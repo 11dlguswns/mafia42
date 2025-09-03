@@ -1,5 +1,6 @@
 package click.mafia42.initializer.handler;
 
+import click.mafia42.exception.GlobalExceptionCode;
 import click.mafia42.payload.Payload;
 import click.mafia42.initializer.service.OutputService;
 import click.mafia42.util.ValidationUtil;
@@ -20,7 +21,7 @@ public class CommendHandler extends SimpleChannelInboundHandler<Payload> {
         switch (payload.getCommend()) {
             case CONSOLE_OUTPUT
                     -> outputService.output(ValidationUtil.validationAndGet(payload.getBody(), ConsoleOutputReq.class));
-            default -> log.info("서버로 부터 처리할 수 없는 커멘드 요청이 왔습니다.");
+            default -> log.info(GlobalExceptionCode.UNSUPPORTED_COMMAND.getMessage());
         }
     }
 

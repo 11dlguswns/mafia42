@@ -1,10 +1,11 @@
 package click.mafia42.initializer.handler;
 
+import click.mafia42.exception.GlobalExceptionCode;
+import click.mafia42.initializer.service.ConnectionService;
+import click.mafia42.initializer.service.dto.dto.ConsoleOutputReq;
 import click.mafia42.payload.Commend;
 import click.mafia42.payload.Payload;
 import click.mafia42.player.ChannelManager;
-import click.mafia42.initializer.service.ConnectionService;
-import click.mafia42.initializer.service.dto.dto.ConsoleOutputReq;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -37,13 +38,15 @@ public class CommendHandler extends SimpleChannelInboundHandler<Payload> {
 
     private Payload getResponseByCommend(Commend commend) {
         if (commend == null) {
-            return new Payload(null, CONSOLE_OUTPUT, new ConsoleOutputReq("존재하지 않는 커멘드"));
-        } else {
-            switch (commend) {
-                default -> {
-                    return new Payload(null, CONSOLE_OUTPUT, new ConsoleOutputReq("처리할 수 없는 커멘드"));
-                }
-            }
+            ConsoleOutputReq body = new ConsoleOutputReq(GlobalExceptionCode.NOT_FOUND_COMMAND.getMessage());
+            return new Payload(null, CONSOLE_OUTPUT, body);
         }
+
+        return switch (commend) {
+            default -> {
+                ConsoleOutputReq body = new ConsoleOutputReq(GlobalExceptionCode.UNSUPPORTED_COMMAND.getMessage());
+                yield new Payload(null, CONSOLE_OUTPUT, body);
+            }
+        };
     }
 }

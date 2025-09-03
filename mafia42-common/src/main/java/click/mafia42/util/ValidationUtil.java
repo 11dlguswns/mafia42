@@ -1,5 +1,7 @@
 package click.mafia42.util;
 
+import click.mafia42.exception.GlobalException;
+import click.mafia42.exception.GlobalExceptionCode;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -26,7 +28,7 @@ public class ValidationUtil {
         Set<ConstraintViolation<T>> violations = validator.validate(value);
         if (!violations.isEmpty()) {
             ConstraintViolation<T> violation = violations.stream().findFirst().orElse(null);
-            throw new RuntimeException("잘못된 요청 : " + violation);
+            throw new GlobalException(GlobalExceptionCode.MALFORMED_JSON, violation.getMessage());
         }
     }
 }
