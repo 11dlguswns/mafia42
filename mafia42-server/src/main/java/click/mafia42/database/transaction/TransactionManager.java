@@ -49,6 +49,12 @@ public class TransactionManager {
     }
 
     public static Connection getConnection() {
-        return connectionHolder.get();
+        Connection connection = connectionHolder.get();
+
+        if (connection == null) {
+            throw new GlobalException(GlobalExceptionCode.OUT_OF_TRANSACTION);
+        }
+
+        return connection;
     }
 }
