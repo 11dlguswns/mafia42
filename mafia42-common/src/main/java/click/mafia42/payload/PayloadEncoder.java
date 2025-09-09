@@ -14,8 +14,13 @@ import java.util.List;
 public class PayloadEncoder extends MessageToMessageEncoder<Payload> {
     @Override
     protected void encode(ChannelHandlerContext ctx, Payload payload, List<Object> out) throws Exception {
-        Payload convertedPayload = MapperUtil.readValueOrThrow(payload, Payload.class);
-        String json = MapperUtil.objectMapper.writeValueAsString(convertedPayload);
-        out.add(ByteBufUtil.encodeString(ctx.alloc(), CharBuffer.wrap(json), CharsetUtil.DEFUALT_CHARSET));
+        try {
+            Payload convertedPayload = MapperUtil.readValueOrThrow(payload, Payload.class);
+            String json = MapperUtil.objectMapper.writeValueAsString(convertedPayload);
+            out.add(ByteBufUtil.encodeString(ctx.alloc(), CharBuffer.wrap(json), CharsetUtil.DEFUALT_CHARSET));
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        }
     }
 }
