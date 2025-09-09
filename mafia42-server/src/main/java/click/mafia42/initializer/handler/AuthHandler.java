@@ -1,7 +1,7 @@
 package click.mafia42.initializer.handler;
 
 import click.mafia42.payload.Payload;
-import click.mafia42.player.ChannelManager;
+import click.mafia42.database.ChannelManager;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;

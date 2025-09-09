@@ -5,7 +5,7 @@ import click.mafia42.initializer.handler.CommendHandler;
 import click.mafia42.initializer.handler.LoggingHandler;
 import click.mafia42.payload.PayloadDecoder;
 import click.mafia42.payload.PayloadEncoder;
-import click.mafia42.player.ChannelManager;
+import click.mafia42.database.ChannelManager;
 import click.mafia42.util.CharsetUtil;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;

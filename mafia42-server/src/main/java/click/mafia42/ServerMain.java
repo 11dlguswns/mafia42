@@ -1,6 +1,6 @@
 package click.mafia42;
 
-import click.mafia42.player.ChannelManager;
+import click.mafia42.database.ChannelManager;
 
 public class ServerMain {
     public static void main(String[] args) throws Exception {

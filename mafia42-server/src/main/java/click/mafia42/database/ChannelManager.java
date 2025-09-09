@@ -1,4 +1,4 @@
-package click.mafia42.player;
+package click.mafia42.database;
 
 import io.netty.channel.Channel;
 import io.netty.channel.group.ChannelGroup;

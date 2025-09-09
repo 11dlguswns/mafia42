@@ -6,6 +6,7 @@ import click.mafia42.initializer.service.dto.dto.ConsoleOutputReq;
 import click.mafia42.payload.Commend;
 import click.mafia42.payload.Payload;
 import click.mafia42.player.ChannelManager;
+import click.mafia42.database.ChannelManager;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
