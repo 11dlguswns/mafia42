@@ -14,13 +14,13 @@ import java.util.UUID;
 public class UserDao {
     public Optional<User> findById(UUID userId) {
         Connection connection = TransactionManager.getConnection();
-        String sql = "SELECT * FROM users u WHERE u.id = ?";
+        String sql = "SELECT * FROM users u WHERE u.user_id = ?";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
             stmt.setString(1, userId.toString());
 
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
-                UUID id = UUID.fromString(rs.getString("id"));
+                UUID id = UUID.fromString(rs.getString("user_id"));
                 String nickname = rs.getString("nickname");
                 String password = rs.getString("password");
                 return Optional.of(new User(id, nickname, password));

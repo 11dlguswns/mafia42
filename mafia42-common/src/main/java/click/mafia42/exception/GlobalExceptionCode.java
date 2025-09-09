@@ -11,6 +11,7 @@ public enum GlobalExceptionCode {
     DB_CONNECTION_FAIL("데이터베이스 연결에 실패했습니다."),
     DB_DISCONNECTION_FAIL("데이터베이스 정상 종료에 실패했습니다."),
     NOT_FOUND_ENV("필수 환경변수 값이 존재하지 않습니다."),
+    OUT_OF_TRANSACTION("트랜잭션 범위 밖에서 커넥션을 얻을 수 없습니다."),
     TRANSACTION_FAIL("트랜잭션 작업 도중 오류가 발생했습니다."),
 
     PASSWORD_MISMATCH("비밀번호가 일치하지 않습니다."),
