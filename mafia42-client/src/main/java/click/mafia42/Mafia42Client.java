@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.time.LocalDateTime;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 import static click.mafia42.payload.Commend.*;
 
@@ -82,9 +83,9 @@ public class Mafia42Client {
             channel.pipeline().get(CommendHandler.class).setPayloadFuture(future);
             channel.writeAndFlush(payload);
 
-            future.get();
+            future.get(2, TimeUnit.SECONDS);
         } catch (Exception e) {
-            throw new GlobalException(GlobalExceptionCode.SYNC_PROCESS_EXCEPTION, e);
+            log.error(GlobalExceptionCode.SYNC_PROCESS_EXCEPTION.getMessage());
         }
     }
 
