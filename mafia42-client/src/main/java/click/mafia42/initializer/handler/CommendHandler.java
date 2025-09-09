@@ -1,32 +1,43 @@
 package click.mafia42.initializer.handler;
 
+import click.mafia42.dto.SaveTokenReq;
 import click.mafia42.exception.GlobalExceptionCode;
+import click.mafia42.initializer.service.TokenService;
 import click.mafia42.payload.Payload;
 import click.mafia42.initializer.service.OutputService;
 import click.mafia42.util.ValidationUtil;
-import click.mafia42.initializer.dto.ConsoleOutputReq;
+import click.mafia42.dto.ConsoleOutputReq;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.CompletableFuture;
+
 @Sharable
 public class CommendHandler extends SimpleChannelInboundHandler<Payload> {
     private static final Logger log = LoggerFactory.getLogger(CommendHandler.class);
     private final OutputService outputService = new OutputService();
+    private final TokenService tokenService = new TokenService();
+    private CompletableFuture<Payload> payloadFuture = new CompletableFuture<>();
 
+    public void setPayloadFuture(CompletableFuture<Payload> future) {
+        this.payloadFuture = future;
+    }
     @Override
-    protected void channelRead0(ChannelHandlerContext channelHandlerContext, Payload payload) throws Exception {
+    protected void channelRead0(ChannelHandlerContext ctx, Payload payload) throws Exception {
         switch (payload.getCommend()) {
-            case CONSOLE_OUTPUT
-                    -> outputService.output(ValidationUtil.validationAndGet(payload.getBody(), ConsoleOutputReq.class));
+            case CONSOLE_OUTPUT ->
+                    outputService.output(ValidationUtil.validationAndGet(payload.getBody(), ConsoleOutputReq.class));
+            case SAVE_TOKEN ->
+                tokenService.saveToken(ValidationUtil.validationAndGet(payload.getBody(), SaveTokenReq.class));
+
             default -> log.info(GlobalExceptionCode.UNSUPPORTED_COMMAND.getMessage());
         }
-    }
 
-    @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        cause.printStackTrace();
+        if (payloadFuture != null) {
+            payloadFuture.complete(payload);
+        }
     }
 }

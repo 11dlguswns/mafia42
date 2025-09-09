@@ -1,4 +1,4 @@
-package click.mafia42.initializer.dto;
+package click.mafia42.dto;
 
 public record ConsoleOutputReq(
         String message

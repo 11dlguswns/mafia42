@@ -1,7 +1,7 @@
 package click.mafia42;
 
 import click.mafia42.initializer.ServerSocketChannelInitializer;
-import click.mafia42.player.ChannelManager;
+import click.mafia42.database.ChannelManager;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioIoHandler;

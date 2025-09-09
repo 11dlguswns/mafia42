@@ -16,6 +16,10 @@ public class Payload implements Serializable {
         this.body = body;
     }
 
+    public void updateToken(String token) {
+        this.token = token;
+    }
+
     public String getToken() {
         return token;
     }

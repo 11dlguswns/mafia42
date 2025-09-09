@@ -1,6 +1,7 @@
 package click.mafia42.initializer.handler;
 
 import click.mafia42.database.ChannelManager;
+import click.mafia42.database.user.User;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
@@ -30,8 +31,10 @@ public class LoggingHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         Channel channel = ctx.channel();
-        log.info("{}포트에서 사용자가 접속을 종료했습니다 [현재 접속자 수 : {}]",
+        User user = ctx.channel().attr(AuthHandler.USER).get();
+        log.info("{}포트에서 {}님이 접속을 종료했습니다 [현재 접속자 수 : {}]",
                 channel.remoteAddress(),
+                user.getNickname(),
                 channelManager.getChannelsCount());
         ctx.fireChannelInactive();
     }
