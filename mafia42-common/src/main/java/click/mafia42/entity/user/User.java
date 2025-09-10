@@ -1,4 +1,4 @@
-package click.mafia42.database.user;
+package click.mafia42.entity.user;
 
 import java.util.UUID;
 
@@ -6,6 +6,9 @@ public class User {
     private UUID id;
     private String nickname;
     private String password;
+
+    public User() {
+    }
 
     public User(UUID id, String nickname, String password) {
         this.id = id;

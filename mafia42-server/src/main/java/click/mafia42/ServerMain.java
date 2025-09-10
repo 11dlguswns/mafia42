@@ -1,6 +1,7 @@
 package click.mafia42;
 
 import click.mafia42.database.ChannelManager;
+import click.mafia42.database.GameRoomManager;
 
 public class ServerMain {
     public static void main(String[] args) throws Exception {
@@ -10,7 +11,8 @@ public class ServerMain {
         Class.forName("org.hibernate.validator.internal.util.Version");
         Class.forName("org.hibernate.validator.internal.engine.ValidatorImpl");
         ChannelManager channelManager = new ChannelManager();
-        Mafia42Server mafia42Server = new Mafia42Server(channelManager);
+        GameRoomManager gameRoomManager = new GameRoomManager();
+        Mafia42Server mafia42Server = new Mafia42Server(channelManager, gameRoomManager);
         mafia42Server.start();
     }
 }

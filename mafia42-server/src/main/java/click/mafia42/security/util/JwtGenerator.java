@@ -1,6 +1,6 @@
 package click.mafia42.security.util;
 
-import click.mafia42.database.user.User;
+import click.mafia42.entity.user.User;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 

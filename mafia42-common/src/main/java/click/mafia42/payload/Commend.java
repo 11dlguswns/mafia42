@@ -6,10 +6,12 @@ public enum Commend {
     SIGN_UP(CommendType.SERVER),
     SIGN_IN(CommendType.SERVER),
     REISSUE_TOKEN(CommendType.SERVER),
+    CREATE_GAME_ROOM(CommendType.SERVER),
 
     // CLIENT
     CONSOLE_OUTPUT(CommendType.CLIENT),
-    SAVE_TOKEN(CommendType.CLIENT);
+    SAVE_TOKEN(CommendType.CLIENT),
+    SAVE_GAME_ROOM(CommendType.CLIENT);
 
     private CommendType type;
 

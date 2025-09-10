@@ -1,7 +1,8 @@
-package click.mafia42.database.refresh_token;
+package click.mafia42.database.dao;
 
+import click.mafia42.entity.refresh_token.RefreshToken;
 import click.mafia42.database.transaction.TransactionManager;
-import click.mafia42.database.user.User;
+import click.mafia42.entity.user.User;
 import click.mafia42.exception.GlobalException;
 import click.mafia42.exception.GlobalExceptionCode;
 

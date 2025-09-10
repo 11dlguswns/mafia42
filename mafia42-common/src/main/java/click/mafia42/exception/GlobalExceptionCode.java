@@ -18,7 +18,12 @@ public enum GlobalExceptionCode {
     NOT_FOUND_REFRESH_TOKEN("리프레쉬 토큰이 존재하지 않습니다."),
     NOT_FOUND_USER("유저가 존재하지 않습니다."),
     USER_ALREADY_EXISTS("이미 존재하는 유저입니다."),
-    SYNC_PROCESS_EXCEPTION("동기 작업 도중 오류가 발생했습니다.");
+    SYNC_PROCESS_EXCEPTION("동기 작업 도중 오류가 발생했습니다."),
+
+    ROOM_MEMBER_FULL("방 인원이 꽉 찼습니다."),
+    ROOM_REMOVE_NOT_ALLOWED("방을 제거할 수 없는 상태입니다."),
+    NOT_FOUND_ROOM("방을 찾을 수 없습니다."),
+    ALREADY_JOINED_ROOM("방에 이미 참여하고 있습니다.");
 
     private final String message;
 

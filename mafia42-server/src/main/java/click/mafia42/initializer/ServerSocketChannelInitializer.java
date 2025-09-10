@@ -1,5 +1,6 @@
 package click.mafia42.initializer;
 
+import click.mafia42.database.GameRoomManager;
 import click.mafia42.initializer.handler.AuthHandler;
 import click.mafia42.initializer.handler.CommendHandler;
 import click.mafia42.initializer.handler.LoggingHandler;
@@ -16,9 +17,11 @@ import io.netty.handler.codec.string.StringDecoder;
 public class ServerSocketChannelInitializer extends ChannelInitializer<SocketChannel> {
 
     private final ChannelManager channelManager;
+    private final GameRoomManager gameRoomManager;
 
-    public ServerSocketChannelInitializer(ChannelManager channelManager) {
+    public ServerSocketChannelInitializer(ChannelManager channelManager, GameRoomManager gameRoomManager) {
         this.channelManager = channelManager;
+        this.gameRoomManager = gameRoomManager;
     }
 
     @Override
@@ -29,7 +32,7 @@ public class ServerSocketChannelInitializer extends ChannelInitializer<SocketCha
                 .addLast(new PayloadDecoder())
                 .addLast(new AuthHandler(channelManager))
                 .addLast(new LoggingHandler(channelManager))
-                .addLast(new CommendHandler(channelManager))
+                .addLast(new CommendHandler(channelManager, gameRoomManager))
                 .addLast(new PayloadEncoder());
     }
 }

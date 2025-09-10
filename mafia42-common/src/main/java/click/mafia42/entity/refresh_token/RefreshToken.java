@@ -1,6 +1,6 @@
-package click.mafia42.database.refresh_token;
+package click.mafia42.entity.refresh_token;
 
-import click.mafia42.database.user.User;
+import click.mafia42.entity.user.User;
 
 public class RefreshToken {
     private User user;

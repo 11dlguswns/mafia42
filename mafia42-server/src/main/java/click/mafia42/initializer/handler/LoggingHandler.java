@@ -1,7 +1,7 @@
 package click.mafia42.initializer.handler;
 
 import click.mafia42.database.ChannelManager;
-import click.mafia42.database.user.User;
+import click.mafia42.entity.user.User;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;

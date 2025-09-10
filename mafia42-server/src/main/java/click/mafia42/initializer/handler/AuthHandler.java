@@ -2,7 +2,7 @@ package click.mafia42.initializer.handler;
 
 import click.mafia42.database.ChannelManager;
 import click.mafia42.database.transaction.TransactionManager;
-import click.mafia42.database.user.User;
+import click.mafia42.entity.user.User;
 import click.mafia42.payload.Payload;
 import click.mafia42.security.service.JwtService;
 import click.mafia42.security.util.JwtUtil;

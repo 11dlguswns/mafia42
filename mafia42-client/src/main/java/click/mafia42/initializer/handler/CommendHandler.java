@@ -1,7 +1,9 @@
 package click.mafia42.initializer.handler;
 
+import click.mafia42.dto.SaveGameRoomReq;
 import click.mafia42.dto.SaveTokenReq;
 import click.mafia42.exception.GlobalExceptionCode;
+import click.mafia42.initializer.service.GameRoomService;
 import click.mafia42.initializer.service.TokenService;
 import click.mafia42.payload.Payload;
 import click.mafia42.initializer.service.OutputService;
@@ -20,6 +22,7 @@ public class CommendHandler extends SimpleChannelInboundHandler<Payload> {
     private static final Logger log = LoggerFactory.getLogger(CommendHandler.class);
     private final OutputService outputService = new OutputService();
     private final TokenService tokenService = new TokenService();
+    private final GameRoomService gameRoomService = new GameRoomService();
     private CompletableFuture<Payload> payloadFuture = new CompletableFuture<>();
 
     public void setPayloadFuture(CompletableFuture<Payload> future) {
@@ -32,6 +35,8 @@ public class CommendHandler extends SimpleChannelInboundHandler<Payload> {
                     outputService.output(ValidationUtil.validationAndGet(payload.getBody(), ConsoleOutputReq.class));
             case SAVE_TOKEN ->
                 tokenService.saveToken(ValidationUtil.validationAndGet(payload.getBody(), SaveTokenReq.class));
+            case SAVE_GAME_ROOM ->
+                gameRoomService.saveGameRoom(ValidationUtil.validationAndGet(payload.getBody(), SaveGameRoomReq.class));
 
             default -> log.info(GlobalExceptionCode.UNSUPPORTED_COMMAND.getMessage());
         }
