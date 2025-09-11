@@ -1,9 +1,9 @@
 package click.mafia42.initializer;
 
 import click.mafia42.database.GameRoomManager;
-import click.mafia42.exception.GlobalExceptionHandler;
 import click.mafia42.initializer.handler.AuthHandler;
 import click.mafia42.initializer.handler.CommendHandler;
+import click.mafia42.initializer.handler.GlobalExceptionHandler;
 import click.mafia42.initializer.handler.LoggingHandler;
 import click.mafia42.payload.PayloadDecoder;
 import click.mafia42.payload.PayloadEncoder;

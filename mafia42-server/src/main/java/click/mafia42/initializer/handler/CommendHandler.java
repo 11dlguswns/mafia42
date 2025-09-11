@@ -2,6 +2,7 @@ package click.mafia42.initializer.handler;
 
 import click.mafia42.database.GameRoomManager;
 import click.mafia42.dto.*;
+import click.mafia42.exception.GlobalException;
 import click.mafia42.exception.GlobalExceptionCode;
 import click.mafia42.initializer.service.AuthService;
 import click.mafia42.initializer.service.ConnectionService;
@@ -43,8 +44,7 @@ public class CommendHandler extends SimpleChannelInboundHandler<Payload> {
 
     private Payload getResponseByPayload(Payload payload, ChannelHandlerContext ctx) {
         if (payload.getCommend() == null) {
-            ConsoleOutputReq body = new ConsoleOutputReq(GlobalExceptionCode.NOT_FOUND_COMMAND.getMessage());
-            return new Payload(null, CONSOLE_OUTPUT, body);
+            throw new GlobalException(GlobalExceptionCode.NOT_FOUND_COMMAND);
         }
 
         return switch (payload.getCommend()) {
@@ -59,8 +59,7 @@ public class CommendHandler extends SimpleChannelInboundHandler<Payload> {
             case JOIN_GAME_ROOM ->
                 gameRoomService.joinGameRoom(ValidationUtil.validationAndGet(payload.getBody(), JoinGameRoomReq.class), ctx);
             default -> {
-                ConsoleOutputReq body = new ConsoleOutputReq(GlobalExceptionCode.UNSUPPORTED_COMMAND.getMessage());
-                yield new Payload(null, CONSOLE_OUTPUT, body);
+                throw new GlobalException(GlobalExceptionCode.UNSUPPORTED_COMMAND);
             }
         };
     }

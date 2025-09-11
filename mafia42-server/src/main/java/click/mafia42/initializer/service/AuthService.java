@@ -4,6 +4,7 @@ import click.mafia42.database.transaction.TransactionManager;
 import click.mafia42.entity.user.User;
 import click.mafia42.database.dao.UserDao;
 import click.mafia42.dto.*;
+import click.mafia42.exception.GlobalException;
 import click.mafia42.exception.GlobalExceptionCode;
 import click.mafia42.payload.Payload;
 import click.mafia42.security.service.JwtService;
@@ -23,8 +24,7 @@ public class AuthService {
             String hashpw = BCrypt.hashpw(request.password(), BCrypt.gensalt());
 
             if (userDao.findByNickname(request.nickname()).isPresent()) {
-                ConsoleOutputReq body = new ConsoleOutputReq(GlobalExceptionCode.USER_ALREADY_EXISTS.getMessage());
-                return new Payload(null, CONSOLE_OUTPUT, body);
+                throw new GlobalException(GlobalExceptionCode.USER_ALREADY_EXISTS);
             }
 
             User user = new User(request.nickname(), hashpw);
@@ -46,13 +46,11 @@ public class AuthService {
             Optional<User> optionalUser = userDao.findByNickname(request.nickname());
 
             if (optionalUser.isEmpty()) {
-                ConsoleOutputReq body = new ConsoleOutputReq(GlobalExceptionCode.NOT_FOUND_USER.getMessage());
-                return new Payload(null, CONSOLE_OUTPUT, body);
+                throw new GlobalException(GlobalExceptionCode.NOT_FOUND_USER);
             }
 
             if (!BCrypt.checkpw(request.password(), optionalUser.get().getPassword())) {
-                ConsoleOutputReq body = new ConsoleOutputReq(GlobalExceptionCode.PASSWORD_MISMATCH.getMessage());
-                return new Payload(null, CONSOLE_OUTPUT, body);
+                throw new GlobalException(GlobalExceptionCode.PASSWORD_MISMATCH);
             }
 
             TokenResponse tokenResponse = jwtService.generateTokenResponse(optionalUser.get());
@@ -74,8 +72,7 @@ public class AuthService {
             Optional<User> optionalUser = userDao.findByNickname(nickname);
 
             if (optionalUser.isEmpty()) {
-                ConsoleOutputReq body = new ConsoleOutputReq(GlobalExceptionCode.NOT_FOUND_USER.getMessage());
-                return new Payload(null, CONSOLE_OUTPUT, body);
+                throw new GlobalException(GlobalExceptionCode.NOT_FOUND_USER);
             }
 
             TokenResponse tokenResponse = jwtService.generateTokenResponse(optionalUser.get());

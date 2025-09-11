@@ -1,6 +1,9 @@
-package click.mafia42.exception;
+package click.mafia42.initializer.handler;
 
 import click.mafia42.dto.ConsoleOutputReq;
+import click.mafia42.dto.ConsoleType;
+import click.mafia42.exception.GlobalException;
+import click.mafia42.exception.GlobalExceptionCode;
 import click.mafia42.payload.Commend;
 import click.mafia42.payload.Payload;
 import io.netty.channel.ChannelHandlerContext;
@@ -21,10 +24,12 @@ public class GlobalExceptionHandler extends ChannelInboundHandlerAdapter {
 
     private Payload toPayloadByException(Throwable cause) {
         if (cause instanceof GlobalException globalException) {
-            ConsoleOutputReq body = new ConsoleOutputReq(globalException.getCodeAndMessage());
+            ConsoleOutputReq body = new ConsoleOutputReq(globalException.getCodeAndMessage(), ConsoleType.ERROR);
             return new Payload(null, Commend.CONSOLE_OUTPUT, body);
         } else {
-            ConsoleOutputReq body = new ConsoleOutputReq(GlobalException.getCodeAndMessage(GlobalExceptionCode.UNKNOWN_ERROR));
+            ConsoleOutputReq body = new ConsoleOutputReq(
+                    GlobalException.getCodeAndMessage(GlobalExceptionCode.UNKNOWN_ERROR),
+                    ConsoleType.ERROR);
             return new Payload(null, Commend.CONSOLE_OUTPUT, body);
         }
     }

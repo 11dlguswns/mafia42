@@ -8,6 +8,10 @@ public class OutputService {
     private static final Logger log = LoggerFactory.getLogger(OutputService.class);
 
     public void output(ConsoleOutputReq request) {
-        log.info(request.message());
+        switch (request.consoleType()) {
+            case INFO -> log.info(request.message());
+            case WARN -> log.warn(request.message());
+            case ERROR -> log.error(request.message());
+        }
     }
 }
