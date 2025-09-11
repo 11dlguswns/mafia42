@@ -56,6 +56,8 @@ public class CommendHandler extends SimpleChannelInboundHandler<Payload> {
                     authService.reissueToken(ValidationUtil.validationAndGet(payload.getBody(), ReissueTokenReq.class));
             case CREATE_GAME_ROOM ->
                     gameRoomService.createGameRoom(ValidationUtil.validationAndGet(payload.getBody(), CreateGameRoomReq.class), ctx);
+            case JOIN_GAME_ROOM ->
+                gameRoomService.joinGameRoom(ValidationUtil.validationAndGet(payload.getBody(), JoinGameRoomReq.class), ctx);
             default -> {
                 ConsoleOutputReq body = new ConsoleOutputReq(GlobalExceptionCode.UNSUPPORTED_COMMAND.getMessage());
                 yield new Payload(null, CONSOLE_OUTPUT, body);

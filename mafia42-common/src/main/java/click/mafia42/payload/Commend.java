@@ -7,6 +7,7 @@ public enum Commend {
     SIGN_IN(CommendType.SERVER),
     REISSUE_TOKEN(CommendType.SERVER),
     CREATE_GAME_ROOM(CommendType.SERVER),
+    JOIN_GAME_ROOM(CommendType.SERVER),
 
     // CLIENT
     CONSOLE_OUTPUT(CommendType.CLIENT),

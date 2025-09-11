@@ -37,6 +37,10 @@ public class GameRoom {
     }
 
     public void addPlayer(User user, String password) {
+        if (containsPlayer(user)) {
+            throw new GlobalException(GlobalExceptionCode.ALREADY_JOINED_ROOM);
+        }
+
         if (maxPlayers <= players.size()) {
             throw new GlobalException(GlobalExceptionCode.ROOM_MEMBER_FULL);
         }
@@ -56,16 +60,16 @@ public class GameRoom {
         players.remove(user);
     }
 
+    public boolean containsPlayer(User user) {
+        return players.contains(user);
+    }
+
     public int getMaxPlayers() {
         return maxPlayers;
     }
 
     public int getPlayersCount() {
         return players.size();
-    }
-
-    public boolean containsPlayer(User user) {
-        return players.contains(user);
     }
 
     public User getManager() {
