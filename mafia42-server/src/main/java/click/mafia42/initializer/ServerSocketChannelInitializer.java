@@ -1,6 +1,7 @@
 package click.mafia42.initializer;
 
 import click.mafia42.database.GameRoomManager;
+import click.mafia42.exception.GlobalExceptionHandler;
 import click.mafia42.initializer.handler.AuthHandler;
 import click.mafia42.initializer.handler.CommendHandler;
 import click.mafia42.initializer.handler.LoggingHandler;
@@ -33,6 +34,7 @@ public class ServerSocketChannelInitializer extends ChannelInitializer<SocketCha
                 .addLast(new AuthHandler(channelManager))
                 .addLast(new LoggingHandler(channelManager))
                 .addLast(new CommendHandler(channelManager, gameRoomManager))
-                .addLast(new PayloadEncoder());
+                .addLast(new PayloadEncoder())
+                .addLast(new GlobalExceptionHandler());
     }
 }

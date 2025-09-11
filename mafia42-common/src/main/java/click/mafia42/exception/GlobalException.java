@@ -1,16 +1,34 @@
 package click.mafia42.exception;
 
 public class GlobalException extends RuntimeException {
+    private GlobalExceptionCode code;
+
+    public GlobalExceptionCode getCode() {
+        return code;
+    }
+
+    public String getCodeAndMessage() {
+        return "[ " + code.name() + " ] : " + code.getMessage();
+    }
+
+    public static String getCodeAndMessage(GlobalExceptionCode code) {
+        return "[ " + code.name() + " ] : " + code.getMessage();
+    }
+
     public GlobalException(GlobalExceptionCode code) {
-        super("[ " + code.name() + " ] : " + code.getMessage());
+        super(getCodeAndMessage(code));
+        this.code = code;
     }
     public GlobalException(GlobalExceptionCode code, Exception e) {
-        super("[ " + code.name() + " ] : " + code.getMessage(), e);
+        super(getCodeAndMessage(code), e);
+        this.code = code;
     }
     public GlobalException(GlobalExceptionCode code, String detailMassage) {
-        super("[ " + code.name() + " ] : " + code.getMessage() + " | detailMassage : " + detailMassage);
+        super(getCodeAndMessage(code) + " | detailMassage : " + detailMassage);
+        this.code = code;
     }
     public GlobalException(GlobalExceptionCode code, String detailMassage, Exception e) {
-        super("[ " + code.name() + " ] : " + code.getMessage() + " | detailMassage : " + detailMassage, e);
+        super(getCodeAndMessage(code) + " | detailMassage : " + detailMassage, e);
+        this.code = code;
     }
 }

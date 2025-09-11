@@ -1,5 +1,6 @@
 package click.mafia42.initializer;
 
+import click.mafia42.exception.GlobalExceptionHandler;
 import click.mafia42.initializer.handler.CommendHandler;
 import click.mafia42.payload.PayloadDecoder;
 import click.mafia42.payload.PayloadEncoder;
@@ -19,6 +20,7 @@ public class ClientSocketChannelInitializer extends ChannelInitializer<SocketCha
                 .addLast(new StringDecoder(CharsetUtil.DEFUALT_CHARSET))
                 .addLast(new PayloadDecoder())
                 .addLast(new CommendHandler())
-                .addLast(new PayloadEncoder());
+                .addLast(new PayloadEncoder())
+                .addLast(new GlobalExceptionHandler());
     }
 }

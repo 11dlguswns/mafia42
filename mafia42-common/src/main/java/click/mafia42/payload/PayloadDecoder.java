@@ -11,12 +11,7 @@ import java.util.List;
 public class PayloadDecoder extends MessageToMessageDecoder<String> {
     @Override
     protected void decode(ChannelHandlerContext ctx, String msg, List<Object> out) throws Exception {
-        try {
-            Payload payload = MapperUtil.readValueOrThrow(msg, Payload.class);
-            out.add(payload);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw e;
-        }
+        Payload payload = MapperUtil.readValueOrThrow(msg, Payload.class);
+        out.add(payload);
     }
 }
