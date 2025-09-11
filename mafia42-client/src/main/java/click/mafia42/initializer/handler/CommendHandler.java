@@ -1,6 +1,6 @@
 package click.mafia42.initializer.handler;
 
-import click.mafia42.dto.SaveGameRoomReq;
+import click.mafia42.dto.SaveDetailGameRoomReq;
 import click.mafia42.dto.SaveTokenReq;
 import click.mafia42.exception.GlobalException;
 import click.mafia42.exception.GlobalExceptionCode;
@@ -37,7 +37,7 @@ public class CommendHandler extends SimpleChannelInboundHandler<Payload> {
             case SAVE_TOKEN ->
                 tokenService.saveToken(ValidationUtil.validationAndGet(payload.getBody(), SaveTokenReq.class));
             case SAVE_GAME_ROOM ->
-                gameRoomService.saveGameRoom(ValidationUtil.validationAndGet(payload.getBody(), SaveGameRoomReq.class));
+                gameRoomService.saveGameRoom(ValidationUtil.validationAndGet(payload.getBody(), SaveDetailGameRoomReq.class));
 
             default -> throw new GlobalException(GlobalExceptionCode.UNSUPPORTED_COMMAND);
         }

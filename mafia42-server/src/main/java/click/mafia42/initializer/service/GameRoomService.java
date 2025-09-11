@@ -1,9 +1,7 @@
 package click.mafia42.initializer.service;
 
 import click.mafia42.database.GameRoomManager;
-import click.mafia42.dto.CreateGameRoomReq;
-import click.mafia42.dto.JoinGameRoomReq;
-import click.mafia42.dto.SaveGameRoomReq;
+import click.mafia42.dto.*;
 import click.mafia42.entity.room.GameRoom;
 import click.mafia42.entity.user.User;
 import click.mafia42.exception.GlobalException;
@@ -34,7 +32,7 @@ public class GameRoomService {
         GameRoom gameRoom = gameRoomManager.findById(gameRoomId)
                 .orElseThrow(() -> new GlobalException(GlobalExceptionCode.NOT_FOUND_ROOM));
 
-        return new Payload(null, Commend.SAVE_GAME_ROOM, SaveGameRoomReq.from(gameRoom));
+        return new Payload(null, Commend.SAVE_GAME_ROOM, SaveDetailGameRoomReq.from(gameRoom));
     }
 
     public Payload joinGameRoom(JoinGameRoomReq request, ChannelHandlerContext ctx) {
@@ -45,5 +43,8 @@ public class GameRoomService {
         gameRoom.addPlayer(user, request.password());
 
         return new Payload(null, Commend.SAVE_GAME_ROOM, SaveGameRoomReq.from(gameRoom));
+        return new Payload(null, Commend.SAVE_GAME_ROOM, SaveDetailGameRoomReq.from(gameRoom));
+    }
+    public Payload fetchGameRooms(FetchGameRoomsReq fetchGameRoomsReq) {
     }
 }
