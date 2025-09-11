@@ -43,6 +43,10 @@ public class GameRoomManager {
         return Optional.ofNullable(gameRooms.get(id));
     }
 
+    public List<GameRoom> findAll() {
+        return gameRooms.values().stream().toList();
+    }
+
     private long getRoomId() {
         if (freeIds.isEmpty()) {
             return nextId.getAndIncrement();

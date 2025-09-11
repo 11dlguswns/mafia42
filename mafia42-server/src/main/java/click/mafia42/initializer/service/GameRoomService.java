@@ -10,6 +10,8 @@ import click.mafia42.payload.Commend;
 import click.mafia42.payload.Payload;
 import io.netty.channel.ChannelHandlerContext;
 
+import java.util.List;
+
 import static click.mafia42.initializer.handler.AuthHandler.*;
 
 public class GameRoomService {
@@ -42,9 +44,17 @@ public class GameRoomService {
 
         gameRoom.addPlayer(user, request.password());
 
-        return new Payload(null, Commend.SAVE_GAME_ROOM, SaveGameRoomReq.from(gameRoom));
         return new Payload(null, Commend.SAVE_GAME_ROOM, SaveDetailGameRoomReq.from(gameRoom));
     }
+
     public Payload fetchGameRooms(FetchGameRoomsReq fetchGameRoomsReq) {
+        List<GameRoom> gameRooms = gameRoomManager.findAll();
+
+        SaveGameRoomListReq body = new SaveGameRoomListReq(
+                gameRooms.stream()
+                        .map(SaveGameRoomReq::from)
+                        .toList()
+        );
+        return new Payload(null, Commend.SAVE_GAME_ROOM_LIST, body);
     }
 }

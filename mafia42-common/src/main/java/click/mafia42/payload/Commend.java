@@ -8,11 +8,13 @@ public enum Commend {
     REISSUE_TOKEN(CommendType.SERVER),
     CREATE_GAME_ROOM(CommendType.SERVER),
     JOIN_GAME_ROOM(CommendType.SERVER),
+    FETCH_GAME_ROOMS(CommendType.SERVER),
 
     // CLIENT
     CONSOLE_OUTPUT(CommendType.CLIENT),
     SAVE_TOKEN(CommendType.CLIENT),
-    SAVE_GAME_ROOM(CommendType.CLIENT);
+    SAVE_GAME_ROOM(CommendType.CLIENT),
+    SAVE_GAME_ROOM_LIST(CommendType.CLIENT);
 
     private CommendType type;
 

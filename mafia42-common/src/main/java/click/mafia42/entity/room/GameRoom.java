@@ -72,6 +72,10 @@ public class GameRoom {
         return players.size();
     }
 
+    public List<User> getPlayers() {
+        return Collections.unmodifiableList(players);
+    }
+
     public User getManager() {
         return manager;
     }
