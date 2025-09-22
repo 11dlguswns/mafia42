@@ -30,7 +30,7 @@ public class CommendHandler extends SimpleChannelInboundHandler<Payload> {
 
     public CommendHandler(ChannelManager channelManager, GameRoomManager gameRoomManager) {
         this.channelManager = channelManager;
-        this.gameRoomService = new GameRoomService(gameRoomManager);
+        this.gameRoomService = new GameRoomService(gameRoomManager, channelManager);
     }
 
     @Override

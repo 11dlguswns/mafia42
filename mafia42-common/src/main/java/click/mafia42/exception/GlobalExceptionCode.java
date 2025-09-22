@@ -24,6 +24,7 @@ public enum GlobalExceptionCode {
     ROOM_MEMBER_FULL("방 인원이 꽉 찼습니다."),
     ROOM_REMOVE_NOT_ALLOWED("방을 제거할 수 없는 상태입니다."),
     NOT_FOUND_ROOM("방을 찾을 수 없습니다."),
+    NOT_JOIN_ROOM("방에 참여한 상태가 아닙니다."),
     ALREADY_JOINED_ROOM("방에 이미 참여하고 있습니다."),
     CLIENT_WRITE_FAIL("화면 출력에 실패했습니다.");
 

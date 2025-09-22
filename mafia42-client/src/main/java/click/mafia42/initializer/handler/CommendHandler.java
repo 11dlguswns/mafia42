@@ -32,6 +32,9 @@ public class CommendHandler extends SimpleChannelInboundHandler<Payload> {
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Payload payload) throws Exception {
         switch (payload.getCommend()) {
+            case NOTHING -> {
+                // do nothing
+            }
             case CONSOLE_OUTPUT ->
                     outputService.output(ValidationUtil.validationAndGet(payload.getBody(), ConsoleOutputReq.class));
             case SAVE_TOKEN ->

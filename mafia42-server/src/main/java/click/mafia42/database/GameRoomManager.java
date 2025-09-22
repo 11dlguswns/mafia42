@@ -47,6 +47,13 @@ public class GameRoomManager {
         return gameRooms.values().stream().toList();
     }
 
+    public GameRoom findGameRoomsByUser(User user) {
+        return gameRooms.values().stream()
+                .filter(gr -> gr.getPlayers().contains(user))
+                .findFirst()
+                .orElseThrow(() -> new GlobalException((GlobalExceptionCode.NOT_JOIN_ROOM)));
+    }
+
     private long getRoomId() {
         if (freeIds.isEmpty()) {
             return nextId.getAndIncrement();
