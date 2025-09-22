@@ -10,7 +10,7 @@ public record SaveDetailGameRoomReq(
         long id,
         String name,
         int maxPlayers,
-        List<SaveGameRoomUserReq> players,
+        List<SaveGameRoomUserReq> users,
         User manager,
         GameType gameType
 ) {
