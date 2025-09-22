@@ -7,15 +7,17 @@ import click.mafia42.exception.GlobalException;
 import click.mafia42.exception.GlobalExceptionCode;
 import click.mafia42.initializer.provider.DetailGameRoomProvider;
 import click.mafia42.initializer.provider.GameRoomListProvider;
+import click.mafia42.initializer.provider.UserInfoProvider;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.UUID;
 
 public class ClientWriter implements Runnable {
-    private final Path clientFile = Path.of("mafia42-client/src/main/resources/" + UUID.randomUUID() + "Client.txt");
+    private final String clientPath = "mafia42-client/src/main/resources/";
+    private final String clientExt = ".txt";
+    private Path clientFile = Path.of(clientPath + "Anonymous" + clientExt);
 
     @Override
     public void run() {
@@ -25,7 +27,11 @@ public class ClientWriter implements Runnable {
             }
 
             while (true) {
-                String writeString = gameRoomWrite();
+                if (existsUserInfo()) {
+                    createUserClientFile();
+                }
+
+                String writeString = userInfoWrite() + gameRoomWrite();
                 Files.writeString(clientFile, writeString, StandardCharsets.UTF_8);
                 Thread.sleep(100);
             }
@@ -34,6 +40,31 @@ public class ClientWriter implements Runnable {
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private String userInfoWrite() {
+        StringBuilder writeString = new StringBuilder();
+
+        if (existsUserInfo()) {
+            writeString.append("닉네임 : ").append(UserInfoProvider.nickname);
+        } else {
+            writeString.append("회원 정보가 존재하지 않습니다.");
+        }
+        writeString.append("\n\n");
+
+        return writeString.toString();
+    }
+
+    private void createUserClientFile() throws IOException {
+        clientFile = Path.of(clientPath + UserInfoProvider.nickname + clientExt);
+
+        if (!Files.exists(clientFile)) {
+            Files.createFile(clientFile);
+        }
+    }
+
+    private boolean existsUserInfo() {
+        return UserInfoProvider.nickname != null;
     }
 
     private String gameRoomWrite() throws IOException {
@@ -48,7 +79,9 @@ public class ClientWriter implements Runnable {
         StringBuilder writeString = new StringBuilder();
 
         SaveDetailGameRoomReq detailGameRoom = DetailGameRoomProvider.detailGameRoom;
-        writeString.append("[ ").append(detailGameRoom.id()).append(" ] ").append(detailGameRoom.name()).append(" - ").append(detailGameRoom.gameType()).append("\n");
+        writeString.append("[").append(detailGameRoom.id()).append("] ").append(detailGameRoom.name()).append(" - ")
+                .append(detailGameRoom.gameType()).append(" (").append(detailGameRoom.users().size()).append("/")
+                .append(detailGameRoom.maxPlayers()).append(")\n");;
         for (SaveGameRoomUserReq user : detailGameRoom.users()) {
             writeString.append(user.name());
 
@@ -70,7 +103,9 @@ public class ClientWriter implements Runnable {
             return writeString.toString();
         }
         for (SaveGameRoomReq gameRoom : GameRoomListProvider.gameRooms) {
-            writeString.append("[").append(gameRoom.id()).append("] ").append(gameRoom.name()).append(" - ").append(gameRoom.gameType()).append(" (").append(gameRoom.playersCount()).append("/").append(gameRoom.maxPlayers()).append(")\n");
+            writeString.append("[").append(gameRoom.id()).append("] ").append(gameRoom.name()).append(" - ")
+                    .append(gameRoom.gameType()).append(" (").append(gameRoom.playersCount()).append("/")
+                    .append(gameRoom.maxPlayers()).append(")\n");
         }
 
         return writeString.toString();

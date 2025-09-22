@@ -9,12 +9,14 @@ public enum Commend {
     CREATE_GAME_ROOM(CommendType.SERVER),
     JOIN_GAME_ROOM(CommendType.SERVER),
     FETCH_GAME_ROOMS(CommendType.SERVER),
+    FETCH_USER_INFO_MYSELF(CommendType.SERVER),
 
     // CLIENT
     CONSOLE_OUTPUT(CommendType.CLIENT),
     SAVE_TOKEN(CommendType.CLIENT),
     SAVE_GAME_ROOM(CommendType.CLIENT),
-    SAVE_GAME_ROOM_LIST(CommendType.CLIENT);
+    SAVE_GAME_ROOM_LIST(CommendType.CLIENT),
+    SAVE_USER_INFO_MYSELF(CommendType.CLIENT);
 
     private CommendType type;
 

@@ -1,16 +1,14 @@
 package click.mafia42.initializer.handler;
 
-import click.mafia42.dto.client.SaveDetailGameRoomReq;
-import click.mafia42.dto.client.SaveGameRoomListReq;
-import click.mafia42.dto.client.SaveTokenReq;
+import click.mafia42.dto.client.*;
 import click.mafia42.exception.GlobalException;
 import click.mafia42.exception.GlobalExceptionCode;
 import click.mafia42.initializer.service.GameRoomService;
 import click.mafia42.initializer.service.TokenService;
+import click.mafia42.initializer.service.UserService;
 import click.mafia42.payload.Payload;
 import click.mafia42.initializer.service.OutputService;
 import click.mafia42.util.ValidationUtil;
-import click.mafia42.dto.client.ConsoleOutputReq;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -25,6 +23,7 @@ public class CommendHandler extends SimpleChannelInboundHandler<Payload> {
     private final OutputService outputService = new OutputService();
     private final TokenService tokenService = new TokenService();
     private final GameRoomService gameRoomService = new GameRoomService();
+    private final UserService userService = new UserService();
     private CompletableFuture<Payload> payloadFuture = new CompletableFuture<>();
 
     public void setPayloadFuture(CompletableFuture<Payload> future) {
@@ -41,6 +40,8 @@ public class CommendHandler extends SimpleChannelInboundHandler<Payload> {
                 gameRoomService.saveGameRoom(ValidationUtil.validationAndGet(payload.getBody(), SaveDetailGameRoomReq.class));
             case SAVE_GAME_ROOM_LIST ->
                     gameRoomService.saveGameRoomList(ValidationUtil.validationAndGet(payload.getBody(), SaveGameRoomListReq.class));
+            case SAVE_USER_INFO_MYSELF ->
+                userService.saveUserInfoMyself(ValidationUtil.validationAndGet(payload.getBody(), SaveUserInfoMyselfReq.class));
 
             default -> throw new GlobalException(GlobalExceptionCode.UNSUPPORTED_COMMAND);
         }

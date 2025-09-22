@@ -7,6 +7,7 @@ import click.mafia42.exception.GlobalExceptionCode;
 import click.mafia42.initializer.service.AuthService;
 import click.mafia42.initializer.service.ConnectionService;
 import click.mafia42.initializer.service.GameRoomService;
+import click.mafia42.initializer.service.UserService;
 import click.mafia42.payload.Payload;
 import click.mafia42.database.ChannelManager;
 import click.mafia42.util.ValidationUtil;
@@ -24,6 +25,7 @@ public class CommendHandler extends SimpleChannelInboundHandler<Payload> {
     private final ConnectionService connectionService = new ConnectionService();
     private final GameRoomService gameRoomService;
     private final AuthService authService = new AuthService();
+    private final UserService userService = new UserService();
     private final ChannelManager channelManager;
 
     public CommendHandler(ChannelManager channelManager, GameRoomManager gameRoomManager) {
@@ -60,6 +62,8 @@ public class CommendHandler extends SimpleChannelInboundHandler<Payload> {
                 gameRoomService.joinGameRoom(ValidationUtil.validationAndGet(payload.getBody(), JoinGameRoomReq.class), ctx);
             case FETCH_GAME_ROOMS ->
                 gameRoomService.fetchGameRooms(ValidationUtil.validationAndGet(payload.getBody(), FetchGameRoomsReq.class));
+            case FETCH_USER_INFO_MYSELF ->
+                userService.fetchUserInfoMyself(ValidationUtil.validationAndGet(payload.getBody(), FetchUserInfoMyselfReq.class), ctx);
             default -> {
                 throw new GlobalException(GlobalExceptionCode.UNSUPPORTED_COMMAND);
             }
