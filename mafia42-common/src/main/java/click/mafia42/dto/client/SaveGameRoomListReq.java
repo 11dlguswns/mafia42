@@ -1,4 +1,4 @@
-package click.mafia42.dto;
+package click.mafia42.dto.client;
 
 import java.util.List;
 

@@ -1,7 +1,7 @@
 package click.mafia42.initializer.service;
 
-import click.mafia42.dto.SaveDetailGameRoomReq;
-import click.mafia42.dto.SaveGameRoomListReq;
+import click.mafia42.dto.client.SaveDetailGameRoomReq;
+import click.mafia42.dto.client.SaveGameRoomListReq;
 import click.mafia42.initializer.provider.DetailGameRoomProvider;
 import click.mafia42.initializer.provider.GameRoomListProvider;
 

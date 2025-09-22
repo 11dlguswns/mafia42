@@ -1,7 +1,7 @@
 package click.mafia42.initializer.handler;
 
 import click.mafia42.database.GameRoomManager;
-import click.mafia42.dto.*;
+import click.mafia42.dto.server.*;
 import click.mafia42.exception.GlobalException;
 import click.mafia42.exception.GlobalExceptionCode;
 import click.mafia42.initializer.service.AuthService;

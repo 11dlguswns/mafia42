@@ -1,4 +1,4 @@
-package click.mafia42.dto;
+package click.mafia42.dto.client;
 
 import click.mafia42.entity.room.GameRoom;
 import click.mafia42.entity.room.GameType;

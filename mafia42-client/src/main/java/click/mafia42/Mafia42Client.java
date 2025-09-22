@@ -1,9 +1,8 @@
 package click.mafia42;
 
-import click.mafia42.dto.ReissueTokenReq;
-import click.mafia42.dto.SignInReq;
-import click.mafia42.dto.SignUpReq;
-import click.mafia42.exception.GlobalException;
+import click.mafia42.dto.server.ReissueTokenReq;
+import click.mafia42.dto.server.SignInReq;
+import click.mafia42.dto.server.SignUpReq;
 import click.mafia42.exception.GlobalExceptionCode;
 import click.mafia42.initializer.ClientSocketChannelInitializer;
 import click.mafia42.initializer.handler.CommendHandler;

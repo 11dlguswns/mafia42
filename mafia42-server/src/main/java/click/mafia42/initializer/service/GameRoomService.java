@@ -1,7 +1,12 @@
 package click.mafia42.initializer.service;
 
 import click.mafia42.database.GameRoomManager;
-import click.mafia42.dto.*;
+import click.mafia42.dto.client.SaveDetailGameRoomReq;
+import click.mafia42.dto.client.SaveGameRoomListReq;
+import click.mafia42.dto.client.SaveGameRoomReq;
+import click.mafia42.dto.server.CreateGameRoomReq;
+import click.mafia42.dto.server.FetchGameRoomsReq;
+import click.mafia42.dto.server.JoinGameRoomReq;
 import click.mafia42.entity.room.GameRoom;
 import click.mafia42.entity.user.User;
 import click.mafia42.exception.GlobalException;

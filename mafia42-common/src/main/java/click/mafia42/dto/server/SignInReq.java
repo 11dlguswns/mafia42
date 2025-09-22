@@ -1,4 +1,4 @@
-package click.mafia42.dto;
+package click.mafia42.dto.server;
 
 public record SignInReq(
         String nickname,

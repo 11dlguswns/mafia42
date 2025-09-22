@@ -1,8 +1,8 @@
 package click.mafia42.initializer.handler;
 
-import click.mafia42.dto.SaveDetailGameRoomReq;
-import click.mafia42.dto.SaveGameRoomListReq;
-import click.mafia42.dto.SaveTokenReq;
+import click.mafia42.dto.client.SaveDetailGameRoomReq;
+import click.mafia42.dto.client.SaveGameRoomListReq;
+import click.mafia42.dto.client.SaveTokenReq;
 import click.mafia42.exception.GlobalException;
 import click.mafia42.exception.GlobalExceptionCode;
 import click.mafia42.initializer.service.GameRoomService;
@@ -10,7 +10,7 @@ import click.mafia42.initializer.service.TokenService;
 import click.mafia42.payload.Payload;
 import click.mafia42.initializer.service.OutputService;
 import click.mafia42.util.ValidationUtil;
-import click.mafia42.dto.ConsoleOutputReq;
+import click.mafia42.dto.client.ConsoleOutputReq;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;

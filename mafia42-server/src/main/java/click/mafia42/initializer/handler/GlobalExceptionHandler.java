@@ -1,7 +1,7 @@
 package click.mafia42.initializer.handler;
 
-import click.mafia42.dto.ConsoleOutputReq;
-import click.mafia42.dto.ConsoleType;
+import click.mafia42.dto.client.ConsoleOutputReq;
+import click.mafia42.dto.client.ConsoleType;
 import click.mafia42.exception.GlobalException;
 import click.mafia42.exception.GlobalExceptionCode;
 import click.mafia42.payload.Commend;

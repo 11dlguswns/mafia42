@@ -1,6 +1,6 @@
 package click.mafia42.initializer.service;
 
-import click.mafia42.dto.ConsoleOutputReq;
+import click.mafia42.dto.client.ConsoleOutputReq;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

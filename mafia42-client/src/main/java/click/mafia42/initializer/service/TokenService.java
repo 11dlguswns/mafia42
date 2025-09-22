@@ -1,6 +1,6 @@
 package click.mafia42.initializer.service;
 
-import click.mafia42.dto.SaveTokenReq;
+import click.mafia42.dto.client.SaveTokenReq;
 import click.mafia42.initializer.provider.TokenProvider;
 
 public class TokenService {

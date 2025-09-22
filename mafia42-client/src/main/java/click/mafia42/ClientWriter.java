@@ -1,8 +1,8 @@
 package click.mafia42;
 
-import click.mafia42.dto.SaveDetailGameRoomReq;
-import click.mafia42.dto.SaveGameRoomReq;
-import click.mafia42.dto.SaveGameRoomUserReq;
+import click.mafia42.dto.client.SaveDetailGameRoomReq;
+import click.mafia42.dto.client.SaveGameRoomReq;
+import click.mafia42.dto.client.SaveGameRoomUserReq;
 import click.mafia42.exception.GlobalException;
 import click.mafia42.exception.GlobalExceptionCode;
 import click.mafia42.initializer.provider.DetailGameRoomProvider;
