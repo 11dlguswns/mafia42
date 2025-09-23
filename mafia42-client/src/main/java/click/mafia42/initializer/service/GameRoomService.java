@@ -17,5 +17,6 @@ public class GameRoomService {
 
     public void removeGameRoom(RemoveGameRoomReq request) {
         DetailGameRoomProvider.detailGameRoom = null;
+        GameRoomListProvider.gameRooms = null;
     }
 }
