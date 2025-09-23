@@ -18,8 +18,6 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
 import static click.mafia42.initializer.handler.AuthHandler.*;
 
@@ -55,7 +53,9 @@ public class GameRoomService {
 
         gameRoom.addPlayer(user, request.password());
 
-        sendDetailGameRoomToUsers(ctx);
+        Payload payload = new Payload(null, Commend.SAVE_GAME_ROOM, SaveDetailGameRoomReq.from(gameRoom));
+        sendCommendToGameRoomUsers(gameRoom, payload);
+
         return new Payload(null, Commend.NOTHING, null);
     }
 
@@ -70,13 +70,16 @@ public class GameRoomService {
         return new Payload(null, Commend.SAVE_GAME_ROOM_LIST, body);
     }
 
-    public void sendDetailGameRoomToUsers(ChannelHandlerContext ctx) {
-        User user = ctx.channel().attr(USER).get();
-
-        GameRoom gameRoom = gameRoomManager.findGameRoomsByUser(user);
+    private void sendCommendToGameRoomUsers(GameRoom gameRoom, Payload payload) {
         List<Channel> userChannelByJoinGameRoom = channelManager.findChannelByGameRoom(gameRoom);
 
-        Payload body = new Payload(null, Commend.SAVE_GAME_ROOM, SaveDetailGameRoomReq.from(gameRoom));
-        channelManager.sendCommendToUsers(userChannelByJoinGameRoom, body);
+        channelManager.sendCommendToUsers(userChannelByJoinGameRoom, payload);
+    }
+
+    public void exitGameRoom(GameRoom gameRoom, User user) {
+        gameRoomManager.exitGameRoom(gameRoom, user);
+
+        Payload payload = new Payload(null, Commend.SAVE_GAME_ROOM, SaveDetailGameRoomReq.from(gameRoom));
+        sendCommendToGameRoomUsers(gameRoom, payload);
     }
 }

@@ -31,7 +31,7 @@ public class ServerSocketChannelInitializer extends ChannelInitializer<SocketCha
         pipeline.addLast(new JsonObjectDecoder(65536))
                 .addLast(new StringDecoder(CharsetUtil.DEFUALT_CHARSET))
                 .addLast(new PayloadDecoder())
-                .addLast(new AuthHandler(channelManager))
+                .addLast(new AuthHandler(channelManager, gameRoomManager))
                 .addLast(new LoggingHandler(channelManager))
                 .addLast(new CommendHandler(channelManager, gameRoomManager))
                 .addLast(new PayloadEncoder())

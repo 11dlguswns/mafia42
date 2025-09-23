@@ -17,6 +17,7 @@ public class GameRoom {
     private User manager;
     private final GameType gameType;
     private final String password;
+    private boolean isStarted = false;
 
     public GameRoom(long id, String name, int maxPlayers, User manager, GameType gameType, String password) {
         this.id = id;
@@ -53,11 +54,15 @@ public class GameRoom {
     }
 
     public void removePlayer(User user) {
-        if (manager.equals(user)) {
-            manager = players.getFirst();
+        if (!containsPlayer(user)) {
+            throw new GlobalException(GlobalExceptionCode.NOT_JOIN_ROOM);
         }
 
         players.remove(user);
+
+        if (!players.isEmpty() && manager.equals(user)) {
+            manager = players.getFirst();
+        }
     }
 
     public boolean containsPlayer(User user) {
@@ -86,5 +91,13 @@ public class GameRoom {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public boolean isStarted() {
+        return isStarted;
+    }
+
+    public void setStarted(boolean started) {
+        isStarted = started;
     }
 }

@@ -30,6 +30,15 @@ public class GameRoomManager {
         return gameRoom.getId();
     }
 
+    public void exitGameRoom(GameRoom gameRoom, User user) {
+        gameRoom.removePlayer(user);
+
+        if (gameRoom.getPlayers().isEmpty()) {
+            gameRooms.remove(gameRoom.getId());
+            freeIds.add(gameRoom.getId());
+        }
+    }
+
     public void removeGameRoom(GameRoom gameRoom, User user) {
         if (isRemovalAllowedForManagerOnly(gameRoom, user)) {
             throw new GlobalException(GlobalExceptionCode.ROOM_REMOVE_NOT_ALLOWED);
@@ -47,11 +56,10 @@ public class GameRoomManager {
         return gameRooms.values().stream().toList();
     }
 
-    public GameRoom findGameRoomsByUser(User user) {
+    public Optional<GameRoom> findGameRoomByUser(User user) {
         return gameRooms.values().stream()
                 .filter(gr -> gr.getPlayers().contains(user))
-                .findFirst()
-                .orElseThrow(() -> new GlobalException((GlobalExceptionCode.NOT_JOIN_ROOM)));
+                .findFirst();
     }
 
     private long getRoomId() {
