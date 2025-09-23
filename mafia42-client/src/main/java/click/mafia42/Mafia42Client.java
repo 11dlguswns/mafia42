@@ -67,8 +67,7 @@ public class Mafia42Client {
     private void sendRequest(Channel channel, Payload payload) {
         Commend commend = payload.getCommend();
 
-        if (commend == SIGN_IN || commend == SIGN_UP || commend == REISSUE_TOKEN ||
-                commend == FETCH_USER_INFO_MYSELF || commend == FETCH_GAME_ROOMS || commend == EXIT_GAME_ROOM) {
+        if (commend.isSyncReq()) {
             sendRequestSync(channel, payload);
             return;
         }

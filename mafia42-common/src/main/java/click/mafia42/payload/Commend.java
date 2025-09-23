@@ -1,24 +1,34 @@
 package click.mafia42.payload;
 
 public enum Commend {
-    NOTHING,
+    NOTHING(false),
 
     // SERVER
-    DISCONNECT,
-    SIGN_UP,
-    SIGN_IN,
-    REISSUE_TOKEN,
-    CREATE_GAME_ROOM,
-    JOIN_GAME_ROOM,
-    FETCH_GAME_ROOMS,
-    FETCH_USER_INFO_MYSELF,
-    EXIT_GAME_ROOM,
+    DISCONNECT(false),
+    SIGN_UP(true),
+    SIGN_IN(true),
+    REISSUE_TOKEN(true),
+    CREATE_GAME_ROOM(false),
+    JOIN_GAME_ROOM(false),
+    FETCH_GAME_ROOMS(true),
+    FETCH_USER_INFO_MYSELF(true),
+    EXIT_GAME_ROOM(true),
 
     // CLIENT
-    CONSOLE_OUTPUT,
-    SAVE_TOKEN,
-    SAVE_GAME_ROOM,
-    SAVE_GAME_ROOM_LIST,
-    SAVE_USER_INFO_MYSELF,
-    REMOVE_GAME_ROOM;
+    CONSOLE_OUTPUT(false),
+    SAVE_TOKEN(false),
+    SAVE_GAME_ROOM(false),
+    SAVE_GAME_ROOM_LIST(false),
+    SAVE_USER_INFO_MYSELF(false),
+    REMOVE_GAME_ROOM(false);
+
+    private final boolean isSyncReq;
+
+    Commend(boolean isSyncReq) {
+        this.isSyncReq = isSyncReq;
+    }
+
+    public boolean isSyncReq() {
+        return isSyncReq;
+    }
 }
