@@ -39,6 +39,11 @@ public class TransactionManager {
                 return result;
             } catch (Exception e) {
                 connection.rollback();
+
+                if (e instanceof GlobalException globalException) {
+                    throw globalException;
+                }
+
                 throw new GlobalException(GlobalExceptionCode.TRANSACTION_FAIL, e);
             }
         } catch (Exception e) {
