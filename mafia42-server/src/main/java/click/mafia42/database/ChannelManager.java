@@ -39,8 +39,8 @@ public class ChannelManager {
 
     public List<Channel> findChannelByGameRoom(GameRoom gameRoom) {
         return channels.stream()
-                .filter(channel -> {
-                    User user = channel.attr(USER).get();
+                .filter(ch -> {
+                    User user = ch.attr(USER).get();
                     return user != null && gameRoom.getPlayers().contains(user);
                 })
                 .toList();
@@ -48,5 +48,12 @@ public class ChannelManager {
 
     public void sendCommendToUsers(List<Channel> channels, Payload payload) {
         channels.forEach(ch -> ch.writeAndFlush(payload));
+    }
+
+    public void sendCommendToUser(User user, Payload payload) {
+        channels.stream()
+                .filter(ch -> user.equals(ch.attr(USER).get()))
+                .findFirst()
+                .ifPresent(ch -> ch.writeAndFlush(payload));
     }
 }

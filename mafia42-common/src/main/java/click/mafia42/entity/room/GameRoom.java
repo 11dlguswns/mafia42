@@ -5,9 +5,7 @@ import click.mafia42.exception.GlobalException;
 import click.mafia42.exception.GlobalExceptionCode;
 import org.mindrot.jbcrypt.BCrypt;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public class GameRoom {
     private final long id;
@@ -60,9 +58,13 @@ public class GameRoom {
 
         players.remove(user);
 
-        if (!players.isEmpty() && manager.equals(user)) {
+        if (!players.isEmpty() && isManager(user)) {
             manager = players.getFirst();
         }
+    }
+
+    public boolean isManager(User user) {
+        return manager.equals(user);
     }
 
     public boolean containsPlayer(User user) {
@@ -79,6 +81,12 @@ public class GameRoom {
 
     public List<User> getPlayers() {
         return Collections.unmodifiableList(players);
+    }
+
+    public Optional<User> getPlayer(UUID userId) {
+        return players.stream()
+                .filter(player -> player.getId().equals(userId))
+                .findFirst();
     }
 
     public User getManager() {

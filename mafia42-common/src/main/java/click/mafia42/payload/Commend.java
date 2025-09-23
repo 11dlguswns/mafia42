@@ -14,6 +14,7 @@ public enum Commend {
     FETCH_USER_INFO_MYSELF(true),
     EXIT_GAME_ROOM(true),
     SEND_MESSAGE_TO_GAME_ROOM_LOBBY(false),
+    KICK_OUT_GAME_ROOM_USER(false),
 
     // CLIENT
     CONSOLE_OUTPUT(false),

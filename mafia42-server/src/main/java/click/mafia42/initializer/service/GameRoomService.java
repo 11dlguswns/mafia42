@@ -109,4 +109,32 @@ public class GameRoomService {
 
         return new Payload(null, Commend.NOTHING, null);
     }
+
+    public Payload kickOutGameRoomUser(KickOutGameRoomUserReq request, ChannelHandlerContext ctx) {
+        User user = ctx.channel().attr(USER).get();
+        GameRoom gameRoom = gameRoomManager.findGameRoomByUser(user)
+                .orElseThrow(() -> new GlobalException(GlobalExceptionCode.NOT_JOIN_ROOM));
+
+        if (!gameRoom.isManager(user)) {
+            throw new GlobalException(GlobalExceptionCode.ROOM_MANAGE_NOT_ALLOWED);
+        }
+        if (gameRoom.isStarted()) {
+            throw new GlobalException(GlobalExceptionCode.GAME_ALREADY_STARTED);
+        }
+        if (user.getId().equals(request.userId())) {
+            throw new GlobalException(GlobalExceptionCode.CANNOT_KICK_SELF);
+        }
+
+        User kickOutUser = gameRoom.getPlayer(request.userId())
+                .orElseThrow(() -> new GlobalException(GlobalExceptionCode.NOT_FOUND_USER));
+        gameRoomManager.exitGameRoom(gameRoom, kickOutUser);
+
+        Payload payloadToGameRoomUsers = new Payload(null, Commend.SAVE_GAME_ROOM, SaveDetailGameRoomReq.from(gameRoom));
+        sendCommendToGameRoomUsers(gameRoom, payloadToGameRoomUsers);
+
+        Payload payloadToKickOutUser = new Payload(null, Commend.REMOVE_GAME_ROOM, new RemoveGameRoomReq());
+        channelManager.sendCommendToUser(kickOutUser, payloadToKickOutUser);
+
+        return new Payload(null, Commend.NOTHING, null);
+    }
 }
