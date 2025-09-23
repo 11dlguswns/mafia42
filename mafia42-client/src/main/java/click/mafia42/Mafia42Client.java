@@ -1,12 +1,12 @@
 package click.mafia42;
 
-import click.mafia42.dto.server.ReissueTokenReq;
-import click.mafia42.dto.server.SignInReq;
-import click.mafia42.dto.server.SignUpReq;
+import click.mafia42.dto.server.*;
 import click.mafia42.exception.GlobalExceptionCode;
 import click.mafia42.initializer.ClientSocketChannelInitializer;
 import click.mafia42.initializer.handler.CommendHandler;
+import click.mafia42.initializer.provider.GameRoomListProvider;
 import click.mafia42.initializer.provider.TokenProvider;
+import click.mafia42.initializer.provider.UserInfoProvider;
 import click.mafia42.payload.Commend;
 import click.mafia42.payload.Payload;
 import click.mafia42.util.MapperUtil;
@@ -67,7 +67,8 @@ public class Mafia42Client {
     private void sendRequest(Channel channel, Payload payload) {
         Commend commend = payload.getCommend();
 
-        if (commend == SIGN_IN || commend == SIGN_UP || commend == REISSUE_TOKEN) {
+        if (commend == SIGN_IN || commend == SIGN_UP || commend == REISSUE_TOKEN ||
+                commend == FETCH_USER_INFO_MYSELF || commend == FETCH_GAME_ROOMS) {
             sendRequestSync(channel, payload);
             return;
         }
@@ -104,6 +105,12 @@ public class Mafia42Client {
         if (isAccessTokenExpired()) {
             return handleExpiredAccessToken();
         }
+        else if (!UserInfoProvider.existsUserInfo()) {
+            return new Payload(null, FETCH_USER_INFO_MYSELF, new FetchUserInfoMyselfReq());
+        }
+        else if (!GameRoomListProvider.existsGameRoomList()) {
+            return new Payload(null, FETCH_GAME_ROOMS, new FetchGameRoomsReq());
+        }
 
         return readClientPayload();
     }
@@ -126,8 +133,8 @@ public class Mafia42Client {
     }
 
     private Payload choiceSignOption() throws IOException {
+        log.warn("이미 계정이 있으신가요? (Y/N)");
         while (true) {
-            log.warn("이미 계정이 있으신가요? (Y/N)");
             String selectedSignOption = br.readLine().toLowerCase();
 
             switch (selectedSignOption) {

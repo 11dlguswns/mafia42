@@ -46,7 +46,7 @@ public class GameRoom {
             throw new GlobalException(GlobalExceptionCode.ROOM_MEMBER_FULL);
         }
 
-        if (!BCrypt.checkpw(password, this.password)) {
+        if (this.password != null && !BCrypt.checkpw(password, this.password)) {
             throw new GlobalException(GlobalExceptionCode.PASSWORD_MISMATCH);
         }
 

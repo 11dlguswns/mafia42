@@ -27,7 +27,7 @@ public class ClientWriter implements Runnable {
             }
 
             while (true) {
-                if (existsUserInfo()) {
+                if (UserInfoProvider.existsUserInfo()) {
                     createUserClientFile();
                 }
 
@@ -45,7 +45,7 @@ public class ClientWriter implements Runnable {
     private String userInfoWrite() {
         StringBuilder writeString = new StringBuilder();
 
-        if (existsUserInfo()) {
+        if (UserInfoProvider.existsUserInfo()) {
             writeString.append("닉네임 : ").append(UserInfoProvider.nickname);
         } else {
             writeString.append("회원 정보가 존재하지 않습니다.");
@@ -61,10 +61,6 @@ public class ClientWriter implements Runnable {
         if (!Files.exists(clientFile)) {
             Files.createFile(clientFile);
         }
-    }
-
-    private boolean existsUserInfo() {
-        return UserInfoProvider.nickname != null;
     }
 
     private String gameRoomWrite() throws IOException {

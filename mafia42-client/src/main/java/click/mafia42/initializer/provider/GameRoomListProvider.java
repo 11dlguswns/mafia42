@@ -6,4 +6,8 @@ import java.util.List;
 
 public class GameRoomListProvider {
     public static List<SaveGameRoomReq> gameRooms;
+
+    public static boolean existsGameRoomList() {
+        return gameRooms != null;
+    }
 }
