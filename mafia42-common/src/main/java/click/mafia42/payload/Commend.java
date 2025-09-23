@@ -13,6 +13,7 @@ public enum Commend {
     FETCH_GAME_ROOMS(true),
     FETCH_USER_INFO_MYSELF(true),
     EXIT_GAME_ROOM(true),
+    SEND_MESSAGE_TO_GAME_ROOM_LOBBY(false),
 
     // CLIENT
     CONSOLE_OUTPUT(false),
@@ -20,7 +21,8 @@ public enum Commend {
     SAVE_GAME_ROOM(false),
     SAVE_GAME_ROOM_LIST(false),
     SAVE_USER_INFO_MYSELF(false),
-    REMOVE_GAME_ROOM(false);
+    REMOVE_GAME_ROOM(false),
+    SAVE_GAME_ROOM_LOBBY_MESSAGE(false);
 
     private final boolean isSyncReq;
 

@@ -11,8 +11,9 @@ public record SaveDetailGameRoomReq(
         String name,
         int maxPlayers,
         List<SaveGameRoomUserReq> users,
-        User manager,
-        GameType gameType
+        SaveGameRoomUserReq manager,
+        GameType gameType,
+        boolean isStarted
 ) {
     public static SaveDetailGameRoomReq from(GameRoom gameRoom) {
         return new SaveDetailGameRoomReq(
@@ -23,8 +24,9 @@ public record SaveDetailGameRoomReq(
                         .stream()
                         .map(SaveGameRoomUserReq::from)
                         .toList(),
-                gameRoom.getManager(),
-                gameRoom.getGameType()
+                SaveGameRoomUserReq.from(gameRoom.getManager()),
+                gameRoom.getGameType(),
+                gameRoom.isStarted()
         );
     }
 }

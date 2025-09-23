@@ -47,6 +47,8 @@ public class CommendHandler extends SimpleChannelInboundHandler<Payload> {
                 userService.saveUserInfoMyself(ValidationUtil.validationAndGet(payload.getBody(), SaveUserInfoMyselfReq.class));
             case REMOVE_GAME_ROOM ->
                 gameRoomService.removeGameRoom(ValidationUtil.validationAndGet(payload.getBody(), RemoveGameRoomReq.class));
+            case SAVE_GAME_ROOM_LOBBY_MESSAGE ->
+                gameRoomService.saveGameRoomLobbyMessage(ValidationUtil.validationAndGet(payload.getBody(), SaveGameRoomLobbyMessageReq.class));
 
             default -> throw new GlobalException(GlobalExceptionCode.UNSUPPORTED_COMMAND);
         }

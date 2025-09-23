@@ -2,14 +2,8 @@ package click.mafia42.initializer.service;
 
 import click.mafia42.database.ChannelManager;
 import click.mafia42.database.GameRoomManager;
-import click.mafia42.dto.client.RemoveGameRoomReq;
-import click.mafia42.dto.client.SaveDetailGameRoomReq;
-import click.mafia42.dto.client.SaveGameRoomListReq;
-import click.mafia42.dto.client.SaveGameRoomReq;
-import click.mafia42.dto.server.CreateGameRoomReq;
-import click.mafia42.dto.server.ExitGameRoomReq;
-import click.mafia42.dto.server.FetchGameRoomsReq;
-import click.mafia42.dto.server.JoinGameRoomReq;
+import click.mafia42.dto.client.*;
+import click.mafia42.dto.server.*;
 import click.mafia42.entity.room.GameRoom;
 import click.mafia42.entity.user.User;
 import click.mafia42.exception.GlobalException;
@@ -95,5 +89,24 @@ public class GameRoomService {
 
         Payload payload = new Payload(null, Commend.SAVE_GAME_ROOM, SaveDetailGameRoomReq.from(gameRoom));
         sendCommendToGameRoomUsers(gameRoom, payload);
+    }
+
+    public Payload sendMessageToGameRoomLobby(SendMessageToGameRoomLobbyReq request, ChannelHandlerContext ctx) {
+        User user = ctx.channel().attr(USER).get();
+        GameRoom gameRoom = gameRoomManager.findGameRoomByUser(user)
+                .orElseThrow(() -> new GlobalException(GlobalExceptionCode.NOT_JOIN_ROOM));
+
+        if (gameRoom.isStarted()) {
+            throw new GlobalException(GlobalExceptionCode.GAME_ALREADY_STARTED);
+        }
+
+        Payload payload = new Payload(
+                null,
+                Commend.SAVE_GAME_ROOM_LOBBY_MESSAGE,
+                new SaveGameRoomLobbyMessageReq(SaveGameRoomUserReq.from(user), request.message())
+        );
+        sendCommendToGameRoomUsers(gameRoom, payload);
+
+        return new Payload(null, Commend.NOTHING, null);
     }
 }

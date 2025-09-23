@@ -1,6 +1,7 @@
 package click.mafia42;
 
 import click.mafia42.dto.client.SaveDetailGameRoomReq;
+import click.mafia42.dto.client.SaveGameRoomLobbyMessageReq;
 import click.mafia42.dto.client.SaveGameRoomReq;
 import click.mafia42.dto.client.SaveGameRoomUserReq;
 import click.mafia42.exception.GlobalException;
@@ -31,7 +32,7 @@ public class ClientWriter implements Runnable {
                     createUserClientFile();
                 }
 
-                String writeString = userInfoWrite() + gameRoomWrite();
+                String writeString = userInfoWrite() + gameRoomWrite() + messageWrite();
                 Files.writeString(clientFile, writeString, StandardCharsets.UTF_8);
                 Thread.sleep(100);
             }
@@ -81,7 +82,7 @@ public class ClientWriter implements Runnable {
         for (SaveGameRoomUserReq user : detailGameRoom.users()) {
             writeString.append(user.name());
 
-            if (detailGameRoom.manager().getId().equals(user.id())) {
+            if (detailGameRoom.manager().id().equals(user.id())) {
                 writeString.append(" [ 방장 ]");
             }
             writeString.append("\n");
@@ -91,9 +92,8 @@ public class ClientWriter implements Runnable {
     }
 
     private String gameRoomListToString() {
-        StringBuilder writeString = new StringBuilder();
+        StringBuilder writeString = new StringBuilder("[ 게임 방 ]\n");
 
-        writeString.append("[ 게임 방 ]\n");
         if (GameRoomListProvider.gameRooms == null) {
             writeString.append("게임 방 전체 목록 정보가 없습니다.");
             return writeString.toString();
@@ -102,6 +102,26 @@ public class ClientWriter implements Runnable {
             writeString.append("[").append(gameRoom.id()).append("] ").append(gameRoom.name()).append(" - ")
                     .append(gameRoom.gameType()).append(" (").append(gameRoom.playersCount()).append("/")
                     .append(gameRoom.maxPlayers()).append(")\n");
+        }
+
+        return writeString.toString();
+    }
+
+    private String messageWrite() {
+        if (DetailGameRoomProvider.detailGameRoom != null && !DetailGameRoomProvider.detailGameRoom.isStarted()) {
+            return gameRoomLobbyMessageWrite();
+        }
+        return "";
+    }
+
+    private String gameRoomLobbyMessageWrite() {
+        StringBuilder writeString = new StringBuilder("\n[채팅창]\n");
+
+        for (SaveGameRoomLobbyMessageReq messageReq : DetailGameRoomProvider.gameRoomLobbyMessages) {
+            writeString.append(messageReq.saveGameRoomUserReq().name())
+                    .append(" | ")
+                    .append(messageReq.message())
+                    .append("\n");
         }
 
         return writeString.toString();
