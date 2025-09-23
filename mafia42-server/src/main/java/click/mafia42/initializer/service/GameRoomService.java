@@ -2,10 +2,12 @@ package click.mafia42.initializer.service;
 
 import click.mafia42.database.ChannelManager;
 import click.mafia42.database.GameRoomManager;
+import click.mafia42.dto.client.RemoveGameRoomReq;
 import click.mafia42.dto.client.SaveDetailGameRoomReq;
 import click.mafia42.dto.client.SaveGameRoomListReq;
 import click.mafia42.dto.client.SaveGameRoomReq;
 import click.mafia42.dto.server.CreateGameRoomReq;
+import click.mafia42.dto.server.ExitGameRoomReq;
 import click.mafia42.dto.server.FetchGameRoomsReq;
 import click.mafia42.dto.server.JoinGameRoomReq;
 import click.mafia42.entity.room.GameRoom;
@@ -68,6 +70,18 @@ public class GameRoomService {
                         .toList()
         );
         return new Payload(null, Commend.SAVE_GAME_ROOM_LIST, body);
+    }
+
+    public Payload exitGameRoomMyself(ExitGameRoomReq request, ChannelHandlerContext ctx) {
+        User user = ctx.channel().attr(USER).get();
+        GameRoom gameRoom = gameRoomManager.findGameRoomByUser(user)
+                .orElseThrow(() -> new GlobalException(GlobalExceptionCode.NOT_JOIN_ROOM));
+        gameRoomManager.exitGameRoom(gameRoom, user);
+
+        Payload payload = new Payload(null, Commend.SAVE_GAME_ROOM, SaveDetailGameRoomReq.from(gameRoom));
+        sendCommendToGameRoomUsers(gameRoom, payload);
+
+        return new Payload(null, Commend.REMOVE_GAME_ROOM, new RemoveGameRoomReq());
     }
 
     private void sendCommendToGameRoomUsers(GameRoom gameRoom, Payload payload) {

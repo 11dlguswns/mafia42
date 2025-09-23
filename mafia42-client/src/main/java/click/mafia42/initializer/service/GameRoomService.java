@@ -1,5 +1,6 @@
 package click.mafia42.initializer.service;
 
+import click.mafia42.dto.client.RemoveGameRoomReq;
 import click.mafia42.dto.client.SaveDetailGameRoomReq;
 import click.mafia42.dto.client.SaveGameRoomListReq;
 import click.mafia42.initializer.provider.DetailGameRoomProvider;
@@ -12,5 +13,9 @@ public class GameRoomService {
 
     public void saveGameRoomList(SaveGameRoomListReq request) {
         GameRoomListProvider.gameRooms = request.gameRooms();
+    }
+
+    public void removeGameRoom(RemoveGameRoomReq request) {
+        DetailGameRoomProvider.detailGameRoom = null;
     }
 }
