@@ -85,7 +85,7 @@ public class ClientWriter implements Runnable {
         for (SaveGameRoomUserReq user : detailGameRoom.users()) {
             writeString.append(user.name());
 
-            if (detailGameRoom.manager().getId() == user.id()) {
+            if (detailGameRoom.manager().getId().equals(user.id())) {
                 writeString.append(" [ 방장 ]");
             }
             writeString.append("\n");
