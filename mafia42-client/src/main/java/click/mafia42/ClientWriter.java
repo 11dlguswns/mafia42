@@ -9,6 +9,8 @@ import click.mafia42.exception.GlobalExceptionCode;
 import click.mafia42.initializer.provider.DetailGameRoomProvider;
 import click.mafia42.initializer.provider.GameRoomListProvider;
 import click.mafia42.initializer.provider.UserInfoProvider;
+import click.mafia42.initializer.provider.dto.GameRoomLobbyMessageDto;
+import click.mafia42.initializer.provider.dto.MessageType;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -117,11 +119,18 @@ public class ClientWriter implements Runnable {
     private String gameRoomLobbyMessageWrite() {
         StringBuilder writeString = new StringBuilder("\n[채팅창]\n");
 
-        for (SaveGameRoomLobbyMessageReq messageReq : DetailGameRoomProvider.gameRoomLobbyMessages) {
-            writeString.append(messageReq.saveGameRoomUserReq().name())
-                    .append(" | ")
-                    .append(messageReq.message())
-                    .append("\n");
+        for (GameRoomLobbyMessageDto messageDto : DetailGameRoomProvider.gameRoomLobbyMessages) {
+            if (messageDto.type() == MessageType.USER) {
+                writeString.append(messageDto.nickname())
+                        .append(" | ")
+                        .append(messageDto.message())
+                        .append("\n");
+            } else if (messageDto.type().equals(MessageType.SYSTEM)) {
+                writeString
+                        .append("< ")
+                        .append(messageDto.message())
+                        .append(" >\n");
+            }
         }
 
         return writeString.toString();

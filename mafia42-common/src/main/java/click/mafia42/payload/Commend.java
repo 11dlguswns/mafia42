@@ -23,7 +23,8 @@ public enum Commend {
     SAVE_GAME_ROOM_LIST(false),
     SAVE_USER_INFO_MYSELF(false),
     REMOVE_GAME_ROOM(false),
-    SAVE_GAME_ROOM_LOBBY_MESSAGE(false);
+    SAVE_GAME_ROOM_LOBBY_MESSAGE(false),
+    SAVE_GAME_ROOM_LOBBY_SYSTEM_MESSAGE(false);
 
     private final boolean isSyncReq;
 

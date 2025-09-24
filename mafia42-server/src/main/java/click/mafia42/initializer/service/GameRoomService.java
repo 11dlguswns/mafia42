@@ -52,6 +52,12 @@ public class GameRoomService {
         Payload payload = new Payload(null, Commend.SAVE_GAME_ROOM, SaveDetailGameRoomReq.from(gameRoom));
         sendCommendToGameRoomUsers(gameRoom, payload);
 
+        Payload SaveSystemMessagePayloadToGameRoomUsers = new Payload(
+                null,
+                Commend.SAVE_GAME_ROOM_LOBBY_SYSTEM_MESSAGE,
+                new SaveGameRoomLobbySystemMessageReq(user.getNickname() + "님이 입장하셨습니다"));
+        sendCommendToGameRoomUsers(gameRoom, SaveSystemMessagePayloadToGameRoomUsers);
+
         return new Payload(null, Commend.NOTHING, null);
     }
 
@@ -74,6 +80,12 @@ public class GameRoomService {
 
         Payload payload = new Payload(null, Commend.SAVE_GAME_ROOM, SaveDetailGameRoomReq.from(gameRoom));
         sendCommendToGameRoomUsers(gameRoom, payload);
+
+        Payload SaveSystemMessagePayloadToGameRoomUsers = new Payload(
+                null,
+                Commend.SAVE_GAME_ROOM_LOBBY_SYSTEM_MESSAGE,
+                new SaveGameRoomLobbySystemMessageReq(user.getNickname() + "님이 퇴장하셨습니다"));
+        sendCommendToGameRoomUsers(gameRoom, SaveSystemMessagePayloadToGameRoomUsers);
 
         return new Payload(null, Commend.REMOVE_GAME_ROOM, new RemoveGameRoomReq());
     }
@@ -103,8 +115,7 @@ public class GameRoomService {
         Payload payload = new Payload(
                 null,
                 Commend.SAVE_GAME_ROOM_LOBBY_MESSAGE,
-                new SaveGameRoomLobbyMessageReq(SaveGameRoomUserReq.from(user), request.message())
-        );
+                new SaveGameRoomLobbyMessageReq(SaveGameRoomUserReq.from(user), request.message()));
         sendCommendToGameRoomUsers(gameRoom, payload);
 
         return new Payload(null, Commend.NOTHING, null);
@@ -129,8 +140,17 @@ public class GameRoomService {
                 .orElseThrow(() -> new GlobalException(GlobalExceptionCode.NOT_FOUND_USER));
         gameRoomManager.exitGameRoom(gameRoom, kickOutUser);
 
-        Payload payloadToGameRoomUsers = new Payload(null, Commend.SAVE_GAME_ROOM, SaveDetailGameRoomReq.from(gameRoom));
-        sendCommendToGameRoomUsers(gameRoom, payloadToGameRoomUsers);
+        Payload saveGameRoomPayloadToGameRoomUsers = new Payload(
+                null,
+                Commend.SAVE_GAME_ROOM,
+                SaveDetailGameRoomReq.from(gameRoom));
+        sendCommendToGameRoomUsers(gameRoom, saveGameRoomPayloadToGameRoomUsers);
+
+        Payload SaveSystemMessagePayloadToGameRoomUsers = new Payload(
+                null,
+                Commend.SAVE_GAME_ROOM_LOBBY_SYSTEM_MESSAGE,
+                new SaveGameRoomLobbySystemMessageReq(kickOutUser.getNickname() + "님이 강제퇴장 되었습니다"));
+        sendCommendToGameRoomUsers(gameRoom, SaveSystemMessagePayloadToGameRoomUsers);
 
         Payload payloadToKickOutUser = new Payload(null, Commend.REMOVE_GAME_ROOM, new RemoveGameRoomReq());
         channelManager.sendCommendToUser(kickOutUser, payloadToKickOutUser);
