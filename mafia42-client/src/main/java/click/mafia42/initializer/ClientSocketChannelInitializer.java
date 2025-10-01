@@ -4,6 +4,7 @@ import click.mafia42.initializer.handler.CommendHandler;
 import click.mafia42.initializer.handler.GlobalExceptionHandler;
 import click.mafia42.payload.PayloadDecoder;
 import click.mafia42.payload.PayloadEncoder;
+import click.mafia42.ui.ClientUI;
 import click.mafia42.util.CharsetUtil;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
@@ -15,6 +16,7 @@ public class ClientSocketChannelInitializer extends ChannelInitializer<SocketCha
 
     @Override
     protected void initChannel(SocketChannel ch) throws Exception {
+        ClientUI.getInstance(ch);
         ChannelPipeline pipeline = ch.pipeline();
         pipeline.addLast(new JsonObjectDecoder(65536))
                 .addLast(new StringDecoder(CharsetUtil.DEFUALT_CHARSET))

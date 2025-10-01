@@ -41,6 +41,7 @@ public class CommendHandler extends SimpleChannelInboundHandler<Payload> {
         }
 
         Payload response = getResponseByPayload(payload, ctx);
+        response.updatePayloadId(payload.getPayloadId());
         ctx.channel().writeAndFlush(response);
     }
 

@@ -3,10 +3,8 @@ package click.mafia42.initializer.handler;
 import click.mafia42.database.ChannelManager;
 import click.mafia42.database.GameRoomManager;
 import click.mafia42.database.transaction.TransactionManager;
-import click.mafia42.entity.room.GameRoom;
 import click.mafia42.entity.user.User;
-import click.mafia42.exception.GlobalException;
-import click.mafia42.exception.GlobalExceptionCode;
+import click.mafia42.initializer.service.ExitType;
 import click.mafia42.initializer.service.GameRoomService;
 import click.mafia42.payload.Payload;
 import click.mafia42.security.service.JwtService;
@@ -60,10 +58,7 @@ public class AuthHandler extends SimpleChannelInboundHandler<Payload> {
     @Override
     public void channelInactive(ChannelHandlerContext ctx) {
         User user = ctx.channel().attr(USER).get();
-        gameRoomManager.findGameRoomByUser(user)
-                .filter(gameRoom -> !gameRoom.isStarted())
-                .ifPresent(gameRoom -> gameRoomService.exitGameRoom(gameRoom, user));
-
+        gameRoomService.exitGameRoomOnDisconnect(user, ExitType.SELF);
         channelManager.removeChannel(ctx.channel());
         ctx.fireChannelInactive();
     }

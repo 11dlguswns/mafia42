@@ -1,6 +1,7 @@
 package click.mafia42.database;
 
 import click.mafia42.entity.room.GameRoom;
+import click.mafia42.entity.room.GameRoomUser;
 import click.mafia42.entity.room.GameType;
 import click.mafia42.entity.user.User;
 import click.mafia42.exception.GlobalException;
@@ -30,8 +31,8 @@ public class GameRoomManager {
         return gameRoom.getId();
     }
 
-    public void exitGameRoom(GameRoom gameRoom, User user) {
-        gameRoom.removePlayer(user);
+    public void exitGameRoom(GameRoom gameRoom, GameRoomUser gameRoomUser) {
+        gameRoom.removePlayer(gameRoomUser);
 
         if (gameRoom.getPlayers().isEmpty()) {
             gameRooms.remove(gameRoom.getId());
@@ -39,8 +40,8 @@ public class GameRoomManager {
         }
     }
 
-    public void removeGameRoom(GameRoom gameRoom, User user) {
-        if (isRemovalAllowedForManagerOnly(gameRoom, user)) {
+    public void removeGameRoom(GameRoom gameRoom, GameRoomUser gameRoomUser) {
+        if (isRemovalAllowedForManagerOnly(gameRoom, gameRoomUser)) {
             throw new GlobalException(GlobalExceptionCode.ROOM_REMOVE_NOT_ALLOWED);
         }
 
@@ -56,9 +57,10 @@ public class GameRoomManager {
         return gameRooms.values().stream().toList();
     }
 
-    public Optional<GameRoom> findGameRoomByUser(User user) {
+    public Optional<GameRoom> findGameRoomByGameRoomUser(User user) {
         return gameRooms.values().stream()
-                .filter(gr -> gr.getPlayers().contains(user))
+                .filter(gr -> gr.getPlayers().stream()
+                        .anyMatch(gameRoomUser -> gameRoomUser.getUser().equals(user)))
                 .findFirst();
     }
 
@@ -70,7 +72,7 @@ public class GameRoomManager {
         }
     }
 
-    private boolean isRemovalAllowedForManagerOnly(GameRoom gameRoom, User user) {
-        return user != gameRoom.getManager() || gameRoom.getPlayersCount() > 1;
+    private boolean isRemovalAllowedForManagerOnly(GameRoom gameRoom, GameRoomUser gameRoomUser) {
+        return gameRoomUser != gameRoom.getManager() || gameRoom.getPlayersCount() > 1;
     }
 }

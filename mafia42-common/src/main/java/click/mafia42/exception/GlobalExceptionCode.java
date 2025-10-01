@@ -2,6 +2,8 @@ package click.mafia42.exception;
 
 public enum GlobalExceptionCode {
     UNKNOWN_ERROR("알 수 없는 예외가 발생했습니다."),
+    NOT_INITIALIZED_UI("UI가 아직 초기화되지 않았습니다."),
+
     NOT_FOUND_COMMAND("존재하지 않는 커멘드입니다."),
     UNSUPPORTED_COMMAND("처리할 수 없는 커멘드입니다."),
 

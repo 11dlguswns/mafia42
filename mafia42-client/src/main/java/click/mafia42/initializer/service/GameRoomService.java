@@ -1,55 +1,62 @@
 package click.mafia42.initializer.service;
 
+import click.mafia42.Mafia42Client;
+import click.mafia42.dto.server.FetchGameRoomsReq;
+import click.mafia42.payload.Commend;
+import click.mafia42.payload.Payload;
+import click.mafia42.ui.ClientPage;
+import click.mafia42.ui.ClientUI;
 import click.mafia42.dto.client.*;
 import click.mafia42.exception.GlobalException;
 import click.mafia42.exception.GlobalExceptionCode;
 import click.mafia42.initializer.provider.DetailGameRoomProvider;
-import click.mafia42.initializer.provider.GameRoomListProvider;
-import click.mafia42.initializer.provider.dto.GameRoomLobbyMessageDto;
-import click.mafia42.initializer.provider.dto.MessageType;
-
-import java.util.ArrayList;
+import click.mafia42.ui.GameRoomRole;
+import io.netty.channel.ChannelHandlerContext;
 
 public class GameRoomService {
+    private final ClientUI clientUI = ClientUI.getInstance();
+
     public void saveGameRoom(SaveDetailGameRoomReq request) {
         DetailGameRoomProvider.detailGameRoom = request;
 
-        if (DetailGameRoomProvider.gameRoomLobbyMessages == null) {
-            DetailGameRoomProvider.gameRoomLobbyMessages = new ArrayList<>();
+        clientUI.setCardLayout(ClientPage.GAME_ROOM_LOBBY);
+        if (DetailGameRoomProvider.isCurrentUserManager()) {
+            clientUI.getGameLobbySubPanel().setGameRoomRoleCardLayout(GameRoomRole.MANAGER);
+        } else {
+            clientUI.getGameLobbySubPanel().setGameRoomRoleCardLayout(GameRoomRole.USER);
         }
+
+        clientUI.getGameLobbySubPanel().updateGameLobbyUserChoicePanel();
     }
 
     public void saveGameRoomList(SaveGameRoomListReq request) {
-        GameRoomListProvider.gameRooms = request.gameRooms();
+        clientUI.getLobbyPanel().updateLobbyPanel(request);
     }
 
-    public void removeGameRoom(RemoveGameRoomReq request) {
+    public void removeGameRoom(RemoveGameRoomReq request, ChannelHandlerContext ctx) {
         DetailGameRoomProvider.detailGameRoom = null;
-        DetailGameRoomProvider.gameRoomLobbyMessages = null;
-        GameRoomListProvider.gameRooms = null;
+        clientUI.getGameLobbyPanel().clearChatArea();
+        clientUI.setCardLayout(ClientPage.LOBBY);
+
+        Payload payload = new Payload(
+                Commend.FETCH_GAME_ROOMS,
+                new FetchGameRoomsReq());
+        Mafia42Client.SYNC_EXECUTOR.submit(() -> Mafia42Client.sendRequest(ctx.channel(), payload));
     }
 
     public void saveGameRoomLobbyMessage(SaveGameRoomLobbyMessageReq request) {
-        if (DetailGameRoomProvider.gameRoomLobbyMessages == null || DetailGameRoomProvider.detailGameRoom == null) {
+        if (DetailGameRoomProvider.detailGameRoom == null) {
             throw new GlobalException(GlobalExceptionCode.NOT_JOIN_ROOM);
         }
 
-        GameRoomLobbyMessageDto messageDto = new GameRoomLobbyMessageDto(
-                MessageType.USER,
-                request.saveGameRoomUserReq().name(),
-                request.message());
-        DetailGameRoomProvider.gameRoomLobbyMessages.add(messageDto);
+        clientUI.getGameLobbyPanel().chatAreaAppendText(request.saveGameRoomUserReq().name() + " | " + request.message());
     }
 
     public void saveGameRoomLobbySystemMessage(SaveGameRoomLobbySystemMessageReq request) {
-        if (DetailGameRoomProvider.gameRoomLobbyMessages == null || DetailGameRoomProvider.detailGameRoom == null) {
+        if (DetailGameRoomProvider.detailGameRoom == null) {
             throw new GlobalException(GlobalExceptionCode.NOT_JOIN_ROOM);
         }
 
-        GameRoomLobbyMessageDto messageDto = new GameRoomLobbyMessageDto(
-                MessageType.SYSTEM,
-                null,
-                request.message());
-        DetailGameRoomProvider.gameRoomLobbyMessages.add(messageDto);
+        clientUI.getGameLobbyPanel().chatAreaAppendText("< " + request.message() + " >");
     }
 }

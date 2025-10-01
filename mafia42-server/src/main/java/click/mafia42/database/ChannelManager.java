@@ -41,7 +41,7 @@ public class ChannelManager {
         return channels.stream()
                 .filter(ch -> {
                     User user = ch.attr(USER).get();
-                    return user != null && gameRoom.getPlayers().contains(user);
+                    return user != null && gameRoom.containsPlayer(user);
                 })
                 .toList();
     }

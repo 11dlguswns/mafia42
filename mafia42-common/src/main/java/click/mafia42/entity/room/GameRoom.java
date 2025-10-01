@@ -6,23 +6,27 @@ import click.mafia42.exception.GlobalExceptionCode;
 import org.mindrot.jbcrypt.BCrypt;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class GameRoom {
     private final long id;
     private String name;
     private final int maxPlayers;
-    private final List<User> players;
-    private User manager;
+    private final SortedSet<GameRoomUser> players;
+    private GameRoomUser manager;
     private final GameType gameType;
     private final String password;
     private boolean isStarted = false;
+    private final PriorityQueue<Integer> freeNumbers = new PriorityQueue<>(12);
+    private final AtomicInteger nextNumber = new AtomicInteger(1);
 
     public GameRoom(long id, String name, int maxPlayers, User manager, GameType gameType, String password) {
         this.id = id;
         this.name = name;
         this.maxPlayers = maxPlayers;
-        this.players = Collections.synchronizedList(new ArrayList<>(Collections.singleton(manager)));
-        this.manager = manager;
+        GameRoomUser gameRoomManager = new GameRoomUser(this, manager);
+        this.players = Collections.synchronizedSortedSet(new TreeSet<>(Collections.singleton(gameRoomManager)));
+        this.manager = gameRoomManager;
         this.gameType = gameType;
         this.password = password;
     }
@@ -33,6 +37,14 @@ public class GameRoom {
 
     public String getName() {
         return name;
+    }
+
+    public int getUserNumber() {
+        if (freeNumbers.isEmpty()) {
+            return nextNumber.getAndIncrement();
+        } else {
+            return freeNumbers.poll();
+        }
     }
 
     public void addPlayer(User user, String password) {
@@ -48,27 +60,25 @@ public class GameRoom {
             throw new GlobalException(GlobalExceptionCode.PASSWORD_MISMATCH);
         }
 
-        players.add(user);
+        players.add(new GameRoomUser(this, user));
     }
 
-    public void removePlayer(User user) {
-        if (!containsPlayer(user)) {
-            throw new GlobalException(GlobalExceptionCode.NOT_JOIN_ROOM);
-        }
+    public void removePlayer(GameRoomUser gameRoomuser) {
+        players.remove(gameRoomuser);
+        freeNumbers.add(gameRoomuser.getNumber());
 
-        players.remove(user);
-
-        if (!players.isEmpty() && isManager(user)) {
+        if (!players.isEmpty() && isManager(gameRoomuser)) {
             manager = players.getFirst();
         }
     }
 
-    public boolean isManager(User user) {
-        return manager.equals(user);
+    public boolean isManager(GameRoomUser gameRoomUser) {
+        return manager.equals(gameRoomUser);
     }
 
     public boolean containsPlayer(User user) {
-        return players.contains(user);
+        return players.stream()
+                .anyMatch(gameRoomUser -> gameRoomUser.getUser().equals(user));
     }
 
     public int getMaxPlayers() {
@@ -79,17 +89,17 @@ public class GameRoom {
         return players.size();
     }
 
-    public List<User> getPlayers() {
-        return Collections.unmodifiableList(players);
+    public Set<GameRoomUser> getPlayers() {
+        return Collections.unmodifiableSortedSet(players);
     }
 
-    public Optional<User> getPlayer(UUID userId) {
+    public Optional<GameRoomUser> getPlayer(UUID userId) {
         return players.stream()
-                .filter(player -> player.getId().equals(userId))
+                .filter(player -> player.getUser().getId().equals(userId))
                 .findFirst();
     }
 
-    public User getManager() {
+    public GameRoomUser getManager() {
         return manager;
     }
 
@@ -107,5 +117,9 @@ public class GameRoom {
 
     public void setStarted(boolean started) {
         isStarted = started;
+    }
+
+    public boolean existPassword() {
+        return password != null;
     }
 }

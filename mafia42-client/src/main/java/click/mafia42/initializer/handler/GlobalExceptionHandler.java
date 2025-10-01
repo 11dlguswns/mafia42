@@ -13,13 +13,12 @@ public class GlobalExceptionHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         String message = toStringByException(cause);
-        log.error(message);
+        log.error(message, cause);
     }
 
     private String  toStringByException(Throwable cause) {
         if (cause instanceof GlobalException globalException) {
             return globalException.getCodeAndMessage();
-
         } else {
             return GlobalException.getCodeAndMessage(GlobalExceptionCode.UNKNOWN_ERROR);
         }

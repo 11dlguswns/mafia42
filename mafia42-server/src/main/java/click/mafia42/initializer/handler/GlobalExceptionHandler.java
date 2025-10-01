@@ -25,12 +25,12 @@ public class GlobalExceptionHandler extends ChannelInboundHandlerAdapter {
     private Payload toPayloadByException(Throwable cause) {
         if (cause instanceof GlobalException globalException) {
             ConsoleOutputReq body = new ConsoleOutputReq(globalException.getCodeAndMessage(), ConsoleType.ERROR);
-            return new Payload(null, Commend.CONSOLE_OUTPUT, body);
+            return new Payload(Commend.CONSOLE_OUTPUT, body);
         } else {
             ConsoleOutputReq body = new ConsoleOutputReq(
                     GlobalException.getCodeAndMessage(GlobalExceptionCode.UNKNOWN_ERROR),
                     ConsoleType.ERROR);
-            return new Payload(null, Commend.CONSOLE_OUTPUT, body);
+            return new Payload(Commend.CONSOLE_OUTPUT, body);
         }
     }
 }

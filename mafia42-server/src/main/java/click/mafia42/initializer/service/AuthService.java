@@ -40,7 +40,7 @@ public class AuthService {
                     tokenResponse.accessTokenExpiresIn(),
                     tokenResponse.refreshTokenExpiresIn());
 
-            return new Payload(null, SAVE_TOKEN, saveTokenReq);
+            return new Payload(SAVE_TOKEN, saveTokenReq);
         });
     }
 
@@ -63,7 +63,7 @@ public class AuthService {
                     tokenResponse.accessTokenExpiresIn(),
                     tokenResponse.refreshTokenExpiresIn());
 
-            return new Payload(null, SAVE_TOKEN, saveTokenReq);
+            return new Payload(SAVE_TOKEN, saveTokenReq);
         });
     }
 
@@ -85,7 +85,7 @@ public class AuthService {
                     tokenResponse.accessTokenExpiresIn(),
                     tokenResponse.refreshTokenExpiresIn());
 
-            return new Payload(null, SAVE_TOKEN, saveTokenReq);
+            return new Payload(SAVE_TOKEN, saveTokenReq);
         });
     }
 }

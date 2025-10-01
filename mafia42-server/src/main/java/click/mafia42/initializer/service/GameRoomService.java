@@ -5,6 +5,7 @@ import click.mafia42.database.GameRoomManager;
 import click.mafia42.dto.client.*;
 import click.mafia42.dto.server.*;
 import click.mafia42.entity.room.GameRoom;
+import click.mafia42.entity.room.GameRoomUser;
 import click.mafia42.entity.user.User;
 import click.mafia42.exception.GlobalException;
 import click.mafia42.exception.GlobalExceptionCode;
@@ -14,6 +15,7 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 
 import java.util.List;
+import java.util.Optional;
 
 import static click.mafia42.initializer.handler.AuthHandler.*;
 
@@ -28,18 +30,27 @@ public class GameRoomService {
 
     public Payload createGameRoom(CreateGameRoomReq request, ChannelHandlerContext ctx) {
         User user = ctx.channel().attr(USER).get();
+        String password = getPassword(request);
 
         long gameRoomId = gameRoomManager.createGameRoom(
                 request.name(),
                 request.maxPlayers(),
                 user,
                 request.gameType(),
-                request.password()
+                password
         );
         GameRoom gameRoom = gameRoomManager.findById(gameRoomId)
                 .orElseThrow(() -> new GlobalException(GlobalExceptionCode.NOT_FOUND_ROOM));
 
-        return new Payload(null, Commend.SAVE_GAME_ROOM, SaveDetailGameRoomReq.from(gameRoom));
+        return new Payload(Commend.SAVE_GAME_ROOM, SaveDetailGameRoomReq.from(gameRoom));
+    }
+
+    private String getPassword(CreateGameRoomReq request) {
+        if (request.password().isBlank()) {
+            return null;
+        }
+
+        return request.password();
     }
 
     public Payload joinGameRoom(JoinGameRoomReq request, ChannelHandlerContext ctx) {
@@ -49,16 +60,15 @@ public class GameRoomService {
 
         gameRoom.addPlayer(user, request.password());
 
-        Payload payload = new Payload(null, Commend.SAVE_GAME_ROOM, SaveDetailGameRoomReq.from(gameRoom));
+        Payload payload = new Payload(Commend.SAVE_GAME_ROOM, SaveDetailGameRoomReq.from(gameRoom));
         sendCommendToGameRoomUsers(gameRoom, payload);
 
         Payload SaveSystemMessagePayloadToGameRoomUsers = new Payload(
-                null,
                 Commend.SAVE_GAME_ROOM_LOBBY_SYSTEM_MESSAGE,
                 new SaveGameRoomLobbySystemMessageReq(user.getNickname() + "님이 입장하셨습니다"));
         sendCommendToGameRoomUsers(gameRoom, SaveSystemMessagePayloadToGameRoomUsers);
 
-        return new Payload(null, Commend.NOTHING, null);
+        return new Payload(Commend.NOTHING, null);
     }
 
     public Payload fetchGameRooms(FetchGameRoomsReq fetchGameRoomsReq) {
@@ -69,64 +79,29 @@ public class GameRoomService {
                         .map(SaveGameRoomReq::from)
                         .toList()
         );
-        return new Payload(null, Commend.SAVE_GAME_ROOM_LIST, body);
+        return new Payload(Commend.SAVE_GAME_ROOM_LIST, body);
     }
 
     public Payload exitGameRoomMyself(ExitGameRoomReq request, ChannelHandlerContext ctx) {
         User user = ctx.channel().attr(USER).get();
-        GameRoom gameRoom = gameRoomManager.findGameRoomByUser(user)
-                .orElseThrow(() -> new GlobalException(GlobalExceptionCode.NOT_JOIN_ROOM));
-        gameRoomManager.exitGameRoom(gameRoom, user);
-
-        Payload payload = new Payload(null, Commend.SAVE_GAME_ROOM, SaveDetailGameRoomReq.from(gameRoom));
-        sendCommendToGameRoomUsers(gameRoom, payload);
-
-        Payload SaveSystemMessagePayloadToGameRoomUsers = new Payload(
-                null,
-                Commend.SAVE_GAME_ROOM_LOBBY_SYSTEM_MESSAGE,
-                new SaveGameRoomLobbySystemMessageReq(user.getNickname() + "님이 퇴장하셨습니다"));
-        sendCommendToGameRoomUsers(gameRoom, SaveSystemMessagePayloadToGameRoomUsers);
-
-        return new Payload(null, Commend.REMOVE_GAME_ROOM, new RemoveGameRoomReq());
-    }
-
-    private void sendCommendToGameRoomUsers(GameRoom gameRoom, Payload payload) {
-        List<Channel> userChannelByJoinGameRoom = channelManager.findChannelByGameRoom(gameRoom);
-
-        channelManager.sendCommendToUsers(userChannelByJoinGameRoom, payload);
-    }
-
-    public void exitGameRoom(GameRoom gameRoom, User user) {
-        gameRoomManager.exitGameRoom(gameRoom, user);
-
-        Payload payload = new Payload(null, Commend.SAVE_GAME_ROOM, SaveDetailGameRoomReq.from(gameRoom));
-        sendCommendToGameRoomUsers(gameRoom, payload);
-    }
-
-    public Payload sendMessageToGameRoomLobby(SendMessageToGameRoomLobbyReq request, ChannelHandlerContext ctx) {
-        User user = ctx.channel().attr(USER).get();
-        GameRoom gameRoom = gameRoomManager.findGameRoomByUser(user)
+        GameRoom gameRoom = gameRoomManager.findGameRoomByGameRoomUser(user)
                 .orElseThrow(() -> new GlobalException(GlobalExceptionCode.NOT_JOIN_ROOM));
 
-        if (gameRoom.isStarted()) {
-            throw new GlobalException(GlobalExceptionCode.GAME_ALREADY_STARTED);
-        }
+        GameRoomUser gameRoomUser = gameRoom.getPlayer(user.getId())
+                .orElseThrow(() -> new GlobalException(GlobalExceptionCode.NOT_JOIN_ROOM));
+        exitGameRoom(gameRoomUser, gameRoom, ExitType.SELF);
 
-        Payload payload = new Payload(
-                null,
-                Commend.SAVE_GAME_ROOM_LOBBY_MESSAGE,
-                new SaveGameRoomLobbyMessageReq(SaveGameRoomUserReq.from(user), request.message()));
-        sendCommendToGameRoomUsers(gameRoom, payload);
-
-        return new Payload(null, Commend.NOTHING, null);
+        return new Payload(Commend.REMOVE_GAME_ROOM, new RemoveGameRoomReq());
     }
 
     public Payload kickOutGameRoomUser(KickOutGameRoomUserReq request, ChannelHandlerContext ctx) {
         User user = ctx.channel().attr(USER).get();
-        GameRoom gameRoom = gameRoomManager.findGameRoomByUser(user)
+        GameRoom gameRoom = gameRoomManager.findGameRoomByGameRoomUser(user)
+                .orElseThrow(() -> new GlobalException(GlobalExceptionCode.NOT_JOIN_ROOM));
+        GameRoomUser gameRoomUser = gameRoom.getPlayer(user.getId())
                 .orElseThrow(() -> new GlobalException(GlobalExceptionCode.NOT_JOIN_ROOM));
 
-        if (!gameRoom.isManager(user)) {
+        if (!gameRoom.isManager(gameRoomUser)) {
             throw new GlobalException(GlobalExceptionCode.ROOM_MANAGE_NOT_ALLOWED);
         }
         if (gameRoom.isStarted()) {
@@ -136,25 +111,68 @@ public class GameRoomService {
             throw new GlobalException(GlobalExceptionCode.CANNOT_KICK_SELF);
         }
 
-        User kickOutUser = gameRoom.getPlayer(request.userId())
+        GameRoomUser kickOutUser = gameRoom.getPlayer(request.userId())
                 .orElseThrow(() -> new GlobalException(GlobalExceptionCode.NOT_FOUND_USER));
-        gameRoomManager.exitGameRoom(gameRoom, kickOutUser);
 
-        Payload saveGameRoomPayloadToGameRoomUsers = new Payload(
-                null,
-                Commend.SAVE_GAME_ROOM,
-                SaveDetailGameRoomReq.from(gameRoom));
-        sendCommendToGameRoomUsers(gameRoom, saveGameRoomPayloadToGameRoomUsers);
+        exitGameRoom(kickOutUser, gameRoom, ExitType.KICKED);
+
+        Payload payloadToKickOutUser = new Payload(Commend.REMOVE_GAME_ROOM, new RemoveGameRoomReq());
+        channelManager.sendCommendToUser(kickOutUser.getUser(), payloadToKickOutUser);
+
+        return new Payload(Commend.NOTHING, null);
+    }
+
+    public void exitGameRoomOnDisconnect(User user, ExitType exitType) {
+        Optional<GameRoom> optionalGameRoom = gameRoomManager.findGameRoomByGameRoomUser(user);
+        if (optionalGameRoom.isEmpty()) {
+            return;
+        }
+
+        GameRoom gameRoom = optionalGameRoom.get();
+
+        if (gameRoom.isStarted()) {
+            return;
+        }
+
+        GameRoomUser gameRoomUser = gameRoom.getPlayer(user.getId())
+                .orElseThrow(() -> new GlobalException(GlobalExceptionCode.NOT_JOIN_ROOM));
+        exitGameRoom(gameRoomUser, gameRoom, exitType);
+    }
+
+    public void exitGameRoom(GameRoomUser gameRoomUser, GameRoom gameRoom, ExitType exitType) {
+        gameRoomManager.exitGameRoom(gameRoom, gameRoomUser);
+
+        Payload payload = new Payload(Commend.SAVE_GAME_ROOM, SaveDetailGameRoomReq.from(gameRoom));
+        sendCommendToGameRoomUsers(gameRoom, payload);
 
         Payload SaveSystemMessagePayloadToGameRoomUsers = new Payload(
-                null,
                 Commend.SAVE_GAME_ROOM_LOBBY_SYSTEM_MESSAGE,
-                new SaveGameRoomLobbySystemMessageReq(kickOutUser.getNickname() + "님이 강제퇴장 되었습니다"));
+                new SaveGameRoomLobbySystemMessageReq(gameRoomUser.getUser().getNickname() + exitType.getMessage()));
         sendCommendToGameRoomUsers(gameRoom, SaveSystemMessagePayloadToGameRoomUsers);
+    }
 
-        Payload payloadToKickOutUser = new Payload(null, Commend.REMOVE_GAME_ROOM, new RemoveGameRoomReq());
-        channelManager.sendCommendToUser(kickOutUser, payloadToKickOutUser);
+    public void sendCommendToGameRoomUsers(GameRoom gameRoom, Payload payload) {
+        List<Channel> userChannelByJoinGameRoom = channelManager.findChannelByGameRoom(gameRoom);
 
-        return new Payload(null, Commend.NOTHING, null);
+        channelManager.sendCommendToUsers(userChannelByJoinGameRoom, payload);
+    }
+
+    public Payload sendMessageToGameRoomLobby(SendMessageToGameRoomLobbyReq request, ChannelHandlerContext ctx) {
+        User user = ctx.channel().attr(USER).get();
+        GameRoom gameRoom = gameRoomManager.findGameRoomByGameRoomUser(user)
+                .orElseThrow(() -> new GlobalException(GlobalExceptionCode.NOT_JOIN_ROOM));
+
+        if (gameRoom.isStarted()) {
+            throw new GlobalException(GlobalExceptionCode.GAME_ALREADY_STARTED);
+        }
+        GameRoomUser gameRoomUser = gameRoom.getPlayer(user.getId())
+                .orElseThrow(() -> new GlobalException(GlobalExceptionCode.NOT_JOIN_ROOM));
+
+        Payload payload = new Payload(
+                Commend.SAVE_GAME_ROOM_LOBBY_MESSAGE,
+                new SaveGameRoomLobbyMessageReq(SaveGameRoomUserReq.from(gameRoomUser), request.message()));
+        sendCommendToGameRoomUsers(gameRoom, payload);
+
+        return new Payload(Commend.NOTHING, null);
     }
 }

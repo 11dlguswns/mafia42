@@ -1,8 +1,10 @@
 package click.mafia42.payload;
 
 import java.io.Serializable;
+import java.util.UUID;
 
 public class Payload implements Serializable {
+    private UUID payloadId;
     private String token;
     private Commend commend;
     private Object body;
@@ -10,14 +12,21 @@ public class Payload implements Serializable {
     public Payload() {
     }
 
-    public Payload(String token, Commend commend, Object body) {
-        this.token = token;
+    public Payload(Commend commend, Object body) {
         this.commend = commend;
         this.body = body;
     }
 
+    public void updatePayloadId(UUID payloadId) {
+        this.payloadId = payloadId;
+    }
+
     public void updateToken(String token) {
         this.token = token;
+    }
+
+    public UUID getPayloadId() {
+        return payloadId;
     }
 
     public String getToken() {

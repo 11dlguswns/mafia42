@@ -4,7 +4,7 @@ public enum Commend {
     NOTHING(false),
 
     // SERVER
-    DISCONNECT(false),
+    DISCONNECT(true),
     SIGN_UP(true),
     SIGN_IN(true),
     REISSUE_TOKEN(true),

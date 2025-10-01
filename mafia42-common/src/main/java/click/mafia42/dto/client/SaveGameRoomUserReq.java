@@ -1,17 +1,19 @@
 package click.mafia42.dto.client;
 
-import click.mafia42.entity.user.User;
+import click.mafia42.entity.room.GameRoomUser;
 
 import java.util.UUID;
 
 public record SaveGameRoomUserReq(
+        int number,
         UUID id,
         String name
 ) {
-    public static SaveGameRoomUserReq from(User user) {
+    public static SaveGameRoomUserReq from(GameRoomUser gameRoomUser) {
         return new SaveGameRoomUserReq(
-                user.getId(),
-                user.getNickname()
+                gameRoomUser.getNumber(),
+                gameRoomUser.getUser().getId(),
+                gameRoomUser.getUser().getNickname()
         );
     }
 }

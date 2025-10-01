@@ -15,7 +15,10 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Sharable
 public class CommendHandler extends SimpleChannelInboundHandler<Payload> {
@@ -24,10 +27,10 @@ public class CommendHandler extends SimpleChannelInboundHandler<Payload> {
     private final TokenService tokenService = new TokenService();
     private final GameRoomService gameRoomService = new GameRoomService();
     private final UserService userService = new UserService();
-    private CompletableFuture<Payload> payloadFuture = new CompletableFuture<>();
+    private final Map<UUID, CompletableFuture<Payload>> payloadFutures = new ConcurrentHashMap<>();
 
-    public void setPayloadFuture(CompletableFuture<Payload> future) {
-        this.payloadFuture = future;
+    public void setPayloadFuture(UUID payloadId, CompletableFuture<Payload> future) {
+        this.payloadFutures.put(payloadId, future);
     }
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Payload payload) throws Exception {
@@ -46,7 +49,7 @@ public class CommendHandler extends SimpleChannelInboundHandler<Payload> {
             case SAVE_USER_INFO_MYSELF ->
                 userService.saveUserInfoMyself(ValidationUtil.validationAndGet(payload.getBody(), SaveUserInfoMyselfReq.class));
             case REMOVE_GAME_ROOM ->
-                gameRoomService.removeGameRoom(ValidationUtil.validationAndGet(payload.getBody(), RemoveGameRoomReq.class));
+                gameRoomService.removeGameRoom(ValidationUtil.validationAndGet(payload.getBody(), RemoveGameRoomReq.class), ctx);
             case SAVE_GAME_ROOM_LOBBY_MESSAGE ->
                 gameRoomService.saveGameRoomLobbyMessage(ValidationUtil.validationAndGet(payload.getBody(), SaveGameRoomLobbyMessageReq.class));
             case SAVE_GAME_ROOM_LOBBY_SYSTEM_MESSAGE ->
@@ -55,8 +58,15 @@ public class CommendHandler extends SimpleChannelInboundHandler<Payload> {
             default -> throw new GlobalException(GlobalExceptionCode.UNSUPPORTED_COMMAND);
         }
 
+        UUID payloadId = payload.getPayloadId();
+        if (payloadId == null) {
+            return;
+        }
+
+        CompletableFuture<Payload> payloadFuture = payloadFutures.get(payloadId);
         if (payloadFuture != null) {
             payloadFuture.complete(payload);
+            payloadFutures.remove(payload.getPayloadId());
         }
     }
 }

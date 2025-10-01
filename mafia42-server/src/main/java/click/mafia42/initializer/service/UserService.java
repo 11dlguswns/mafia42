@@ -11,6 +11,6 @@ import io.netty.channel.ChannelHandlerContext;
 public class UserService {
     public Payload fetchUserInfoMyself(FetchUserInfoMyselfReq request, ChannelHandlerContext ctx) {
         User user = ctx.channel().attr(AuthHandler.USER).get();
-        return new Payload(null, Commend.SAVE_USER_INFO_MYSELF, new SaveUserInfoMyselfReq(user.getNickname()));
+        return new Payload(Commend.SAVE_USER_INFO_MYSELF, new SaveUserInfoMyselfReq(user.getId(), user.getNickname()));
     }
 }

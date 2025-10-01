@@ -8,7 +8,8 @@ public record SaveGameRoomReq(
         String name,
         int maxPlayers,
         int playersCount,
-        GameType gameType
+        GameType gameType,
+        boolean existPassword
 ) {
     public static SaveGameRoomReq from(GameRoom gameRoom) {
         return new SaveGameRoomReq(
@@ -16,7 +17,8 @@ public record SaveGameRoomReq(
                 gameRoom.getName(),
                 gameRoom.getMaxPlayers(),
                 gameRoom.getPlayersCount(),
-                gameRoom.getGameType()
+                gameRoom.getGameType(),
+                gameRoom.existPassword()
         );
     }
 }
