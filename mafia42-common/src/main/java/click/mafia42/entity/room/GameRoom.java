@@ -48,6 +48,10 @@ public class GameRoom {
     }
 
     public void addPlayer(User user, String password) {
+        if (isStarted) {
+            throw new GlobalException(GlobalExceptionCode.GAME_ALREADY_STARTED);
+        }
+
         if (containsPlayer(user)) {
             throw new GlobalException(GlobalExceptionCode.ALREADY_JOINED_ROOM);
         }

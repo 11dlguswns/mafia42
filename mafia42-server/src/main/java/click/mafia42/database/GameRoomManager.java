@@ -91,6 +91,10 @@ public class GameRoomManager {
         gameRoom.setStarted(true);
     }
 
+    public boolean isUserInAnyGameRoom(User user) {
+        return gameRooms.values().stream().anyMatch(gameRoom -> gameRoom.containsPlayer(user));
+    }
+
     private void setMutualVisibilityByJobType(GameRoom gameRoom, JobType jobType) {
         List<UUID> mutualIds = gameRoom.getPlayers().stream()
                 .filter(gameRoomUser -> gameRoomUser.getJob().getJobType() == jobType)

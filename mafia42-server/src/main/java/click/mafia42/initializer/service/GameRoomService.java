@@ -32,6 +32,10 @@ public class GameRoomService {
         User user = ctx.channel().attr(USER).get();
         String password = getPassword(request);
 
+        if (gameRoomManager.isUserInAnyGameRoom(user)) {
+            throw new GlobalException(GlobalExceptionCode.ALREADY_JOINED_ROOM);
+        }
+
         long gameRoomId = gameRoomManager.createGameRoom(
                 request.name(),
                 request.maxPlayers(),
@@ -57,6 +61,10 @@ public class GameRoomService {
         User user = ctx.channel().attr(USER).get();
         GameRoom gameRoom = gameRoomManager.findById(request.gameRoomId())
                 .orElseThrow(() -> new GlobalException(GlobalExceptionCode.NOT_FOUND_ROOM));
+
+        if (gameRoomManager.isUserInAnyGameRoom(user)) {
+            throw new GlobalException(GlobalExceptionCode.ALREADY_JOINED_ROOM);
+        }
 
         gameRoom.addPlayer(user, request.password());
 
@@ -127,6 +135,10 @@ public class GameRoomService {
                 .orElseThrow(() -> new GlobalException(GlobalExceptionCode.NOT_JOIN_ROOM));
         GameRoomUser currentGameRoomUser = gameRoom.getPlayer(user.getId())
                 .orElseThrow(() -> new GlobalException(GlobalExceptionCode.NOT_JOIN_ROOM));
+
+        if (gameRoom.isStarted()) {
+            throw new GlobalException(GlobalExceptionCode.GAME_ALREADY_STARTED);
+        }
 
         if (!currentGameRoomUser.equals(gameRoom.getManager())) {
             throw new GlobalException(GlobalExceptionCode.ROOM_MANAGE_NOT_ALLOWED);
