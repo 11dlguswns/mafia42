@@ -19,14 +19,21 @@ public class GameRoomService {
     public void saveGameRoom(SaveDetailGameRoomReq request) {
         DetailGameRoomProvider.detailGameRoom = request;
 
-        clientUI.setCardLayout(ClientPage.GAME_ROOM_LOBBY);
-        if (DetailGameRoomProvider.isCurrentUserManager()) {
-            clientUI.getGameLobbySubPanel().setGameRoomRoleCardLayout(GameRoomRole.MANAGER);
+        if (request.isStarted()) {
+            clientUI.setCardLayout(ClientPage.GAME);
+
+            clientUI.getGameSubPanel().updateGameLobbyUserChoicePanel();
         } else {
-            clientUI.getGameLobbySubPanel().setGameRoomRoleCardLayout(GameRoomRole.USER);
+            clientUI.setCardLayout(ClientPage.GAME_ROOM_LOBBY);
+
+            clientUI.getGameLobbySubPanel().updateGameLobbyUserChoicePanel();
+            if (DetailGameRoomProvider.isCurrentUserManager()) {
+                clientUI.getGameLobbySubPanel().setGameRoomRoleCardLayout(GameRoomRole.MANAGER);
+            } else {
+                clientUI.getGameLobbySubPanel().setGameRoomRoleCardLayout(GameRoomRole.USER);
+            }
         }
 
-        clientUI.getGameLobbySubPanel().updateGameLobbyUserChoicePanel();
     }
 
     public void saveGameRoomList(SaveGameRoomListReq request) {

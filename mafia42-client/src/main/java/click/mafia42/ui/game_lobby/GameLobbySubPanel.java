@@ -4,6 +4,7 @@ import click.mafia42.Mafia42Client;
 import click.mafia42.dto.client.SaveGameRoomUserReq;
 import click.mafia42.dto.server.ExitGameRoomReq;
 import click.mafia42.dto.server.KickOutGameRoomUserReq;
+import click.mafia42.dto.server.StartGameReq;
 import click.mafia42.initializer.provider.DetailGameRoomProvider;
 import click.mafia42.initializer.provider.UserInfoProvider;
 import click.mafia42.payload.Commend;
@@ -23,15 +24,15 @@ public class GameLobbySubPanel extends JPanel {
 
     private CardLayout gameRoomRoleCardLayout = new CardLayout();
 
-    private final JPanel gameLobbyUserInfoPanel = new JPanel(new GridLayout(4, 1));;
-    private final JLabel gameLobbyUserInfoLabel = new JLabel(UserInfoProvider.nickname, SwingConstants.CENTER);;
-    private final JPanel gameLobbyUserChoiceTopPanel = new JPanel(new GridLayout(1, 4));;
-    private final JPanel gameLobbyUserChoiceMiddlePanel = new JPanel(new GridLayout(1, 4));;
-    private final JPanel gameLobbyUserChoiceBottomPanel = new JPanel(new GridLayout(1, 4));;
+    private final JPanel gameLobbyUserInfoPanel = new JPanel(new GridLayout(4, 1));
+    private final JLabel gameLobbyUserInfoLabel = new JLabel(UserInfoProvider.nickname, SwingConstants.CENTER);
+    private final JPanel gameLobbyUserChoiceTopPanel = new JPanel(new GridLayout(1, 4));
+    private final JPanel gameLobbyUserChoiceMiddlePanel = new JPanel(new GridLayout(1, 4));
+    private final JPanel gameLobbyUserChoiceBottomPanel = new JPanel(new GridLayout(1, 4));
 
-    private final JPanel gameLobbyButtonPanel = new JPanel(gameRoomRoleCardLayout);;
-    private final JPanel gameLobbyUserButtonPanel= new JPanel(new GridLayout(1, 1));;
-    private final JPanel gameLobbyManagerButtonPanel = new JPanel(new GridLayout(3, 1));;
+    private final JPanel gameLobbyButtonPanel = new JPanel(gameRoomRoleCardLayout);
+    private final JPanel gameLobbyUserButtonPanel= new JPanel(new GridLayout(1, 1));
+    private final JPanel gameLobbyManagerButtonPanel = new JPanel(new GridLayout(3, 1));
 
     private UUID choiceUserId;
 
@@ -97,6 +98,10 @@ public class GameLobbySubPanel extends JPanel {
         gameLobbyUserInfoPanel.add(gameLobbyUserChoiceBottomPanel);
     }
 
+    public void updateLobbyUserInfoPanel() {
+        gameLobbyUserInfoLabel.setText(UserInfoProvider.nickname);
+    }
+
     private void setGameLobbyUserChoicePanel() {
         for (int i = 1; i <= 12; i++) {
             JButton userChoiceButton = new JButton();
@@ -156,7 +161,10 @@ public class GameLobbySubPanel extends JPanel {
     }
 
     private void startGame(ActionEvent e) {
-        // TODO 게임 시작
+        Payload payload = new Payload(
+                Commend.START_GAME,
+                new StartGameReq());
+        Mafia42Client.sendRequest(channel, payload);
     }
 
     private void kickOutGameRoomUser(ActionEvent e) {

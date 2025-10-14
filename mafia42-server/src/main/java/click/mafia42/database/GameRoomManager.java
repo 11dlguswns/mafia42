@@ -6,6 +6,9 @@ import click.mafia42.entity.room.GameType;
 import click.mafia42.entity.user.User;
 import click.mafia42.exception.GlobalException;
 import click.mafia42.exception.GlobalExceptionCode;
+import click.mafia42.job.Job;
+import click.mafia42.job.JobType;
+import click.mafia42.util.GameUtil;
 import org.mindrot.jbcrypt.BCrypt;
 
 import java.util.*;
@@ -62,6 +65,42 @@ public class GameRoomManager {
                 .filter(gr -> gr.getPlayers().stream()
                         .anyMatch(gameRoomUser -> gameRoomUser.getUser().equals(user)))
                 .findFirst();
+    }
+
+    public void startGame(GameRoom gameRoom) {
+        if (gameRoom.isStarted()) {
+            throw new GlobalException(GlobalExceptionCode.GAME_ALREADY_STARTED);
+        }
+        if (gameRoom.getPlayersCount() < 4) {
+            throw new GlobalException(GlobalExceptionCode.GAME_START_FAIL);
+        }
+
+        ArrayDeque<Job> job = GameUtil.getJob(gameRoom.getPlayersCount(), gameRoom.getGameType());
+
+        if (!(job.size() == gameRoom.getPlayersCount())) {
+            throw new GlobalException(GlobalExceptionCode.GAME_START_FAIL);
+        }
+
+        gameRoom.getPlayers().forEach(gameRoomUser -> {
+            gameRoomUser.updateJob(Objects.requireNonNull(job.poll()));
+        });
+
+        setMutualVisibilityByJobType(gameRoom, JobType.MAFIA);
+        setMutualVisibilityByJobType(gameRoom, JobType.LOVER);
+
+        gameRoom.setStarted(true);
+    }
+
+    private void setMutualVisibilityByJobType(GameRoom gameRoom, JobType jobType) {
+        List<UUID> mutualIds = gameRoom.getPlayers().stream()
+                .filter(gameRoomUser -> gameRoomUser.getJob().getJobType() == jobType)
+                .map(gameRoomUser -> gameRoomUser.getUser().getId())
+                .toList();
+        gameRoom.getPlayers().forEach(gameRoomUser -> {
+            if (gameRoomUser.getJob().getJobType() == jobType) {
+                gameRoomUser.addVisibleToUserIds(mutualIds);
+            }
+        });
     }
 
     private long getRoomId() {

@@ -4,6 +4,7 @@ import click.mafia42.Mafia42Client;
 import click.mafia42.dto.server.CreateGameRoomReq;
 import click.mafia42.dto.server.FetchGameRoomsReq;
 import click.mafia42.entity.room.GameType;
+import click.mafia42.initializer.provider.UserInfoProvider;
 import click.mafia42.payload.Commend;
 import click.mafia42.payload.Payload;
 import io.netty.channel.Channel;
@@ -140,7 +141,7 @@ public class LobbySubPanel extends JPanel {
         userInfoPanel.add(userInfoLabel, BorderLayout.CENTER);
     }
 
-    public void updateUserInfoPanel(String nickname) {
-        userInfoLabel.setText(nickname);
+    public void updateUserInfoPanel() {
+        userInfoLabel.setText(UserInfoProvider.nickname);
     }
 }

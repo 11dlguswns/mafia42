@@ -2,6 +2,8 @@ package click.mafia42.ui;
 
 import click.mafia42.exception.GlobalException;
 import click.mafia42.exception.GlobalExceptionCode;
+import click.mafia42.ui.game.GamePanel;
+import click.mafia42.ui.game.GameSubPanel;
 import click.mafia42.ui.game_lobby.GameLobbyPanel;
 import click.mafia42.ui.game_lobby.GameLobbySubPanel;
 import click.mafia42.ui.lobby.LobbyPanel;
@@ -30,6 +32,9 @@ public class ClientUI {
     private final GameLobbyPanel gameLobbyPanel;
     private final GameLobbySubPanel gameLobbySubPanel;
 
+    private final GamePanel gamePanel;
+    private final GameSubPanel gameSubPanel;
+
     public static ClientUI getInstance() {
         if (instance == null) {
             throw new GlobalException(GlobalExceptionCode.NOT_INITIALIZED_UI);
@@ -52,6 +57,8 @@ public class ClientUI {
         lobbySubPanel = new LobbySubPanel(channel);
         gameLobbyPanel = new GameLobbyPanel(channel);
         gameLobbySubPanel = new GameLobbySubPanel(channel);
+        gamePanel = new GamePanel(channel);
+        gameSubPanel = new GameSubPanel(channel);
 
         setFrame();
         setCardLayout(ClientPage.LOBBY);
@@ -73,6 +80,9 @@ public class ClientUI {
 
         mainPanel.add(gameLobbyPanel, ClientPage.GAME_ROOM_LOBBY.name());
         subPanel.add(gameLobbySubPanel, ClientPage.GAME_ROOM_LOBBY.name());
+
+        mainPanel.add(gamePanel, ClientPage.GAME.name());
+        subPanel.add(gameSubPanel, ClientPage.GAME.name());
 
         uiPanel.add(mainPanel);
         uiPanel.add(subPanel);
@@ -97,5 +107,13 @@ public class ClientUI {
 
     public LobbyPanel getLobbyPanel() {
         return lobbyPanel;
+    }
+
+    public GamePanel getGamePanel() {
+        return gamePanel;
+    }
+
+    public GameSubPanel getGameSubPanel() {
+        return gameSubPanel;
     }
 }

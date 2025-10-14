@@ -60,8 +60,7 @@ public class GameRoomService {
 
         gameRoom.addPlayer(user, request.password());
 
-        Payload payload = new Payload(Commend.SAVE_GAME_ROOM, SaveDetailGameRoomReq.from(gameRoom));
-        sendCommendToGameRoomUsers(gameRoom, payload);
+        saveGameRoomToGameRoomUsers(gameRoom);
 
         Payload SaveSystemMessagePayloadToGameRoomUsers = new Payload(
                 Commend.SAVE_GAME_ROOM_LOBBY_SYSTEM_MESSAGE,
@@ -122,6 +121,33 @@ public class GameRoomService {
         return new Payload(Commend.NOTHING, null);
     }
 
+    public Payload startGame(StartGameReq request, ChannelHandlerContext ctx) {
+        User user = ctx.channel().attr(USER).get();
+        GameRoom gameRoom = gameRoomManager.findGameRoomByGameRoomUser(user)
+                .orElseThrow(() -> new GlobalException(GlobalExceptionCode.NOT_JOIN_ROOM));
+        GameRoomUser currentGameRoomUser = gameRoom.getPlayer(user.getId())
+                .orElseThrow(() -> new GlobalException(GlobalExceptionCode.NOT_JOIN_ROOM));
+
+        if (!currentGameRoomUser.equals(gameRoom.getManager())) {
+            throw new GlobalException(GlobalExceptionCode.ROOM_MANAGE_NOT_ALLOWED);
+        }
+
+        gameRoomManager.startGame(gameRoom);
+
+        saveGameRoomToGameRoomUsers(gameRoom);
+
+        return new Payload(Commend.NOTHING, null);
+    }
+
+    private void saveGameRoomToGameRoomUsers(GameRoom gameRoom) {
+        gameRoom.getPlayers().forEach(gameRoomUser -> {
+            Payload payload = new Payload(
+                    Commend.SAVE_GAME_ROOM,
+                    SaveDetailGameRoomReq.from(gameRoom, gameRoomUser.getUser().getId()));
+            channelManager.sendCommendToUser(gameRoomUser.getUser(), payload);
+        });
+    }
+
     public void exitGameRoomOnDisconnect(User user, ExitType exitType) {
         Optional<GameRoom> optionalGameRoom = gameRoomManager.findGameRoomByGameRoomUser(user);
         if (optionalGameRoom.isEmpty()) {
@@ -142,8 +168,7 @@ public class GameRoomService {
     public void exitGameRoom(GameRoomUser gameRoomUser, GameRoom gameRoom, ExitType exitType) {
         gameRoomManager.exitGameRoom(gameRoom, gameRoomUser);
 
-        Payload payload = new Payload(Commend.SAVE_GAME_ROOM, SaveDetailGameRoomReq.from(gameRoom));
-        sendCommendToGameRoomUsers(gameRoom, payload);
+        saveGameRoomToGameRoomUsers(gameRoom);
 
         Payload SaveSystemMessagePayloadToGameRoomUsers = new Payload(
                 Commend.SAVE_GAME_ROOM_LOBBY_SYSTEM_MESSAGE,

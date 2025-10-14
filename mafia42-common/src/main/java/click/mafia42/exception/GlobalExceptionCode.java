@@ -31,7 +31,10 @@ public enum GlobalExceptionCode {
     CLIENT_WRITE_FAIL("화면 출력에 실패했습니다."),
     GAME_ALREADY_STARTED("게임이 이미 시작되어 있습니다."),
     ROOM_MANAGE_NOT_ALLOWED("방 관리 권한이 없습니다."),
-    CANNOT_KICK_SELF("자기 자신을 강퇴할 수 없습니다.");
+    CANNOT_KICK_SELF("자기 자신을 강퇴할 수 없습니다."),
+
+    GAME_START_FAIL("게임을 시작할 수 없는 상태입니다."),
+    SKILL_NOT_AVAILABLE("직업 능력이 없습니다.");
 
     private final String message;
 

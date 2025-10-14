@@ -10,6 +10,8 @@ public class UserService {
     public void saveUserInfoMyself(SaveUserInfoMyselfReq request) {
         UserInfoProvider.id = request.id();
         UserInfoProvider.nickname = request.nickname();
-        clientUI.getLobbySubPanel().updateUserInfoPanel(request.nickname());
+        clientUI.getLobbySubPanel().updateUserInfoPanel();
+        clientUI.getGameSubPanel().updateGameUserInfoPanel();
+        clientUI.getGameLobbySubPanel().updateLobbyUserInfoPanel();
     }
 }

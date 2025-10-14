@@ -2,9 +2,9 @@ package click.mafia42.dto.client;
 
 import click.mafia42.entity.room.GameRoom;
 import click.mafia42.entity.room.GameType;
-import click.mafia42.entity.user.User;
 
 import java.util.List;
+import java.util.UUID;
 
 public record SaveDetailGameRoomReq(
         long id,
@@ -25,6 +25,21 @@ public record SaveDetailGameRoomReq(
                         .map(SaveGameRoomUserReq::from)
                         .toList(),
                 SaveGameRoomUserReq.from(gameRoom.getManager()),
+                gameRoom.getGameType(),
+                gameRoom.isStarted()
+        );
+    }
+
+    public static SaveDetailGameRoomReq from(GameRoom gameRoom, UUID currentUserId) {
+        return new SaveDetailGameRoomReq(
+                gameRoom.getId(),
+                gameRoom.getName(),
+                gameRoom.getMaxPlayers(),
+                gameRoom.getPlayers()
+                        .stream()
+                        .map(gameRoomUser -> SaveGameRoomUserReq.from(gameRoomUser, currentUserId))
+                        .toList(),
+                SaveGameRoomUserReq.from(gameRoom.getManager(), currentUserId),
                 gameRoom.getGameType(),
                 gameRoom.isStarted()
         );
