@@ -78,6 +78,10 @@ public class GameRoomUser implements Comparable<GameRoomUser> {
         return votedByUserIds;
     }
 
+    public void clearVotes() {
+        votedByUserIds.clear();
+    }
+
     public void die() {
         status = GameUserStatus.DIE;
     }

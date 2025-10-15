@@ -1,6 +1,8 @@
 package click.mafia42.ui.game;
 
 import click.mafia42.Mafia42Client;
+import click.mafia42.dto.server.DecreaseGameTimeReq;
+import click.mafia42.dto.server.IncreaseGameTimeReq;
 import click.mafia42.dto.server.UpdateGameStatusReq;
 import click.mafia42.initializer.provider.DetailGameRoomProvider;
 import click.mafia42.payload.Commend;
@@ -80,11 +82,13 @@ public class GamePanel extends JPanel {
     }
 
     private void timeDown(ActionEvent e) {
-        // TODO 시간 단축
+        Payload payload = new Payload(Commend.DECREASE_GAME_TIME, new DecreaseGameTimeReq());
+        Mafia42Client.sendRequest(channel, payload);
     }
 
     private void timeUp(ActionEvent e) {
-        // TODO 시간 증가
+        Payload payload = new Payload(Commend.INCREASE_GAME_TIME, new IncreaseGameTimeReq());
+        Mafia42Client.sendRequest(channel, payload);
     }
 
     private void setInputPanel() {

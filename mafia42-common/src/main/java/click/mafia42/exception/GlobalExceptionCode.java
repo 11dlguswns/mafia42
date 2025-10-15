@@ -36,6 +36,8 @@ public enum GlobalExceptionCode {
     GAME_START_FAIL("게임을 시작할 수 없는 상태입니다."),
     SKILL_NOT_AVAILABLE("직업 능력이 없습니다."),
     TIME_NOT_OVER("시간이 초과되지 않았습니다."),
+    TIME_ALREADY_MODIFIED("시간이 이미 수정되었습니다."),
+    TIME_MODIFICATION_NOT_ALLOWED("현재는 시간을 수정할 수 없는 상태입니다."),
     ;
 
     private final String message;

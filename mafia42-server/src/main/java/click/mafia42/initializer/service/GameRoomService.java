@@ -222,4 +222,26 @@ public class GameRoomService {
 
         return new Payload(Commend.SAVE_GAME_ROOM, SaveDetailGameRoomReq.from(gameRoom, user.getId()));
     }
+
+    public Payload increaseGameTime(IncreaseGameTimeReq request, ChannelHandlerContext ctx) {
+        User user = ctx.channel().attr(USER).get();
+        GameRoom gameRoom = gameRoomManager.findGameRoomByGameRoomUser(user)
+                .orElseThrow(() -> new GlobalException(GlobalExceptionCode.NOT_JOIN_ROOM));
+
+        gameRoom.increaseGameTime(user);
+        saveGameRoomToGameRoomUsers(gameRoom);
+
+        return new Payload(Commend.NOTHING, null);
+    }
+
+    public Payload decreaseGameTime(DecreaseGameTimeReq request, ChannelHandlerContext ctx) {
+        User user = ctx.channel().attr(USER).get();
+        GameRoom gameRoom = gameRoomManager.findGameRoomByGameRoomUser(user)
+                .orElseThrow(() -> new GlobalException(GlobalExceptionCode.NOT_JOIN_ROOM));
+
+        gameRoom.decreaseGameTime(user);
+        saveGameRoomToGameRoomUsers(gameRoom);
+
+        return new Payload(Commend.NOTHING, null);
+    }
 }

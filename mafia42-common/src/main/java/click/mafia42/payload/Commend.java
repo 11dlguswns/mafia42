@@ -17,6 +17,8 @@ public enum Commend {
     KICK_OUT_GAME_ROOM_USER(false),
     START_GAME(false),
     UPDATE_GAME_STATUS(false),
+    DECREASE_GAME_TIME(false),
+    INCREASE_GAME_TIME(false),
 
     // CLIENT
     CONSOLE_OUTPUT(false),

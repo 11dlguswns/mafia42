@@ -26,6 +26,7 @@ public class GameRoom {
     private GameStatus status;
     private long endTimeSecond;
     private final Set<UUID> agreeUserIds = new HashSet<>();
+    private final Set<UUID> timeControlUserIds = new HashSet<>();
 
     public GameRoom(long id, String name, int maxPlayers, User manager, GameType gameType, String password) {
         this.id = id;
@@ -157,7 +158,10 @@ public class GameRoom {
         }
 
        status = switch (status) {
-           case NIGHT -> GameStatus.MORNING;
+           case NIGHT -> {
+               timeControlUserIds.clear();
+               yield GameStatus.MORNING;
+           }
            case MORNING -> GameStatus.VOTING;
            case VOTING -> {
                Optional<GameRoomUser> mostVotedUser = getMostVotedUser();
@@ -174,11 +178,17 @@ public class GameRoom {
                    mostVotedUser.get().die();
                }
 
+               clearVotes();
+               agreeUserIds.clear();
                yield GameStatus.NIGHT;
            }
        };
 
         endTimeSecond = Instant.now().plus(getGameTime()).getEpochSecond();
+    }
+
+    private void clearVotes() {
+        players.forEach(GameRoomUser::clearVotes);
     }
 
     private boolean isVotePassed() {
@@ -217,5 +227,31 @@ public class GameRoom {
     private long getAlivePlayerCount() {
         return players.stream()
                 .filter(gameRoomUser -> gameRoomUser.getStatus() == GameUserStatus.ALIVE).count();
+    }
+
+    public void increaseGameTime(User user) {
+        if (timeControlUserIds.contains(user.getId())) {
+            throw new GlobalException(GlobalExceptionCode.TIME_ALREADY_MODIFIED);
+        }
+
+        if (status != GameStatus.MORNING) {
+            throw new GlobalException(GlobalExceptionCode.TIME_MODIFICATION_NOT_ALLOWED);
+        }
+
+        endTimeSecond += 15;
+        timeControlUserIds.add(user.getId());
+    }
+
+    public void decreaseGameTime(User user) {
+        if (timeControlUserIds.contains(user.getId())) {
+            throw new GlobalException(GlobalExceptionCode.TIME_ALREADY_MODIFIED);
+        }
+
+        if (status != GameStatus.MORNING) {
+            throw new GlobalException(GlobalExceptionCode.TIME_MODIFICATION_NOT_ALLOWED);
+        }
+
+        endTimeSecond -= 15;
+        timeControlUserIds.add(user.getId());
     }
 }
