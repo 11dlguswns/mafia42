@@ -16,6 +16,7 @@ public enum Commend {
     SEND_MESSAGE_TO_GAME_ROOM_LOBBY(false),
     KICK_OUT_GAME_ROOM_USER(false),
     START_GAME(false),
+    UPDATE_GAME_STATUS(false),
 
     // CLIENT
     CONSOLE_OUTPUT(false),

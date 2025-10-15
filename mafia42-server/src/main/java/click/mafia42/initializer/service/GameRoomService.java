@@ -46,7 +46,7 @@ public class GameRoomService {
         GameRoom gameRoom = gameRoomManager.findById(gameRoomId)
                 .orElseThrow(() -> new GlobalException(GlobalExceptionCode.NOT_FOUND_ROOM));
 
-        return new Payload(Commend.SAVE_GAME_ROOM, SaveDetailGameRoomReq.from(gameRoom));
+        return new Payload(Commend.SAVE_GAME_ROOM, SaveDetailGameRoomReq.from(gameRoom, user.getId()));
     }
 
     private String getPassword(CreateGameRoomReq request) {
@@ -211,5 +211,15 @@ public class GameRoomService {
         sendCommendToGameRoomUsers(gameRoom, payload);
 
         return new Payload(Commend.NOTHING, null);
+    }
+
+    public Payload updateGameStatus(UpdateGameStatusReq updateGameStatusReq, ChannelHandlerContext ctx) {
+        User user = ctx.channel().attr(USER).get();
+        GameRoom gameRoom = gameRoomManager.findGameRoomByGameRoomUser(user)
+                .orElseThrow(() -> new GlobalException(GlobalExceptionCode.NOT_JOIN_ROOM));
+
+        gameRoom.updateStatus();
+
+        return new Payload(Commend.SAVE_GAME_ROOM, SaveDetailGameRoomReq.from(gameRoom, user.getId()));
     }
 }

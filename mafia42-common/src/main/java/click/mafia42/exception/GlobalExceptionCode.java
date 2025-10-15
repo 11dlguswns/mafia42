@@ -34,7 +34,9 @@ public enum GlobalExceptionCode {
     CANNOT_KICK_SELF("자기 자신을 강퇴할 수 없습니다."),
 
     GAME_START_FAIL("게임을 시작할 수 없는 상태입니다."),
-    SKILL_NOT_AVAILABLE("직업 능력이 없습니다.");
+    SKILL_NOT_AVAILABLE("직업 능력이 없습니다."),
+    TIME_NOT_OVER("시간이 초과되지 않았습니다."),
+    ;
 
     private final String message;
 

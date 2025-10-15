@@ -1,6 +1,7 @@
 package click.mafia42.dto.client;
 
 import click.mafia42.entity.room.GameRoom;
+import click.mafia42.entity.room.GameStatus;
 import click.mafia42.entity.room.GameType;
 
 import java.util.List;
@@ -13,23 +14,10 @@ public record SaveDetailGameRoomReq(
         List<SaveGameRoomUserReq> users,
         SaveGameRoomUserReq manager,
         GameType gameType,
-        boolean isStarted
+        boolean isStarted,
+        GameStatus gameStatus,
+        long endTimeSecond
 ) {
-    public static SaveDetailGameRoomReq from(GameRoom gameRoom) {
-        return new SaveDetailGameRoomReq(
-                gameRoom.getId(),
-                gameRoom.getName(),
-                gameRoom.getMaxPlayers(),
-                gameRoom.getPlayers()
-                        .stream()
-                        .map(SaveGameRoomUserReq::from)
-                        .toList(),
-                SaveGameRoomUserReq.from(gameRoom.getManager()),
-                gameRoom.getGameType(),
-                gameRoom.isStarted()
-        );
-    }
-
     public static SaveDetailGameRoomReq from(GameRoom gameRoom, UUID currentUserId) {
         return new SaveDetailGameRoomReq(
                 gameRoom.getId(),
@@ -41,7 +29,9 @@ public record SaveDetailGameRoomReq(
                         .toList(),
                 SaveGameRoomUserReq.from(gameRoom.getManager(), currentUserId),
                 gameRoom.getGameType(),
-                gameRoom.isStarted()
+                gameRoom.isStarted(),
+                gameRoom.getStatus(),
+                gameRoom.getEndTimeSecond()
         );
     }
 }

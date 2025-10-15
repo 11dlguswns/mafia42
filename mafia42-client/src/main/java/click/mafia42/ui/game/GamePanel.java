@@ -1,5 +1,11 @@
 package click.mafia42.ui.game;
 
+import click.mafia42.Mafia42Client;
+import click.mafia42.dto.server.UpdateGameStatusReq;
+import click.mafia42.initializer.provider.DetailGameRoomProvider;
+import click.mafia42.payload.Commend;
+import click.mafia42.payload.Payload;
+import click.mafia42.util.TimeUtil;
 import io.netty.channel.Channel;
 
 import javax.swing.*;
@@ -10,7 +16,8 @@ public class GamePanel extends JPanel {
     private final Channel channel;
 
     private final JPanel timePanel = new JPanel(new BorderLayout());
-    private final JLabel timeLabel = new JLabel("00:00", SwingConstants.CENTER);
+    private final JLabel timeLabel = new JLabel("[밤] 00:00", SwingConstants.CENTER);
+    private Timer timer;
 
     private final JScrollPane chatPane;
     private final JTextArea chatArea = new JTextArea();
@@ -45,9 +52,33 @@ public class GamePanel extends JPanel {
         timePanel.add(timeUpButton, BorderLayout.EAST);
     }
 
-    private void updateTimePanel(int minute, int second) {
-        timeLabel.setText(String.format("%02d:%02d", minute, second));
+    public synchronized void startTimePanel() {
+        if (timer == null) {
+            timer = new Timer(1000, e -> {
+                updateTimePanel();
+                if (TimeUtil.isTimeOver(DetailGameRoomProvider.detailGameRoom.endTimeSecond())) {
+                    Payload payload = new Payload(Commend.UPDATE_GAME_STATUS, new UpdateGameStatusReq());
+                    Mafia42Client.sendRequest(channel, payload);
+
+                    ((Timer)e.getSource()).stop();
+                }
+            });
+        }
+        timer.restart();
     }
+
+    private void updateTimePanel() {
+        if (DetailGameRoomProvider.detailGameRoom.gameStatus() == null) {
+            return;
+        }
+
+        long remainingSecond = TimeUtil.getRemainingTime(DetailGameRoomProvider.detailGameRoom.endTimeSecond());
+        String gameStatusAlias = DetailGameRoomProvider.detailGameRoom.gameStatus().getAlias();
+        long minute = remainingSecond / 60;
+        long second = remainingSecond % 60;
+        timeLabel.setText(String.format("[%s] %02d:%02d", gameStatusAlias, minute, second));
+    }
+
     private void timeDown(ActionEvent e) {
         // TODO 시간 단축
     }
@@ -68,5 +99,4 @@ public class GamePanel extends JPanel {
     private void sendMessage(ActionEvent e) {
         // TODO 메시지 전송
     }
-
 }

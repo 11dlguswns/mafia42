@@ -18,6 +18,7 @@ public class GameRoomService {
 
     public void saveGameRoom(SaveDetailGameRoomReq request) {
         DetailGameRoomProvider.detailGameRoom = request;
+        clientUI.getGamePanel().startTimePanel();
 
         if (request.isStarted()) {
             clientUI.setCardLayout(ClientPage.GAME);

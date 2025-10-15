@@ -88,6 +88,7 @@ public class GameRoomManager {
         setMutualVisibilityByJobType(gameRoom, JobType.MAFIA);
         setMutualVisibilityByJobType(gameRoom, JobType.LOVER);
 
+        gameRoom.initStatus();
         gameRoom.setStarted(true);
     }
 

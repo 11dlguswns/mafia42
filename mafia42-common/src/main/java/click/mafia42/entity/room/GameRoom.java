@@ -3,10 +3,14 @@ package click.mafia42.entity.room;
 import click.mafia42.entity.user.User;
 import click.mafia42.exception.GlobalException;
 import click.mafia42.exception.GlobalExceptionCode;
+import click.mafia42.util.TimeUtil;
 import org.mindrot.jbcrypt.BCrypt;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 public class GameRoom {
     private final long id;
@@ -19,6 +23,9 @@ public class GameRoom {
     private boolean isStarted = false;
     private final PriorityQueue<Integer> freeNumbers = new PriorityQueue<>(12);
     private final AtomicInteger nextNumber = new AtomicInteger(1);
+    private GameStatus status;
+    private long endTimeSecond;
+    private final Set<UUID> agreeUserIds = new HashSet<>();
 
     public GameRoom(long id, String name, int maxPlayers, User manager, GameType gameType, String password) {
         this.id = id;
@@ -111,6 +118,14 @@ public class GameRoom {
         return gameType;
     }
 
+    public GameStatus getStatus() {
+        return status;
+    }
+
+    public Long getEndTimeSecond() {
+        return endTimeSecond;
+    }
+
     public void setName(String name) {
         this.name = name;
     }
@@ -125,5 +140,82 @@ public class GameRoom {
 
     public boolean existPassword() {
         return password != null;
+    }
+
+    public void initStatus() {
+        status = GameStatus.NIGHT;
+        endTimeSecond = Instant.now().plus(getGameTime()).getEpochSecond();
+    }
+
+    public synchronized void updateStatus() {
+        if (status == null) {
+            return;
+        }
+
+        if (!TimeUtil.isTimeOver(endTimeSecond)) {
+            return;
+        }
+
+       status = switch (status) {
+           case NIGHT -> GameStatus.MORNING;
+           case MORNING -> GameStatus.VOTING;
+           case VOTING -> {
+               Optional<GameRoomUser> mostVotedUser = getMostVotedUser();
+               if (mostVotedUser.isEmpty()) {
+                   yield GameStatus.NIGHT;
+               }
+
+               yield GameStatus.CONTRADICT;
+           }
+           case CONTRADICT -> GameStatus.JUDGEMENT;
+           case JUDGEMENT -> {
+               Optional<GameRoomUser> mostVotedUser = getMostVotedUser();
+               if (mostVotedUser.isPresent() && isVotePassed()) {
+                   mostVotedUser.get().die();
+               }
+
+               yield GameStatus.NIGHT;
+           }
+       };
+
+        endTimeSecond = Instant.now().plus(getGameTime()).getEpochSecond();
+    }
+
+    private boolean isVotePassed() {
+        return agreeUserIds.size() > getAlivePlayerCount() / 2;
+    }
+
+    public Optional<GameRoomUser> getMostVotedUser() {
+        Map<Integer, List<GameRoomUser>> groupedByVotes = players.stream()
+                .collect(Collectors.groupingBy(user -> user.getVotedByUserIds().size()));
+
+        int maxVotes = groupedByVotes.keySet().stream()
+                .max(Integer::compare)
+                .orElse(0);
+
+        List<GameRoomUser> topUsers = groupedByVotes.getOrDefault(maxVotes, List.of());
+
+        if (topUsers.size() != 1) {
+            return Optional.empty();
+        }
+
+        return Optional.of(topUsers.getFirst());
+    }
+
+    private Duration getGameTime() {
+        Duration gameTime = status.getDefaultTime();
+
+        if (status == GameStatus.MORNING) {
+            long alivePlayerCount = getAlivePlayerCount();
+
+            return Duration.ofSeconds(gameTime.getSeconds() * alivePlayerCount);
+        }
+
+        return gameTime;
+    }
+
+    private long getAlivePlayerCount() {
+        return players.stream()
+                .filter(gameRoomUser -> gameRoomUser.getStatus() == GameUserStatus.ALIVE).count();
     }
 }

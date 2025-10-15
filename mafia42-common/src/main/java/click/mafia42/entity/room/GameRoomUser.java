@@ -14,7 +14,9 @@ public class GameRoomUser implements Comparable<GameRoomUser> {
     private final User user;
     private Job job;
     private Team team;
+    private GameUserStatus status = GameUserStatus.ALIVE;
     private final Set<UUID> visibleToUserIds;
+    private final Set<UUID> votedByUserIds = new HashSet<>();
 
     public GameRoomUser(GameRoom gameRoom, User user) {
         this.number = gameRoom.getUserNumber();
@@ -38,6 +40,10 @@ public class GameRoomUser implements Comparable<GameRoomUser> {
         return team;
     }
 
+    public void updateStatus(GameUserStatus status) {
+        this.status = status;
+    }
+
     public void updateJob(Job job) {
         this.job = job;
         this.team = job.getJobType().getRole().getTeam();
@@ -45,6 +51,10 @@ public class GameRoomUser implements Comparable<GameRoomUser> {
 
     public void updateTeam(Team team) {
         this.team = team;
+    }
+
+    public GameUserStatus getStatus() {
+        return status;
     }
 
     @Override
@@ -62,5 +72,17 @@ public class GameRoomUser implements Comparable<GameRoomUser> {
 
     public void addVisibleToUserIds(List<UUID> userIds) {
         userIds.forEach(this::addVisibleToUserId);
+    }
+
+    public Set<UUID> getVotedByUserIds() {
+        return votedByUserIds;
+    }
+
+    public void die() {
+        status = GameUserStatus.DIE;
+    }
+
+    public void resurrection() {
+        status = GameUserStatus.ALIVE;
     }
 }
