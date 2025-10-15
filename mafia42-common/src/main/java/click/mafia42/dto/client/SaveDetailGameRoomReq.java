@@ -5,6 +5,7 @@ import click.mafia42.entity.room.GameStatus;
 import click.mafia42.entity.room.GameType;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public record SaveDetailGameRoomReq(
@@ -16,7 +17,8 @@ public record SaveDetailGameRoomReq(
         GameType gameType,
         boolean isStarted,
         GameStatus gameStatus,
-        long endTimeSecond
+        long endTimeSecond,
+        List<SaveGameMessageReq> chatMessages
 ) {
     public static SaveDetailGameRoomReq from(GameRoom gameRoom, UUID currentUserId) {
         return new SaveDetailGameRoomReq(
@@ -31,7 +33,12 @@ public record SaveDetailGameRoomReq(
                 gameRoom.getGameType(),
                 gameRoom.isStarted(),
                 gameRoom.getStatus(),
-                gameRoom.getEndTimeSecond()
+                gameRoom.getEndTimeSecond(),
+                gameRoom.getChatMessages()
         );
+    }
+
+    public Optional<SaveGameRoomUserReq> getGameRoomUser(UUID userId) {
+        return users.stream().filter(user -> user.id().equals(userId)).findFirst();
     }
 }

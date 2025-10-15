@@ -6,6 +6,7 @@ import click.mafia42.dto.client.*;
 import click.mafia42.dto.server.*;
 import click.mafia42.entity.room.GameRoom;
 import click.mafia42.entity.room.GameRoomUser;
+import click.mafia42.entity.room.GameStatus;
 import click.mafia42.entity.user.User;
 import click.mafia42.exception.GlobalException;
 import click.mafia42.exception.GlobalExceptionCode;
@@ -202,12 +203,38 @@ public class GameRoomService {
         if (gameRoom.isStarted()) {
             throw new GlobalException(GlobalExceptionCode.GAME_ALREADY_STARTED);
         }
-        GameRoomUser gameRoomUser = gameRoom.getPlayer(user.getId())
-                .orElseThrow(() -> new GlobalException(GlobalExceptionCode.NOT_JOIN_ROOM));
 
         Payload payload = new Payload(
                 Commend.SAVE_GAME_ROOM_LOBBY_MESSAGE,
-                new SaveGameRoomLobbyMessageReq(SaveGameRoomUserReq.from(gameRoomUser), request.message()));
+                new SaveGameRoomLobbyMessageReq(user.getId(), request.message()));
+        sendCommendToGameRoomUsers(gameRoom, payload);
+
+        return new Payload(Commend.NOTHING, null);
+    }
+
+    public Payload sendMessageToGame(SendMessageToGameReq request, ChannelHandlerContext ctx) {
+        User user = ctx.channel().attr(USER).get();
+        GameRoom gameRoom = gameRoomManager.findGameRoomByGameRoomUser(user)
+                .orElseThrow(() -> new GlobalException(GlobalExceptionCode.NOT_JOIN_ROOM));
+
+        boolean allowedMorning = gameRoom.getStatus() == GameStatus.MORNING;
+        boolean allowedVoting = gameRoom.getStatus() == GameStatus.VOTING;
+        boolean isUserMostVoted = gameRoom.getMostVotedUser()
+                .map(mostVotedUser -> mostVotedUser.getUser().getId().equals(user.getId()))
+                .orElse(false);
+        boolean allowedContradict = (gameRoom.getStatus() == GameStatus.CONTRADICT) && isUserMostVoted;
+
+        if (!(allowedMorning || allowedVoting || allowedContradict)) {
+            throw new GlobalException(GlobalExceptionCode.CHATTING_NOT_ALLOWED);
+        }
+
+        if (!gameRoom.isStarted()) {
+            throw new GlobalException(GlobalExceptionCode.GAME_NOT_STARTED);
+        }
+
+        Payload payload = new Payload(
+                Commend.SAVE_GAME_MESSAGE,
+                new SaveGameMessageReq(user.getId(), request.message()));
         sendCommendToGameRoomUsers(gameRoom, payload);
 
         return new Payload(Commend.NOTHING, null);

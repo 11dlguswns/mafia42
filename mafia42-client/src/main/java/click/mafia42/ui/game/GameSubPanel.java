@@ -87,7 +87,7 @@ public class GameSubPanel extends JPanel {
                 if (comp instanceof JButton jButton) {
                     int buttonNumber = Integer.parseInt(jButton.getName());
                     if (user.number() == buttonNumber) {
-                        String jobAlias = user.jobType() == null ? "추리중" : user.jobType().getAlias();
+                        String jobAlias = user.fetchJobAlias();
                         jButton.setText("<html>" + user.name() + "<br>" + jobAlias + "</html>");
 
                         jButton.setActionCommand(user.id().toString());

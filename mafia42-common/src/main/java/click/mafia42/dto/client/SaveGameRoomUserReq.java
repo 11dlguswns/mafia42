@@ -13,14 +13,8 @@ public record SaveGameRoomUserReq(
         JobType jobType,
         GameUserStatus gameUserStatus
 ) {
-    public static SaveGameRoomUserReq from(GameRoomUser gameRoomUser) {
-        return new SaveGameRoomUserReq(
-                gameRoomUser.getNumber(),
-                gameRoomUser.getUser().getId(),
-                gameRoomUser.getUser().getNickname(),
-                null,
-                gameRoomUser.getStatus()
-        );
+    public String fetchJobAlias() {
+        return jobType != null ? jobType.getAlias() : "?";
     }
 
     public static SaveGameRoomUserReq from(GameRoomUser gameRoomUser, UUID currentUserId) {

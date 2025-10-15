@@ -30,6 +30,7 @@ public enum GlobalExceptionCode {
     ALREADY_JOINED_ROOM("방에 이미 참여하고 있습니다."),
     CLIENT_WRITE_FAIL("화면 출력에 실패했습니다."),
     GAME_ALREADY_STARTED("게임이 이미 시작되어 있습니다."),
+    GAME_NOT_STARTED("게임이 시작되어 있지 않습니다."),
     ROOM_MANAGE_NOT_ALLOWED("방 관리 권한이 없습니다."),
     CANNOT_KICK_SELF("자기 자신을 강퇴할 수 없습니다."),
 
@@ -38,6 +39,7 @@ public enum GlobalExceptionCode {
     TIME_NOT_OVER("시간이 초과되지 않았습니다."),
     TIME_ALREADY_MODIFIED("시간이 이미 수정되었습니다."),
     TIME_MODIFICATION_NOT_ALLOWED("현재는 시간을 수정할 수 없는 상태입니다."),
+    CHATTING_NOT_ALLOWED("채팅을 할 수 없는 상태입니다."),
     ;
 
     private final String message;

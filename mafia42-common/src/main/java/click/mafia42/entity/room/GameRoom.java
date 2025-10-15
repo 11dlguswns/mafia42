@@ -1,5 +1,6 @@
 package click.mafia42.entity.room;
 
+import click.mafia42.dto.client.SaveGameMessageReq;
 import click.mafia42.entity.user.User;
 import click.mafia42.exception.GlobalException;
 import click.mafia42.exception.GlobalExceptionCode;
@@ -27,6 +28,7 @@ public class GameRoom {
     private long endTimeSecond;
     private final Set<UUID> agreeUserIds = new HashSet<>();
     private final Set<UUID> timeControlUserIds = new HashSet<>();
+    private final List<SaveGameMessageReq> chatMessages = new ArrayList<>();
 
     public GameRoom(long id, String name, int maxPlayers, User manager, GameType gameType, String password) {
         this.id = id;
@@ -253,5 +255,13 @@ public class GameRoom {
 
         endTimeSecond -= 15;
         timeControlUserIds.add(user.getId());
+    }
+
+    public void addChatMessage(SaveGameMessageReq message) {
+        chatMessages.add(message);
+    }
+
+    public List<SaveGameMessageReq> getChatMessages() {
+        return chatMessages;
     }
 }
