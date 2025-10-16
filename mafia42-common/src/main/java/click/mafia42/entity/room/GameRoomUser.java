@@ -17,6 +17,8 @@ public class GameRoomUser implements Comparable<GameRoomUser> {
     private GameUserStatus status = GameUserStatus.ALIVE;
     private final Set<UUID> visibleToUserIds;
     private final Set<UUID> votedByUserIds = new HashSet<>();
+    private final boolean isProselytized = false;
+    private final boolean isContacted = false;
 
     public GameRoomUser(GameRoom gameRoom, User user) {
         this.number = gameRoom.getUserNumber();
@@ -88,5 +90,13 @@ public class GameRoomUser implements Comparable<GameRoomUser> {
 
     public void resurrection() {
         status = GameUserStatus.ALIVE;
+    }
+
+    public boolean isProselytized() {
+        return isProselytized;
+    }
+
+    public boolean isContacted() {
+        return isContacted;
     }
 }

@@ -7,16 +7,19 @@ import click.mafia42.dto.server.*;
 import click.mafia42.entity.room.GameRoom;
 import click.mafia42.entity.room.GameRoomUser;
 import click.mafia42.entity.room.GameStatus;
+import click.mafia42.entity.room.GameUserStatus;
 import click.mafia42.entity.user.User;
 import click.mafia42.exception.GlobalException;
 import click.mafia42.exception.GlobalExceptionCode;
+import click.mafia42.job.Job;
+import click.mafia42.job.JobType;
+import click.mafia42.job.mafia.Thief;
 import click.mafia42.payload.Commend;
 import click.mafia42.payload.Payload;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static click.mafia42.initializer.handler.AuthHandler.*;
 
@@ -216,15 +219,12 @@ public class GameRoomService {
         User user = ctx.channel().attr(USER).get();
         GameRoom gameRoom = gameRoomManager.findGameRoomByGameRoomUser(user)
                 .orElseThrow(() -> new GlobalException(GlobalExceptionCode.NOT_JOIN_ROOM));
+        GameRoomUser gameRoomUser = gameRoom.getPlayer(user.getId())
+                .orElseThrow(() -> new GlobalException(GlobalExceptionCode.NOT_JOIN_ROOM));
 
-        boolean allowedMorning = gameRoom.getStatus() == GameStatus.MORNING;
-        boolean allowedVoting = gameRoom.getStatus() == GameStatus.VOTING;
-        boolean isUserMostVoted = gameRoom.getMostVotedUser()
-                .map(mostVotedUser -> mostVotedUser.getUser().getId().equals(user.getId()))
-                .orElse(false);
-        boolean allowedContradict = (gameRoom.getStatus() == GameStatus.CONTRADICT) && isUserMostVoted;
+        Set<GameRoomUser> visibleChatToUsers = getVisibleChatToUsers(gameRoom, gameRoomUser);
 
-        if (!(allowedMorning || allowedVoting || allowedContradict)) {
+        if (visibleChatToUsers.isEmpty()) {
             throw new GlobalException(GlobalExceptionCode.CHATTING_NOT_ALLOWED);
         }
 
@@ -232,12 +232,76 @@ public class GameRoomService {
             throw new GlobalException(GlobalExceptionCode.GAME_NOT_STARTED);
         }
 
-        Payload payload = new Payload(
-                Commend.SAVE_GAME_MESSAGE,
-                new SaveGameMessageReq(user.getId(), request.message()));
-        sendCommendToGameRoomUsers(gameRoom, payload);
+        visibleChatToUsers.addAll(gameRoom.getPlayers().stream()
+                .filter(gUser -> gUser.getStatus() == GameUserStatus.DIE).toList());
+
+        visibleChatToUsers.forEach(gUser -> {
+            Payload payload = new Payload(
+                    Commend.SAVE_GAME_MESSAGE,
+                    new SaveGameMessageReq(user.getId(), request.message()));
+            channelManager.sendCommendToUser(gUser.getUser(), payload);
+        });
 
         return new Payload(Commend.NOTHING, null);
+    }
+
+    private Set<GameRoomUser> getVisibleChatToUsers(GameRoom gameRoom, GameRoomUser gameRoomUser) {
+        Set<GameRoomUser> visibleChatToUsers = new HashSet<>();
+
+        boolean allowedMorning = gameRoom.getStatus() == GameStatus.MORNING;
+        boolean allowedVoting = gameRoom.getStatus() == GameStatus.VOTING;
+        boolean isUserMostVoted = gameRoom.getMostVotedUser()
+                .map(mostVotedUser -> mostVotedUser.equals(gameRoomUser))
+                .orElse(false);
+        boolean allowedContradict = (gameRoom.getStatus() == GameStatus.CONTRADICT) && isUserMostVoted;
+
+        if (allowedMorning || allowedVoting || allowedContradict) {
+            visibleChatToUsers.addAll(gameRoom.getPlayers());
+        } else if (gameRoom.getStatus() == GameStatus.NIGHT) {
+            switch (gameRoomUser.getJob().getJobType()) {
+                case LOVER -> visibleChatToUsers.addAll(gameRoom.getPlayers().stream()
+                        .filter(gUser -> gUser.getJob().getJobType() == JobType.LOVER).toList());
+                case PSYCHIC -> {
+                    if (gameRoom.getDay() != 0) {
+                        visibleChatToUsers.addAll(gameRoom.getPlayers().stream()
+                                .filter(gUser -> gUser.getStatus() == GameUserStatus.DIE).toList());
+                    }
+                }
+                case MAFIA -> {
+                    List<GameRoomUser> mafiaUsers = gameRoom.getPlayers().stream()
+                            .filter(gUser -> gUser.getJob().getJobType() == JobType.MAFIA).toList();
+                    List<GameRoomUser> contactedUsers = gameRoom.getPlayers().stream()
+                            .filter(GameRoomUser::isContacted).toList();
+
+                    visibleChatToUsers.addAll(mafiaUsers);
+                    visibleChatToUsers.addAll(contactedUsers);
+                }
+                case CULT_LEADER -> visibleChatToUsers.addAll(gameRoom.getPlayers().stream()
+                        .filter(GameRoomUser::isProselytized).toList());
+                case FANATIC -> {
+                    Optional<GameRoomUser> cultLeader = gameRoom.getPlayers().stream()
+                            .filter(gUser -> gUser.getJob().getJobType() == JobType.CULT_LEADER)
+                            .findFirst();
+
+                    if (cultLeader.isEmpty()) {
+                        visibleChatToUsers.addAll(gameRoom.getPlayers().stream()
+                                .filter(GameRoomUser::isProselytized).toList());
+                    }
+                }
+                case THIEF -> {
+                    if (gameRoomUser.getJob() instanceof Thief thief) {
+                        Job stealJob = thief.getStealJob();
+
+                        if (stealJob.getJobType() == JobType.LOVER) {
+                            visibleChatToUsers.addAll(gameRoom.getPlayers().stream()
+                                    .filter(gUser -> gUser.getJob().getJobType() == JobType.LOVER).toList());
+                        }
+                    }
+                }
+            }
+        }
+
+        return visibleChatToUsers;
     }
 
     public Payload updateGameStatus(UpdateGameStatusReq updateGameStatusReq, ChannelHandlerContext ctx) {

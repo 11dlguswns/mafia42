@@ -6,6 +6,12 @@ import click.mafia42.job.JobType;
 import java.util.UUID;
 
 public class Thief implements Job {
+    private Job stealJob;
+
+    public Job getStealJob() {
+        return stealJob;
+    }
+
     @Override
     public JobType getJobType() {
         return JobType.THIEF;

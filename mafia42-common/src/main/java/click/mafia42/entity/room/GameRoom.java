@@ -29,6 +29,7 @@ public class GameRoom {
     private final Set<UUID> agreeUserIds = new HashSet<>();
     private final Set<UUID> timeControlUserIds = new HashSet<>();
     private final List<SaveGameMessageReq> chatMessages = new ArrayList<>();
+    private int day;
 
     public GameRoom(long id, String name, int maxPlayers, User manager, GameType gameType, String password) {
         this.id = id;
@@ -159,32 +160,33 @@ public class GameRoom {
             return;
         }
 
-       status = switch (status) {
-           case NIGHT -> {
-               timeControlUserIds.clear();
-               yield GameStatus.MORNING;
-           }
-           case MORNING -> GameStatus.VOTING;
-           case VOTING -> {
-               Optional<GameRoomUser> mostVotedUser = getMostVotedUser();
-               if (mostVotedUser.isEmpty()) {
-                   yield GameStatus.NIGHT;
-               }
+        status = switch (status) {
+            case NIGHT -> {
+                timeControlUserIds.clear();
+                yield GameStatus.MORNING;
+            }
+            case MORNING -> GameStatus.VOTING;
+            case VOTING -> {
+                Optional<GameRoomUser> mostVotedUser = getMostVotedUser();
+                if (mostVotedUser.isEmpty()) {
+                    yield GameStatus.NIGHT;
+                }
 
-               yield GameStatus.CONTRADICT;
-           }
-           case CONTRADICT -> GameStatus.JUDGEMENT;
-           case JUDGEMENT -> {
-               Optional<GameRoomUser> mostVotedUser = getMostVotedUser();
-               if (mostVotedUser.isPresent() && isVotePassed()) {
-                   mostVotedUser.get().die();
-               }
+                yield GameStatus.CONTRADICT;
+            }
+            case CONTRADICT -> GameStatus.JUDGEMENT;
+            case JUDGEMENT -> {
+                Optional<GameRoomUser> mostVotedUser = getMostVotedUser();
+                if (mostVotedUser.isPresent() && isVotePassed()) {
+                    mostVotedUser.get().die();
+                }
 
-               clearVotes();
-               agreeUserIds.clear();
-               yield GameStatus.NIGHT;
-           }
-       };
+                clearVotes();
+                agreeUserIds.clear();
+                day++;
+                yield GameStatus.NIGHT;
+            }
+        };
 
         endTimeSecond = Instant.now().plus(getGameTime()).getEpochSecond();
     }
@@ -263,5 +265,9 @@ public class GameRoom {
 
     public List<SaveGameMessageReq> getChatMessages() {
         return chatMessages;
+    }
+
+    public int getDay() {
+        return day;
     }
 }
