@@ -1,6 +1,8 @@
 package click.mafia42.entity.room;
 
 import click.mafia42.entity.user.User;
+import click.mafia42.exception.GlobalException;
+import click.mafia42.exception.GlobalExceptionCode;
 import click.mafia42.job.Job;
 import click.mafia42.job.Team;
 
@@ -16,9 +18,9 @@ public class GameRoomUser implements Comparable<GameRoomUser> {
     private Team team;
     private GameUserStatus status = GameUserStatus.ALIVE;
     private final Set<UUID> visibleToUserIds;
-    private final Set<UUID> votedByUserIds = new HashSet<>();
     private final boolean isProselytized = false;
     private final boolean isContacted = false;
+    private GameRoomUser voteUser;
 
     public GameRoomUser(GameRoom gameRoom, User user) {
         this.number = gameRoom.getUserNumber();
@@ -76,12 +78,8 @@ public class GameRoomUser implements Comparable<GameRoomUser> {
         userIds.forEach(this::addVisibleToUserId);
     }
 
-    public Set<UUID> getVotedByUserIds() {
-        return votedByUserIds;
-    }
-
-    public void clearVotes() {
-        votedByUserIds.clear();
+    public void clearVote() {
+        voteUser = null;
     }
 
     public void die() {
@@ -98,5 +96,17 @@ public class GameRoomUser implements Comparable<GameRoomUser> {
 
     public boolean isContacted() {
         return isContacted;
+    }
+
+    public void setVoteUser(GameRoomUser voteUser) {
+        this.voteUser = voteUser;
+    }
+
+    public GameRoomUser getVoteUser() {
+        if (status == GameUserStatus.DIE) {
+            throw new GlobalException(GlobalExceptionCode.VOTE_NOT_ALLOWED);
+        }
+
+        return voteUser;
     }
 }

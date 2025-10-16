@@ -20,6 +20,7 @@ public enum Commend {
     DECREASE_GAME_TIME(false),
     INCREASE_GAME_TIME(false),
     SEND_MESSAGE_TO_GAME(false),
+    VOTE_USER(false),
 
     // CLIENT
     CONSOLE_OUTPUT(false),

@@ -3,6 +3,7 @@ package click.mafia42.ui.game;
 import click.mafia42.Mafia42Client;
 import click.mafia42.dto.client.SaveGameRoomUserReq;
 import click.mafia42.dto.server.ExitGameRoomReq;
+import click.mafia42.dto.server.VoteUserReq;
 import click.mafia42.initializer.provider.DetailGameRoomProvider;
 import click.mafia42.initializer.provider.UserInfoProvider;
 import click.mafia42.payload.Commend;
@@ -88,7 +89,15 @@ public class GameSubPanel extends JPanel {
                     int buttonNumber = Integer.parseInt(jButton.getName());
                     if (user.number() == buttonNumber) {
                         String jobAlias = user.fetchJobAlias();
-                        jButton.setText("<html>" + user.name() + "<br>" + jobAlias + "</html>");
+
+                        String voteCountMark = getVoteCountMark(user.voteCount());
+                        jButton.setText(
+                                "<html><div style='text-align: center;'>" +
+                                        user.name() + "<br>" +
+                                        jobAlias + "<br>" +
+                                        voteCountMark +
+                                        "</div></html>"
+                        );
 
                         jButton.setActionCommand(user.id().toString());
                         jButton.setVisible(true);
@@ -101,6 +110,14 @@ public class GameSubPanel extends JPanel {
                 }
             }
         }
+    }
+
+    private String getVoteCountMark(long voteCount) {
+        StringBuilder voteCountMark = new StringBuilder("[ ");
+        for (int i = 0; i < voteCount; i++) {
+            voteCountMark.append("/");
+        }
+        return voteCountMark.append(" ]").toString();
     }
 
     private void setGameButtonPanel() {
@@ -120,7 +137,10 @@ public class GameSubPanel extends JPanel {
     }
 
     private void vote(ActionEvent e) {
-        // TODO 투표 기능
+        Payload payload = new Payload(
+                Commend.VOTE_USER,
+                new VoteUserReq(choiceUserId));
+        Mafia42Client.sendRequest(channel, payload);
     }
 
     private void skill(ActionEvent e) {

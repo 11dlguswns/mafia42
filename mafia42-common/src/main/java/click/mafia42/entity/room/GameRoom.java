@@ -165,12 +165,17 @@ public class GameRoom {
                 timeControlUserIds.clear();
                 yield GameStatus.MORNING;
             }
-            case MORNING -> GameStatus.VOTING;
+            case MORNING -> {
+                clearVotes();
+                yield GameStatus.VOTING;
+            }
             case VOTING -> {
                 Optional<GameRoomUser> mostVotedUser = getMostVotedUser();
                 if (mostVotedUser.isEmpty()) {
+                    endDayEvent();
                     yield GameStatus.NIGHT;
                 }
+
 
                 yield GameStatus.CONTRADICT;
             }
@@ -181,9 +186,7 @@ public class GameRoom {
                     mostVotedUser.get().die();
                 }
 
-                clearVotes();
-                agreeUserIds.clear();
-                day++;
+                endDayEvent();
                 yield GameStatus.NIGHT;
             }
         };
@@ -191,8 +194,14 @@ public class GameRoom {
         endTimeSecond = Instant.now().plus(getGameTime()).getEpochSecond();
     }
 
+    private void endDayEvent() {
+        clearVotes();
+        agreeUserIds.clear();
+        day++;
+    }
+
     private void clearVotes() {
-        players.forEach(GameRoomUser::clearVotes);
+        players.forEach(GameRoomUser::clearVote);
     }
 
     private boolean isVotePassed() {
@@ -200,14 +209,18 @@ public class GameRoom {
     }
 
     public Optional<GameRoomUser> getMostVotedUser() {
-        Map<Integer, List<GameRoomUser>> groupedByVotes = players.stream()
-                .collect(Collectors.groupingBy(user -> user.getVotedByUserIds().size()));
+        Map<GameRoomUser, Long> voteCountMap = players.stream()
+                .filter(p -> p.getVoteUser() != null)
+                .collect(Collectors.groupingBy(GameRoomUser::getVoteUser, Collectors.counting()));
 
-        int maxVotes = groupedByVotes.keySet().stream()
-                .max(Integer::compare)
-                .orElse(0);
+        long maxVotes = voteCountMap.values().stream()
+                .max(Long::compare)
+                .orElse(0L);
 
-        List<GameRoomUser> topUsers = groupedByVotes.getOrDefault(maxVotes, List.of());
+        List<GameRoomUser> topUsers = voteCountMap.entrySet().stream()
+                .filter(entry -> entry.getValue() == maxVotes)
+                .map(Map.Entry::getKey)
+                .toList();
 
         if (topUsers.size() != 1) {
             return Optional.empty();
@@ -269,5 +282,23 @@ public class GameRoom {
 
     public int getDay() {
         return day;
+    }
+
+    public void voteUser(GameRoomUser requestUser, GameRoomUser voteUser) {
+        if (status != GameStatus.MORNING && status != GameStatus.VOTING) {
+            throw new GlobalException(GlobalExceptionCode.VOTE_NOT_ALLOWED);
+        }
+
+        if (!isStarted) {
+            throw new GlobalException(GlobalExceptionCode.GAME_NOT_STARTED);
+        }
+
+        requestUser.setVoteUser(voteUser);
+    }
+
+    public long getUserVoteCount(GameRoomUser gameRoomUser) {
+        return players.stream()
+                .filter(gUser -> gameRoomUser.equals(gUser.getVoteUser()))
+                .count();
     }
 }

@@ -40,6 +40,7 @@ public enum GlobalExceptionCode {
     TIME_ALREADY_MODIFIED("시간이 이미 수정되었습니다."),
     TIME_MODIFICATION_NOT_ALLOWED("현재는 시간을 수정할 수 없는 상태입니다."),
     CHATTING_NOT_ALLOWED("채팅을 할 수 없는 상태입니다."),
+    VOTE_NOT_ALLOWED("투표를 할 수 없는 상태입니다."),
     ;
 
     private final String message;

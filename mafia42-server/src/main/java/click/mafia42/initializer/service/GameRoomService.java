@@ -224,7 +224,7 @@ public class GameRoomService {
 
         Set<GameRoomUser> visibleChatToUsers = getVisibleChatToUsers(gameRoom, gameRoomUser);
 
-        if (visibleChatToUsers.isEmpty()) {
+        if (gameRoomUser.getStatus() == GameUserStatus.ALIVE && visibleChatToUsers.isEmpty()) {
             throw new GlobalException(GlobalExceptionCode.CHATTING_NOT_ALLOWED);
         }
 
@@ -331,6 +331,22 @@ public class GameRoomService {
                 .orElseThrow(() -> new GlobalException(GlobalExceptionCode.NOT_JOIN_ROOM));
 
         gameRoom.decreaseGameTime(user);
+        saveGameRoomToGameRoomUsers(gameRoom);
+
+        return new Payload(Commend.NOTHING, null);
+    }
+
+    public Payload voteUser(VoteUserReq request, ChannelHandlerContext ctx) {
+        User user = ctx.channel().attr(USER).get();
+        GameRoom gameRoom = gameRoomManager.findGameRoomByGameRoomUser(user)
+                .orElseThrow(() -> new GlobalException(GlobalExceptionCode.NOT_JOIN_ROOM));
+        GameRoomUser requestUser = gameRoom.getPlayer(user.getId())
+                .orElseThrow(() -> new GlobalException(GlobalExceptionCode.NOT_JOIN_ROOM));
+        GameRoomUser voteUser = gameRoom.getPlayer(request.userId())
+                .orElseThrow(() -> new GlobalException(GlobalExceptionCode.NOT_JOIN_ROOM));
+
+        gameRoom.voteUser(requestUser, voteUser);
+
         saveGameRoomToGameRoomUsers(gameRoom);
 
         return new Payload(Commend.NOTHING, null);

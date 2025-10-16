@@ -27,9 +27,15 @@ public record SaveDetailGameRoomReq(
                 gameRoom.getMaxPlayers(),
                 gameRoom.getPlayers()
                         .stream()
-                        .map(gameRoomUser -> SaveGameRoomUserReq.from(gameRoomUser, currentUserId))
+                        .map(gameRoomUser -> SaveGameRoomUserReq.from(
+                                gameRoomUser,
+                                currentUserId,
+                                gameRoom.getUserVoteCount(gameRoomUser)))
                         .toList(),
-                SaveGameRoomUserReq.from(gameRoom.getManager(), currentUserId),
+                SaveGameRoomUserReq.from(
+                        gameRoom.getManager(),
+                        currentUserId,
+                        gameRoom.getUserVoteCount(gameRoom.getManager())),
                 gameRoom.getGameType(),
                 gameRoom.isStarted(),
                 gameRoom.getStatus(),

@@ -81,6 +81,8 @@ public class CommendHandler extends SimpleChannelInboundHandler<Payload> {
                 gameRoomService.decreaseGameTime(ValidationUtil.validationAndGet(payload.getBody(), DecreaseGameTimeReq.class), ctx);
             case SEND_MESSAGE_TO_GAME ->
                 gameRoomService.sendMessageToGame(ValidationUtil.validationAndGet(payload.getBody(), SendMessageToGameReq.class), ctx);
+            case VOTE_USER ->
+                gameRoomService.voteUser(ValidationUtil.validationAndGet(payload.getBody(), VoteUserReq.class), ctx);
             default -> {
                 throw new GlobalException(GlobalExceptionCode.UNSUPPORTED_COMMAND);
             }

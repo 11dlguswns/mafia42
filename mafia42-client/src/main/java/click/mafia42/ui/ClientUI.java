@@ -66,7 +66,7 @@ public class ClientUI {
 
     private void setFrame() {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(600, 400);
+        frame.setSize(600, 600);
 
         setUIPanel();
 
