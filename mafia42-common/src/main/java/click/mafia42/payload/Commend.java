@@ -21,6 +21,8 @@ public enum Commend {
     INCREASE_GAME_TIME(false),
     SEND_MESSAGE_TO_GAME(false),
     VOTE_USER(false),
+    VOTE_AGREE(false),
+    VOTE_DISAGREE(false),
 
     // CLIENT
     CONSOLE_OUTPUT(false),
@@ -33,7 +35,6 @@ public enum Commend {
     SAVE_GAME_ROOM_LOBBY_SYSTEM_MESSAGE(false),
     SAVE_GAME_MESSAGE(false),
     ;
-
     private final boolean isSyncReq;
 
     Commend(boolean isSyncReq) {

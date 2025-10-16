@@ -3,7 +3,10 @@ package click.mafia42.ui.game;
 import click.mafia42.Mafia42Client;
 import click.mafia42.dto.client.SaveGameRoomUserReq;
 import click.mafia42.dto.server.ExitGameRoomReq;
+import click.mafia42.dto.server.VoteAgreeReq;
+import click.mafia42.dto.server.VoteDisagreeReq;
 import click.mafia42.dto.server.VoteUserReq;
+import click.mafia42.entity.room.GameUserStatus;
 import click.mafia42.initializer.provider.DetailGameRoomProvider;
 import click.mafia42.initializer.provider.UserInfoProvider;
 import click.mafia42.payload.Commend;
@@ -15,6 +18,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class GameSubPanel extends JPanel {
@@ -100,6 +104,13 @@ public class GameSubPanel extends JPanel {
                         );
 
                         jButton.setActionCommand(user.id().toString());
+
+                        if (user.gameUserStatus() == GameUserStatus.ALIVE) {
+                            jButton.setBackground(Color.WHITE);
+                        } else {
+                            jButton.setBackground(Color.GRAY);
+                        }
+
                         jButton.setVisible(true);
                         break;
                     }
@@ -152,5 +163,37 @@ public class GameSubPanel extends JPanel {
                 Commend.EXIT_GAME_ROOM,
                 new ExitGameRoomReq());
         Mafia42Client.sendRequest(channel, payload);
+    }
+
+    public void showJudgmentVoteDialog() {
+        Optional<SaveGameRoomUserReq> mostVotedUser = DetailGameRoomProvider.detailGameRoom.fetchMostVotedUser();
+        Optional<SaveGameRoomUserReq> currentUser = DetailGameRoomProvider.detailGameRoom.getGameRoomUser(UserInfoProvider.id);
+        boolean isUserInStateDied = currentUser.isPresent() && currentUser.get().gameUserStatus() == GameUserStatus.DIE;
+
+        if (mostVotedUser.isEmpty() || isUserInStateDied) {
+            return;
+        }
+
+        int result = JOptionPane.showOptionDialog(
+                null,
+                mostVotedUser.get().name() + "님에 대한 찬반 투표",
+                "찬반 투표",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                new String[]{"찬성", "반대"},
+                null
+        );
+        if (result == JOptionPane.YES_OPTION) {
+            Payload payload = new Payload(
+                    Commend.VOTE_AGREE,
+                    new VoteAgreeReq());
+            Mafia42Client.sendRequest(channel, payload);
+        } else if (result == JOptionPane.NO_OPTION) {
+            Payload payload = new Payload(
+                    Commend.VOTE_DISAGREE,
+                    new VoteDisagreeReq());
+            Mafia42Client.sendRequest(channel, payload);
+        }
     }
 }

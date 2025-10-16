@@ -26,7 +26,6 @@ public class GameRoom {
     private final AtomicInteger nextNumber = new AtomicInteger(1);
     private GameStatus status;
     private long endTimeSecond;
-    private final Set<UUID> agreeUserIds = new HashSet<>();
     private final Set<UUID> timeControlUserIds = new HashSet<>();
     private final List<SaveGameMessageReq> chatMessages = new ArrayList<>();
     private int day;
@@ -196,21 +195,34 @@ public class GameRoom {
 
     private void endDayEvent() {
         clearVotes();
-        agreeUserIds.clear();
+        clearAgreeUser();
+        clearBlackMailed();
         day++;
+    }
+
+    private void clearBlackMailed() {
+        players.forEach(GameRoomUser::clearBlackmailed);
+    }
+
+    private void clearAgreeUser() {
+        players.forEach(GameRoomUser::clearAgree);
     }
 
     private void clearVotes() {
         players.forEach(GameRoomUser::clearVote);
     }
 
+    private long getAgreeUserCount() {
+        return players.stream().filter(GameRoomUser::isVoteAgree).count();
+    }
+
     private boolean isVotePassed() {
-        return agreeUserIds.size() > getAlivePlayerCount() / 2;
+        return getAgreeUserCount() > getVoteAllowedPlayerCount() / 2;
     }
 
     public Optional<GameRoomUser> getMostVotedUser() {
         Map<GameRoomUser, Long> voteCountMap = players.stream()
-                .filter(p -> p.getVoteUser() != null)
+                .filter(gUser -> gUser.getVoteUser() != null)
                 .collect(Collectors.groupingBy(GameRoomUser::getVoteUser, Collectors.counting()));
 
         long maxVotes = voteCountMap.values().stream()
@@ -244,6 +256,15 @@ public class GameRoom {
     private long getAlivePlayerCount() {
         return players.stream()
                 .filter(gameRoomUser -> gameRoomUser.getStatus() == GameUserStatus.ALIVE).count();
+    }
+
+    private long getVoteAllowedPlayerCount() {
+        return players.stream()
+                .filter(gameRoomUser -> {
+                    boolean isAlive = gameRoomUser.getStatus() == GameUserStatus.ALIVE;
+                    boolean isNotBlackmailed = !gameRoomUser.isBlackmailed();
+                    return isAlive && isNotBlackmailed;
+                }).count();
     }
 
     public void increaseGameTime(User user) {
@@ -289,6 +310,10 @@ public class GameRoom {
             throw new GlobalException(GlobalExceptionCode.VOTE_NOT_ALLOWED);
         }
 
+        if (voteUser.getStatus() == GameUserStatus.DIE) {
+            throw new GlobalException(GlobalExceptionCode.VOTE_TARGET_DEAD_NOT_ALLOWED);
+        }
+
         if (!isStarted) {
             throw new GlobalException(GlobalExceptionCode.GAME_NOT_STARTED);
         }
@@ -300,5 +325,29 @@ public class GameRoom {
         return players.stream()
                 .filter(gUser -> gameRoomUser.equals(gUser.getVoteUser()))
                 .count();
+    }
+
+    public void voteAgree(GameRoomUser gameRoomUser) {
+        if (status != GameStatus.JUDGEMENT) {
+            throw new GlobalException(GlobalExceptionCode.VOTE_AGREE_OR_DISAGREE_NOT_ALLOWED);
+        }
+
+        if (!isStarted) {
+            throw new GlobalException(GlobalExceptionCode.GAME_NOT_STARTED);
+        }
+
+        gameRoomUser.voteAgree();
+    }
+
+    public void voteDisagree(GameRoomUser gameRoomUser) {
+        if (status != GameStatus.JUDGEMENT) {
+            throw new GlobalException(GlobalExceptionCode.VOTE_AGREE_OR_DISAGREE_NOT_ALLOWED);
+        }
+
+        if (!isStarted) {
+            throw new GlobalException(GlobalExceptionCode.GAME_NOT_STARTED);
+        }
+
+        gameRoomUser.voteDisagree();
     }
 }

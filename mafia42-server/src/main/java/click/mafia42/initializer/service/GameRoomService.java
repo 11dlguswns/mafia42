@@ -222,10 +222,14 @@ public class GameRoomService {
         GameRoomUser gameRoomUser = gameRoom.getPlayer(user.getId())
                 .orElseThrow(() -> new GlobalException(GlobalExceptionCode.NOT_JOIN_ROOM));
 
-        Set<GameRoomUser> visibleChatToUsers = getVisibleChatToUsers(gameRoom, gameRoomUser);
+        Set<GameRoomUser> visibleChatToUsers = new HashSet<>();
 
-        if (gameRoomUser.getStatus() == GameUserStatus.ALIVE && visibleChatToUsers.isEmpty()) {
-            throw new GlobalException(GlobalExceptionCode.CHATTING_NOT_ALLOWED);
+        if (gameRoomUser.getStatus() == GameUserStatus.ALIVE) {
+            visibleChatToUsers.addAll(getVisibleChatToUsers(gameRoom, gameRoomUser));
+
+            if (visibleChatToUsers.isEmpty()) {
+                throw new GlobalException(GlobalExceptionCode.CHATTING_NOT_ALLOWED);
+            }
         }
 
         if (!gameRoom.isStarted()) {
@@ -348,6 +352,30 @@ public class GameRoomService {
         gameRoom.voteUser(requestUser, voteUser);
 
         saveGameRoomToGameRoomUsers(gameRoom);
+
+        return new Payload(Commend.NOTHING, null);
+    }
+
+    public Payload voteAgree(VoteAgreeReq request, ChannelHandlerContext ctx) {
+        User user = ctx.channel().attr(USER).get();
+        GameRoom gameRoom = gameRoomManager.findGameRoomByGameRoomUser(user)
+                .orElseThrow(() -> new GlobalException(GlobalExceptionCode.NOT_JOIN_ROOM));
+        GameRoomUser gameRoomUser = gameRoom.getPlayer(user.getId())
+                .orElseThrow(() -> new GlobalException(GlobalExceptionCode.NOT_JOIN_ROOM));
+
+        gameRoom.voteAgree(gameRoomUser);
+
+        return new Payload(Commend.NOTHING, null);
+    }
+
+    public Payload voteDisagree(VoteDisagreeReq request, ChannelHandlerContext ctx) {
+        User user = ctx.channel().attr(USER).get();
+        GameRoom gameRoom = gameRoomManager.findGameRoomByGameRoomUser(user)
+                .orElseThrow(() -> new GlobalException(GlobalExceptionCode.NOT_JOIN_ROOM));
+        GameRoomUser gameRoomUser = gameRoom.getPlayer(user.getId())
+                .orElseThrow(() -> new GlobalException(GlobalExceptionCode.NOT_JOIN_ROOM));
+
+        gameRoom.voteDisagree(gameRoomUser);
 
         return new Payload(Commend.NOTHING, null);
     }

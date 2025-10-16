@@ -64,7 +64,7 @@ public class GamePanel extends JPanel {
                     ((Timer)e.getSource()).stop();
                 }
 
-                if (TimeUtil.isTimeOver(DetailGameRoomProvider.detailGameRoom.endTimeSecond())) {
+                if (DetailGameRoomProvider.detailGameRoom != null && TimeUtil.isTimeOver(DetailGameRoomProvider.detailGameRoom.endTimeSecond())) {
                     Payload payload = new Payload(Commend.UPDATE_GAME_STATUS, new UpdateGameStatusReq());
                     Mafia42Client.sendRequest(channel, payload);
 

@@ -3,6 +3,7 @@ package click.mafia42.initializer.service;
 import click.mafia42.Mafia42Client;
 import click.mafia42.dto.client.*;
 import click.mafia42.dto.server.FetchGameRoomsReq;
+import click.mafia42.entity.room.GameStatus;
 import click.mafia42.exception.GlobalException;
 import click.mafia42.exception.GlobalExceptionCode;
 import click.mafia42.initializer.provider.DetailGameRoomProvider;
@@ -24,6 +25,10 @@ public class GameRoomService {
             clientUI.setCardLayout(ClientPage.GAME);
 
             clientUI.getGameSubPanel().updateGameLobbyUserChoicePanel();
+
+            if (request.gameStatus() == GameStatus.JUDGEMENT) {
+                clientUI.getGameSubPanel().showJudgmentVoteDialog();
+            }
         } else {
             clientUI.setCardLayout(ClientPage.GAME_ROOM_LOBBY);
 

@@ -21,6 +21,8 @@ public class GameRoomUser implements Comparable<GameRoomUser> {
     private final boolean isProselytized = false;
     private final boolean isContacted = false;
     private GameRoomUser voteUser;
+    private Boolean voteAgree;
+    private boolean isBlackmailed = false;
 
     public GameRoomUser(GameRoom gameRoom, User user) {
         this.number = gameRoom.getUserNumber();
@@ -99,14 +101,62 @@ public class GameRoomUser implements Comparable<GameRoomUser> {
     }
 
     public void setVoteUser(GameRoomUser voteUser) {
-        this.voteUser = voteUser;
-    }
-
-    public GameRoomUser getVoteUser() {
         if (status == GameUserStatus.DIE) {
             throw new GlobalException(GlobalExceptionCode.VOTE_NOT_ALLOWED);
         }
 
+        this.voteUser = voteUser;
+    }
+
+    public GameRoomUser getVoteUser() {
         return voteUser;
+    }
+
+    public void voteAgree() {
+        if (voteAgree != null) {
+            throw new GlobalException(GlobalExceptionCode.VOTE_AGREE_OR_DISAGREE_NOT_ALLOWED);
+        }
+
+        if (status == GameUserStatus.DIE) {
+            throw new GlobalException(GlobalExceptionCode.VOTE_AGREE_OR_DISAGREE_NOT_ALLOWED);
+        }
+
+        voteAgree = true;
+    }
+
+    public void voteDisagree() {
+        if (voteAgree != null) {
+            throw new GlobalException(GlobalExceptionCode.VOTE_AGREE_OR_DISAGREE_NOT_ALLOWED);
+        }
+
+        if (status == GameUserStatus.DIE) {
+            throw new GlobalException(GlobalExceptionCode.VOTE_AGREE_OR_DISAGREE_NOT_ALLOWED);
+        }
+
+        voteAgree = false;
+    }
+
+    public boolean isVoteAgree() {
+        if (voteAgree == null) {
+            return false;
+        }
+
+        return voteAgree;
+    }
+
+    public void clearAgree() {
+        voteAgree = null;
+    }
+
+    public void blackmailed() {
+        isBlackmailed = true;
+    }
+
+    public void clearBlackmailed() {
+        isBlackmailed = false;
+    }
+
+    public boolean isBlackmailed() {
+        return isBlackmailed;
     }
 }

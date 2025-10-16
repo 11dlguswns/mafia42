@@ -41,6 +41,8 @@ public enum GlobalExceptionCode {
     TIME_MODIFICATION_NOT_ALLOWED("현재는 시간을 수정할 수 없는 상태입니다."),
     CHATTING_NOT_ALLOWED("채팅을 할 수 없는 상태입니다."),
     VOTE_NOT_ALLOWED("투표를 할 수 없는 상태입니다."),
+    VOTE_TARGET_DEAD_NOT_ALLOWED("죽은 대상을 투표할 수 없습니다."),
+    VOTE_AGREE_OR_DISAGREE_NOT_ALLOWED("찬성 반대 투표를 할 수 없는 상태입니다."),
     ;
 
     private final String message;

@@ -5,8 +5,10 @@ import click.mafia42.entity.room.GameStatus;
 import click.mafia42.entity.room.GameType;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public record SaveDetailGameRoomReq(
         long id,
@@ -46,5 +48,25 @@ public record SaveDetailGameRoomReq(
 
     public Optional<SaveGameRoomUserReq> getGameRoomUser(UUID userId) {
         return users.stream().filter(user -> user.id().equals(userId)).findFirst();
+    }
+
+    public Optional<SaveGameRoomUserReq> fetchMostVotedUser() {
+        Map<SaveGameRoomUserReq, Long> voteCountMap = users.stream()
+                .collect(Collectors.toMap(gUser -> gUser, SaveGameRoomUserReq::voteCount));
+
+        long maxVotes = voteCountMap.values().stream()
+                .max(Long::compare)
+                .orElse(0L);
+
+        List<SaveGameRoomUserReq> topUsers = voteCountMap.entrySet().stream()
+                .filter(entry -> entry.getValue() == maxVotes)
+                .map(Map.Entry::getKey)
+                .toList();
+
+        if (topUsers.size() != 1) {
+            return Optional.empty();
+        }
+
+        return Optional.of(topUsers.getFirst());
     }
 }
