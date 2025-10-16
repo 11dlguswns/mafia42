@@ -19,8 +19,7 @@ public record SaveDetailGameRoomReq(
         GameType gameType,
         boolean isStarted,
         GameStatus gameStatus,
-        long endTimeSecond,
-        List<SaveGameMessageReq> chatMessages
+        long endTimeSecond
 ) {
     public static SaveDetailGameRoomReq from(GameRoom gameRoom, UUID currentUserId) {
         return new SaveDetailGameRoomReq(
@@ -41,8 +40,7 @@ public record SaveDetailGameRoomReq(
                 gameRoom.getGameType(),
                 gameRoom.isStarted(),
                 gameRoom.getStatus(),
-                gameRoom.getEndTimeSecond(),
-                gameRoom.getChatMessages()
+                gameRoom.getEndTimeSecond()
         );
     }
 

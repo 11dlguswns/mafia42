@@ -4,6 +4,7 @@ import java.util.UUID;
 
 public record SaveGameMessageReq(
         UUID userId,
-        String message
+        String message,
+        MessageType messageType
 ) {
 }

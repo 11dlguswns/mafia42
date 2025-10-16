@@ -1,11 +1,7 @@
 package click.mafia42.ui.game;
 
 import click.mafia42.Mafia42Client;
-import click.mafia42.dto.client.SaveGameMessageReq;
-import click.mafia42.dto.client.SaveGameRoomUserReq;
 import click.mafia42.dto.server.*;
-import click.mafia42.exception.GlobalException;
-import click.mafia42.exception.GlobalExceptionCode;
 import click.mafia42.initializer.provider.DetailGameRoomProvider;
 import click.mafia42.payload.Commend;
 import click.mafia42.payload.Payload;
@@ -13,6 +9,10 @@ import click.mafia42.util.TimeUtil;
 import io.netty.channel.Channel;
 
 import javax.swing.*;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Style;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 
@@ -24,7 +24,7 @@ public class GamePanel extends JPanel {
     private Timer timer;
 
     private final JScrollPane chatPane;
-    private final JTextArea chatArea = new JTextArea();
+    private final JTextPane chatArea = new JTextPane();
 
     private final JTextField chatInput = new JTextField();
 
@@ -117,21 +117,15 @@ public class GamePanel extends JPanel {
         }
     }
 
-    public void chatAreaAppendText(String text) {
-        chatArea.append(text + "\n");
-    }
+    public void chatAreaAppendText(String text, Color color) {
+        StyledDocument doc = chatArea.getStyledDocument();
+        Style style = chatArea.addStyle("colorStyle", null);
+        StyleConstants.setForeground(style, color);
 
-    public void updateChatArea() {
-        chatArea.setText("");
-        for (SaveGameMessageReq chatMessage : DetailGameRoomProvider.detailGameRoom.chatMessages()) {
-
-            SaveGameRoomUserReq gameRoomUser = DetailGameRoomProvider.detailGameRoom.getGameRoomUser(chatMessage.userId())
-                    .orElseThrow(() -> new GlobalException(GlobalExceptionCode.NOT_JOIN_ROOM));
-
-            chatArea.append(String.format("[%s] %s | %s\n",
-                    gameRoomUser.fetchJobAlias(),
-                    gameRoomUser.name(),
-                    chatMessage.message()));
+        try {
+            doc.insertString(doc.getLength(), text + "\n", style);
+        } catch (BadLocationException e) {
+            e.printStackTrace();
         }
     }
 }

@@ -7,19 +7,23 @@ import click.mafia42.payload.Payload;
 import io.netty.channel.Channel;
 
 import javax.swing.*;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Style;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 
 public class GameLobbyPanel extends JPanel {
     private final Channel channel;
-    private final JTextArea chatArea;
+    private final JTextPane chatArea;
     private final JTextField chatInput;
 
     public GameLobbyPanel(Channel channel) {
         this.channel = channel;
         this.setLayout(new BorderLayout());
 
-        chatArea = new JTextArea();
+        chatArea = new JTextPane();
         chatArea.setEditable(false);
         JScrollPane scrollPane = new JScrollPane(chatArea);
 
@@ -47,8 +51,16 @@ public class GameLobbyPanel extends JPanel {
         }
     }
 
-    public void chatAreaAppendText(String text) {
-        chatArea.append(text + "\n");
+    public void chatAreaAppendText(String text, Color color) {
+        StyledDocument doc = chatArea.getStyledDocument();
+        Style style = chatArea.addStyle("colorStyle", null);
+        StyleConstants.setForeground(style, color);
+
+        try {
+            doc.insertString(doc.getLength(), text + "\n", style);
+        } catch (BadLocationException e) {
+            e.printStackTrace();
+        }
     }
 
     public void clearChatArea() {

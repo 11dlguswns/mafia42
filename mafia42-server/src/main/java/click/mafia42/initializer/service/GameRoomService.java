@@ -19,9 +19,12 @@ import click.mafia42.payload.Payload;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
-import static click.mafia42.initializer.handler.AuthHandler.*;
+import static click.mafia42.initializer.handler.AuthHandler.USER;
 
 public class GameRoomService {
     private final GameRoomManager gameRoomManager;
@@ -222,15 +225,8 @@ public class GameRoomService {
         GameRoomUser gameRoomUser = gameRoom.getPlayer(user.getId())
                 .orElseThrow(() -> new GlobalException(GlobalExceptionCode.NOT_JOIN_ROOM));
 
-        Set<GameRoomUser> visibleChatToUsers = new HashSet<>();
-
-        if (gameRoomUser.getStatus() == GameUserStatus.ALIVE) {
-            visibleChatToUsers.addAll(getVisibleChatToUsers(gameRoom, gameRoomUser));
-
-            if (visibleChatToUsers.isEmpty()) {
-                throw new GlobalException(GlobalExceptionCode.CHATTING_NOT_ALLOWED);
-            }
-        }
+        MessageType messageType = getMessageType(gameRoom, gameRoomUser);
+        Set<GameRoomUser> visibleChatToUsers = new HashSet<>(getVisibleChatToUsers(gameRoom, messageType));
 
         if (!gameRoom.isStarted()) {
             throw new GlobalException(GlobalExceptionCode.GAME_NOT_STARTED);
@@ -239,57 +235,63 @@ public class GameRoomService {
         visibleChatToUsers.addAll(gameRoom.getPlayers().stream()
                 .filter(gUser -> gUser.getStatus() == GameUserStatus.DIE).toList());
 
+        SaveGameMessageReq saveGameMessageReq = new SaveGameMessageReq(user.getId(), request.message(), messageType);
+        gameRoom.addGameMessage(saveGameMessageReq, visibleChatToUsers);
+        Payload payload = new Payload(
+                Commend.SAVE_GAME_MESSAGE,
+                saveGameMessageReq);
+
         visibleChatToUsers.forEach(gUser -> {
-            Payload payload = new Payload(
-                    Commend.SAVE_GAME_MESSAGE,
-                    new SaveGameMessageReq(user.getId(), request.message()));
             channelManager.sendCommendToUser(gUser.getUser(), payload);
         });
 
         return new Payload(Commend.NOTHING, null);
     }
 
-    private Set<GameRoomUser> getVisibleChatToUsers(GameRoom gameRoom, GameRoomUser gameRoomUser) {
-        Set<GameRoomUser> visibleChatToUsers = new HashSet<>();
+    private MessageType getMessageType(GameRoom gameRoom, GameRoomUser gameRoomUser) {
+        if (gameRoomUser.getStatus() == GameUserStatus.DIE) {
+            return MessageType.DIE;
+        }
 
-        boolean allowedMorning = gameRoom.getStatus() == GameStatus.MORNING;
-        boolean allowedVoting = gameRoom.getStatus() == GameStatus.VOTING;
-        boolean isUserMostVoted = gameRoom.getMostVotedUser()
-                .map(mostVotedUser -> mostVotedUser.equals(gameRoomUser))
-                .orElse(false);
-        boolean allowedContradict = (gameRoom.getStatus() == GameStatus.CONTRADICT) && isUserMostVoted;
+        if (gameRoom.getStatus() == GameStatus.MORNING || gameRoom.getStatus() == GameStatus.VOTING) {
+            return MessageType.ALL;
+        }
 
-        if (allowedMorning || allowedVoting || allowedContradict) {
-            visibleChatToUsers.addAll(gameRoom.getPlayers());
-        } else if (gameRoom.getStatus() == GameStatus.NIGHT) {
+        if (gameRoom.getStatus() == GameStatus.CONTRADICT) {
+            boolean isUserMostVoted = gameRoom.getMostVotedUser()
+                    .map(mostVotedUser -> mostVotedUser.equals(gameRoomUser))
+                    .orElse(false);
+
+            if (isUserMostVoted) {
+                return MessageType.ALL;
+            }
+
+            throw new GlobalException(GlobalExceptionCode.CHATTING_NOT_ALLOWED);
+        }
+
+        if (gameRoom.getStatus() == GameStatus.NIGHT) {
             switch (gameRoomUser.getJob().getJobType()) {
-                case LOVER -> visibleChatToUsers.addAll(gameRoom.getPlayers().stream()
-                        .filter(gUser -> gUser.getJob().getJobType() == JobType.LOVER).toList());
+                case LOVER -> {
+                    return MessageType.LOVER;
+                }
                 case PSYCHIC -> {
                     if (gameRoom.getDay() != 0) {
-                        visibleChatToUsers.addAll(gameRoom.getPlayers().stream()
-                                .filter(gUser -> gUser.getStatus() == GameUserStatus.DIE).toList());
+                        return MessageType.PSYCHIC;
                     }
                 }
                 case MAFIA -> {
-                    List<GameRoomUser> mafiaUsers = gameRoom.getPlayers().stream()
-                            .filter(gUser -> gUser.getJob().getJobType() == JobType.MAFIA).toList();
-                    List<GameRoomUser> contactedUsers = gameRoom.getPlayers().stream()
-                            .filter(GameRoomUser::isContacted).toList();
-
-                    visibleChatToUsers.addAll(mafiaUsers);
-                    visibleChatToUsers.addAll(contactedUsers);
+                    return MessageType.MAFIA;
                 }
-                case CULT_LEADER -> visibleChatToUsers.addAll(gameRoom.getPlayers().stream()
-                        .filter(GameRoomUser::isProselytized).toList());
+                case CULT_LEADER -> {
+                    return MessageType.CULT;
+                }
                 case FANATIC -> {
                     Optional<GameRoomUser> cultLeader = gameRoom.getPlayers().stream()
                             .filter(gUser -> gUser.getJob().getJobType() == JobType.CULT_LEADER)
                             .findFirst();
 
                     if (cultLeader.isEmpty()) {
-                        visibleChatToUsers.addAll(gameRoom.getPlayers().stream()
-                                .filter(GameRoomUser::isProselytized).toList());
+                        return MessageType.CULT;
                     }
                 }
                 case THIEF -> {
@@ -297,12 +299,38 @@ public class GameRoomService {
                         Job stealJob = thief.getStealJob();
 
                         if (stealJob.getJobType() == JobType.LOVER) {
-                            visibleChatToUsers.addAll(gameRoom.getPlayers().stream()
-                                    .filter(gUser -> gUser.getJob().getJobType() == JobType.LOVER).toList());
+                            return MessageType.LOVER;
                         }
                     }
                 }
             }
+
+            throw new GlobalException(GlobalExceptionCode.CHATTING_NOT_ALLOWED);
+        }
+
+        throw new GlobalException(GlobalExceptionCode.CHATTING_NOT_ALLOWED);
+    }
+
+    private Set<GameRoomUser> getVisibleChatToUsers(GameRoom gameRoom, MessageType messageType) {
+        Set<GameRoomUser> visibleChatToUsers = new HashSet<>();
+
+        switch (messageType) {
+            case ALL -> visibleChatToUsers.addAll(gameRoom.getPlayers());
+            case LOVER -> visibleChatToUsers.addAll(gameRoom.getPlayers().stream()
+                    .filter(gUser -> gUser.getJob().getJobType() == JobType.LOVER).toList());
+            case PSYCHIC, DIE -> visibleChatToUsers.addAll(gameRoom.getPlayers().stream()
+                    .filter(gUser -> gUser.getStatus() == GameUserStatus.DIE).toList());
+            case MAFIA -> {
+                List<GameRoomUser> mafiaUsers = gameRoom.getPlayers().stream()
+                        .filter(gUser -> gUser.getJob().getJobType() == JobType.MAFIA).toList();
+                List<GameRoomUser> contactedUsers = gameRoom.getPlayers().stream()
+                        .filter(GameRoomUser::isContacted).toList();
+
+                visibleChatToUsers.addAll(mafiaUsers);
+                visibleChatToUsers.addAll(contactedUsers);
+            }
+            case CULT -> visibleChatToUsers.addAll(gameRoom.getPlayers().stream()
+                    .filter(GameRoomUser::isProselytized).toList());
         }
 
         return visibleChatToUsers;

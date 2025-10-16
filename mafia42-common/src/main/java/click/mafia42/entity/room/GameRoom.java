@@ -27,7 +27,7 @@ public class GameRoom {
     private GameStatus status;
     private long endTimeSecond;
     private final Set<UUID> timeControlUserIds = new HashSet<>();
-    private final List<SaveGameMessageReq> chatMessages = new ArrayList<>();
+    private final List<GameMessageDto> gameMessages = new ArrayList<>();
     private int day;
 
     public GameRoom(long id, String name, int maxPlayers, User manager, GameType gameType, String password) {
@@ -293,12 +293,12 @@ public class GameRoom {
         timeControlUserIds.add(user.getId());
     }
 
-    public void addChatMessage(SaveGameMessageReq message) {
-        chatMessages.add(message);
+    public void addGameMessage(SaveGameMessageReq message, Set<GameRoomUser> visibleChatToUsers) {
+        gameMessages.add(new GameMessageDto(message, visibleChatToUsers));
     }
 
-    public List<SaveGameMessageReq> getChatMessages() {
-        return chatMessages;
+    public List<GameMessageDto> getChatMessages() {
+        return gameMessages;
     }
 
     public int getDay() {

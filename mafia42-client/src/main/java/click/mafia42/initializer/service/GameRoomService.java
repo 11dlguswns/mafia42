@@ -14,6 +14,8 @@ import click.mafia42.ui.ClientUI;
 import click.mafia42.ui.GameRoomRole;
 import io.netty.channel.ChannelHandlerContext;
 
+import java.awt.*;
+
 public class GameRoomService {
     private final ClientUI clientUI = ClientUI.getInstance();
 
@@ -65,7 +67,7 @@ public class GameRoomService {
         SaveGameRoomUserReq gameRoomUser = DetailGameRoomProvider.detailGameRoom.getGameRoomUser(request.userId())
                 .orElseThrow(() -> new GlobalException(GlobalExceptionCode.NOT_JOIN_ROOM));
 
-        clientUI.getGameLobbyPanel().chatAreaAppendText(gameRoomUser.name() + " | " + request.message());
+        clientUI.getGameLobbyPanel().chatAreaAppendText(gameRoomUser.name() + " | " + request.message(), Color.BLACK);
     }
 
     public void saveGameRoomLobbySystemMessage(SaveGameRoomLobbySystemMessageReq request) {
@@ -73,7 +75,7 @@ public class GameRoomService {
             throw new GlobalException(GlobalExceptionCode.NOT_JOIN_ROOM);
         }
 
-        clientUI.getGameLobbyPanel().chatAreaAppendText("< " + request.message() + " >");
+        clientUI.getGameLobbyPanel().chatAreaAppendText("< " + request.message() + " >", Color.DARK_GRAY);
     }
 
     public void saveGameMessage(SaveGameMessageReq request) {
@@ -84,9 +86,10 @@ public class GameRoomService {
         SaveGameRoomUserReq gameRoomUser = DetailGameRoomProvider.detailGameRoom.getGameRoomUser(request.userId())
                 .orElseThrow(() -> new GlobalException(GlobalExceptionCode.NOT_JOIN_ROOM));
 
-        clientUI.getGamePanel().chatAreaAppendText(String.format("[%s] %s | %s",
-                gameRoomUser.fetchJobAlias(),
-                gameRoomUser.name(),
-                request.message()));
+        clientUI.getGamePanel().chatAreaAppendText(
+                String.format("[%s] %s | %s",
+                        gameRoomUser.fetchJobAlias(),
+                        gameRoomUser.name(),
+                        request.message()), request.messageType().getColor());
     }
 }
