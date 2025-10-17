@@ -24,7 +24,7 @@ public class GameRoom {
     private boolean isStarted = false;
     private final PriorityQueue<Integer> freeNumbers = new PriorityQueue<>(12);
     private final AtomicInteger nextNumber = new AtomicInteger(1);
-    private GameStatus status;
+    private volatile GameStatus status;
     private long endTimeSecond;
     private final Set<UUID> timeControlUserIds = new HashSet<>();
     private final List<GameMessageDto> gameMessages = new ArrayList<>();
@@ -146,58 +146,49 @@ public class GameRoom {
     }
 
     public void initStatus() {
+        if (status != null) {
+            throw new GlobalException(GlobalExceptionCode.GAME_ALREADY_STARTED);
+        }
+
         status = GameStatus.NIGHT;
         endTimeSecond = Instant.now().plus(getGameTime()).getEpochSecond();
     }
 
-    public synchronized void updateStatus() {
-        if (status == null) {
-            return;
-        }
-
+    public synchronized boolean updateStatus() {
         if (!TimeUtil.isTimeOver(endTimeSecond)) {
-            return;
+            return false;
         }
 
         status = switch (status) {
-            case NIGHT -> {
-                timeControlUserIds.clear();
-                yield GameStatus.MORNING;
-            }
-            case MORNING -> {
-                clearVotes();
-                yield GameStatus.VOTING;
-            }
+            case NIGHT -> GameStatus.MORNING;
+            case MORNING -> GameStatus.VOTING;
             case VOTING -> {
                 Optional<GameRoomUser> mostVotedUser = getMostVotedUser();
                 if (mostVotedUser.isEmpty()) {
-                    endDayEvent();
                     yield GameStatus.NIGHT;
                 }
-
 
                 yield GameStatus.CONTRADICT;
             }
             case CONTRADICT -> GameStatus.JUDGEMENT;
-            case JUDGEMENT -> {
-                Optional<GameRoomUser> mostVotedUser = getMostVotedUser();
-                if (mostVotedUser.isPresent() && isVotePassed()) {
-                    mostVotedUser.get().die();
-                }
-
-                endDayEvent();
-                yield GameStatus.NIGHT;
-            }
+            case JUDGEMENT -> GameStatus.NIGHT;
         };
 
         endTimeSecond = Instant.now().plus(getGameTime()).getEpochSecond();
+        return true;
     }
 
-    private void endDayEvent() {
+    public void endDayEvent() {
+        clearTimeControlUserIds();
         clearVotes();
         clearAgreeUser();
         clearBlackMailed();
+
         day++;
+    }
+
+    public void clearTimeControlUserIds() {
+        timeControlUserIds.clear();
     }
 
     private void clearBlackMailed() {
@@ -208,7 +199,7 @@ public class GameRoom {
         players.forEach(GameRoomUser::clearAgree);
     }
 
-    private void clearVotes() {
+    public void clearVotes() {
         players.forEach(GameRoomUser::clearVote);
     }
 
@@ -216,7 +207,7 @@ public class GameRoom {
         return players.stream().filter(GameRoomUser::isVoteAgree).count();
     }
 
-    private boolean isVotePassed() {
+    public boolean isVotePassed() {
         return getAgreeUserCount() > getVoteAllowedPlayerCount() / 2;
     }
 

@@ -152,6 +152,7 @@ public class GameRoomService {
         }
 
         gameRoomManager.startGame(gameRoom);
+        sendGameSystemMessageToGameRoomUsers(gameRoom, "밤이 되었습니다");
 
         saveGameRoomToGameRoomUsers(gameRoom);
 
@@ -311,6 +312,16 @@ public class GameRoomService {
         throw new GlobalException(GlobalExceptionCode.CHATTING_NOT_ALLOWED);
     }
 
+    public void sendGameSystemMessageToGameRoomUsers(GameRoom gameRoom, String message) {
+        SaveGameMessageReq saveGameMessageReq = new SaveGameMessageReq(null, message, MessageType.SYSTEM);
+        gameRoom.addGameMessage(saveGameMessageReq, gameRoom.getPlayers());
+
+        Payload payload = new Payload(
+                Commend.SAVE_GAME_MESSAGE,
+                saveGameMessageReq);
+        sendCommendToGameRoomUsers(gameRoom, payload);
+    }
+
     private Set<GameRoomUser> getVisibleChatToUsers(GameRoom gameRoom, MessageType messageType) {
         Set<GameRoomUser> visibleChatToUsers = new HashSet<>();
 
@@ -341,7 +352,40 @@ public class GameRoomService {
         GameRoom gameRoom = gameRoomManager.findGameRoomByGameRoomUser(user)
                 .orElseThrow(() -> new GlobalException(GlobalExceptionCode.NOT_JOIN_ROOM));
 
-        gameRoom.updateStatus();
+        if (!gameRoom.updateStatus()) {
+            return new Payload(Commend.SAVE_GAME_ROOM, SaveDetailGameRoomReq.from(gameRoom, user.getId()));
+        }
+
+        switch (gameRoom.getStatus()) {
+            case NIGHT -> {
+                Optional<GameRoomUser> mostVotedUserOptional = gameRoom.getMostVotedUser();
+                if (mostVotedUserOptional.isPresent()) {
+                    if (gameRoom.isVotePassed()) {
+                        GameRoomUser mostVotedUser = mostVotedUserOptional.get();
+                        mostVotedUser.die();
+                        sendGameSystemMessageToGameRoomUsers(gameRoom, mostVotedUser.getUser().getNickname() + "님이 처형당했습니다.");
+                    } else {
+                        sendGameSystemMessageToGameRoomUsers(gameRoom, "투표가 부결되었습니다.");
+                    }
+                }
+
+                gameRoom.endDayEvent();
+                sendGameSystemMessageToGameRoomUsers(gameRoom, "밤이 되었습니다");
+            }
+            case MORNING -> sendGameSystemMessageToGameRoomUsers(gameRoom, "아침이 밝았습니다");
+            case VOTING -> {
+                gameRoom.clearVotes();
+                sendGameSystemMessageToGameRoomUsers(gameRoom, "투표시간이 되었습니다");
+            }
+            case CONTRADICT -> {
+                GameRoomUser gameRoomUser = gameRoom.getMostVotedUser().get();
+                sendGameSystemMessageToGameRoomUsers(gameRoom, gameRoomUser.getUser().getNickname() + "님의 최후의 반론");
+            }
+            case JUDGEMENT -> {
+                GameRoomUser gameRoomUser = gameRoom.getMostVotedUser().get();
+                sendGameSystemMessageToGameRoomUsers(gameRoom, gameRoomUser.getUser().getNickname() + "님에 대한 찬반 투표");
+            }
+        }
 
         return new Payload(Commend.SAVE_GAME_ROOM, SaveDetailGameRoomReq.from(gameRoom, user.getId()));
     }
@@ -354,6 +398,8 @@ public class GameRoomService {
         gameRoom.increaseGameTime(user);
         saveGameRoomToGameRoomUsers(gameRoom);
 
+        sendGameSystemMessageToGameRoomUsers(gameRoom, user.getNickname() + "님이 시간을 증가시켰습니다.");
+
         return new Payload(Commend.NOTHING, null);
     }
 
@@ -364,6 +410,8 @@ public class GameRoomService {
 
         gameRoom.decreaseGameTime(user);
         saveGameRoomToGameRoomUsers(gameRoom);
+
+        sendGameSystemMessageToGameRoomUsers(gameRoom, user.getNickname() + "님이 시간을 감소시켰습니다.");
 
         return new Payload(Commend.NOTHING, null);
     }

@@ -83,6 +83,12 @@ public class GameRoomService {
             throw new GlobalException(GlobalExceptionCode.NOT_JOIN_ROOM);
         }
 
+        if (request.messageType() == MessageType.SYSTEM) {
+            clientUI.getGamePanel().chatAreaAppendText(
+                    String.format("< %s >", request.message()), request.messageType().getColor());
+            return;
+        }
+
         SaveGameRoomUserReq gameRoomUser = DetailGameRoomProvider.detailGameRoom.getGameRoomUser(request.userId())
                 .orElseThrow(() -> new GlobalException(GlobalExceptionCode.NOT_JOIN_ROOM));
 
