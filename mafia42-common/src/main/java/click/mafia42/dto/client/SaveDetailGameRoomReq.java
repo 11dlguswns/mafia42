@@ -19,7 +19,8 @@ public record SaveDetailGameRoomReq(
         GameType gameType,
         boolean isStarted,
         GameStatus gameStatus,
-        long endTimeSecond
+        long endTimeSecond,
+        int day
 ) {
     public static SaveDetailGameRoomReq from(GameRoom gameRoom, UUID currentUserId) {
         return new SaveDetailGameRoomReq(
@@ -40,7 +41,8 @@ public record SaveDetailGameRoomReq(
                 gameRoom.getGameType(),
                 gameRoom.isStarted(),
                 gameRoom.getStatus(),
-                gameRoom.getEndTimeSecond()
+                gameRoom.getEndTimeSecond(),
+                gameRoom.getDay()
         );
     }
 

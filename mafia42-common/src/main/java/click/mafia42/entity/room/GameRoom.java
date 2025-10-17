@@ -178,14 +178,17 @@ public class GameRoom {
         return true;
     }
 
-    public void endDayEvent() {
-        clearTimeControlUserIds();
+    public void endMorningEvent() {
         clearVotes();
         clearAgreeUser();
         clearBlackMailed();
+    }
 
+    public void startMorningEvent() {
+        clearTimeControlUserIds();
         day++;
     }
+
 
     public void clearTimeControlUserIds() {
         timeControlUserIds.clear();

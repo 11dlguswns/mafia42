@@ -20,7 +20,7 @@ public class GamePanel extends JPanel {
     private final Channel channel;
 
     private final JPanel timePanel = new JPanel(new BorderLayout());
-    private final JLabel timeLabel = new JLabel("[밤] 00:00", SwingConstants.CENTER);
+    private final JLabel timeLabel = new JLabel("<0일째> [밤] 00:00", SwingConstants.CENTER);
     private Timer timer;
 
     private final JScrollPane chatPane;
@@ -81,10 +81,11 @@ public class GamePanel extends JPanel {
         }
 
         long remainingSecond = TimeUtil.getRemainingTime(DetailGameRoomProvider.detailGameRoom.endTimeSecond());
+        int day = DetailGameRoomProvider.detailGameRoom.day();
         String gameStatusAlias = DetailGameRoomProvider.detailGameRoom.gameStatus().getAlias();
         long minute = remainingSecond / 60;
         long second = remainingSecond % 60;
-        timeLabel.setText(String.format("[%s] %02d:%02d", gameStatusAlias, minute, second));
+        timeLabel.setText(String.format("<%d일째> [%s] %02d:%02d", day, gameStatusAlias, minute, second));
     }
 
     private void timeDown(ActionEvent e) {

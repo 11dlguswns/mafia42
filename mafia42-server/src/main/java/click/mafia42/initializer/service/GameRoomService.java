@@ -369,10 +369,13 @@ public class GameRoomService {
                     }
                 }
 
-                gameRoom.endDayEvent();
+                gameRoom.endMorningEvent();
                 sendGameSystemMessageToGameRoomUsers(gameRoom, "밤이 되었습니다");
             }
-            case MORNING -> sendGameSystemMessageToGameRoomUsers(gameRoom, "아침이 밝았습니다");
+            case MORNING -> {
+                gameRoom.startMorningEvent();
+                sendGameSystemMessageToGameRoomUsers(gameRoom, "아침이 밝았습니다");
+            }
             case VOTING -> {
                 gameRoom.clearVotes();
                 sendGameSystemMessageToGameRoomUsers(gameRoom, "투표시간이 되었습니다");
