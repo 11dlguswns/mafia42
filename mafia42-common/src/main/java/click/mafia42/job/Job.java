@@ -1,18 +1,17 @@
 package click.mafia42.job;
 
-import click.mafia42.exception.GlobalException;
-import click.mafia42.exception.GlobalExceptionCode;
+import click.mafia42.entity.room.GameRoomUser;
 
-import java.util.UUID;
+public abstract class Job {
+    protected final GameRoomUser owner;
 
-public interface Job {
-    JobType getJobType();
-
-    default void skill(UUID userId, JobType jobType) {
-        throw new GlobalException(GlobalExceptionCode.SKILL_NOT_AVAILABLE);
+    public GameRoomUser getOwner() {
+        return owner;
     }
 
-    default boolean requiredCompanion() {
-        return false;
+    protected Job(GameRoomUser owner) {
+        this.owner = owner;
     }
+
+    abstract public JobType getJobType();
 }

@@ -1,34 +1,36 @@
 package click.mafia42.util;
 
+import click.mafia42.entity.room.GameRoomUser;
 import click.mafia42.entity.room.GameType;
 import click.mafia42.job.Job;
+import click.mafia42.job.JobType;
 import click.mafia42.job.Role;
-import click.mafia42.job.citizen.*;
-import click.mafia42.job.citizen.special.*;
-import click.mafia42.job.cult.CultLeader;
-import click.mafia42.job.cult.Fanatic;
-import click.mafia42.job.mafia.*;
+import click.mafia42.job.server.citizen.*;
+import click.mafia42.job.server.citizen.special.*;
+import click.mafia42.job.server.cult.CultLeader;
+import click.mafia42.job.server.cult.Fanatic;
+import click.mafia42.job.server.mafia.*;
 
 import java.util.*;
 
 public class GameUtil {
-    public static ArrayDeque<Job> getJob(int userCount, GameType gameType) {
+    public static ArrayDeque<JobType> getJob(int userCount, GameType gameType) {
         List<Role> roles = getRoles(userCount, gameType);
-        ArrayDeque<Job> mafiaAssistanceJobs = getMafiaAssistanceJobs(gameType);
-        ArrayDeque<Job> policeJobs = getPoliceJobs(gameType);
+        ArrayDeque<JobType> mafiaAssistanceJobs = getMafiaAssistanceJobs(gameType);
+        ArrayDeque<JobType> policeJobs = getPoliceJobs(gameType);
         long spatialCitizenCount = roles.stream().filter(role -> role == Role.SPECIAL_CITIZEN).count();
-        ArrayDeque<Job> spatialCitizenJobs = getSpatialCitizenJobs((int) spatialCitizenCount, gameType);
+        ArrayDeque<JobType> spatialCitizenJobs = getSpatialCitizenJobs((int) spatialCitizenCount, gameType);
 
         return new ArrayDeque<>(roles.stream()
                 .map(role ->
                         switch (role) {
-                            case MAFIA -> new Mafia();
+                            case MAFIA -> JobType.MAFIA;
                             case MAFIA_ASSISTANCE -> mafiaAssistanceJobs.poll();
-                            case CULT_LEADER -> new CultLeader();
-                            case CULT_ASSISTANCE -> new Fanatic();
+                            case CULT_LEADER -> JobType.CULT_LEADER;
+                            case CULT_ASSISTANCE -> JobType.FANATIC;
                             case POLICE -> policeJobs.poll();
-                            case DOCTOR -> new Doctor();
-                            case CITIZEN -> new Citizen();
+                            case DOCTOR -> JobType.DOCTOR;
+                            case CITIZEN -> JobType.CITIZEN;
                             case SPECIAL_CITIZEN -> spatialCitizenJobs.poll();
                         }
                 ).toList());
@@ -87,8 +89,8 @@ public class GameUtil {
         }
     }
 
-    private static ArrayDeque<Job> getMafiaAssistanceJobs(GameType gameType) {
-        ArrayList<Job> mafiaAssistanceList = new ArrayList<>(
+    private static ArrayDeque<JobType> getMafiaAssistanceJobs(GameType gameType) {
+        ArrayList<JobType> mafiaAssistanceList = new ArrayList<>(
                 switch (gameType) {
                     case CLASSIC -> getMafiaAssistanceJobsByClassic();
                     case DUAL, CULT -> getDefaultMafiaAssistanceJobs();
@@ -98,10 +100,10 @@ public class GameUtil {
         return new ArrayDeque<>(mafiaAssistanceList);
     }
 
-    private static ArrayDeque<Job> getPoliceJobs(GameType gameType) {
-        ArrayList<Job> policeJobs = new ArrayList<>(
+    private static ArrayDeque<JobType> getPoliceJobs(GameType gameType) {
+        ArrayList<JobType> policeJobs = new ArrayList<>(
                 switch (gameType) {
-                    case CLASSIC -> Set.of(new Cop());
+                    case CLASSIC -> Set.of(JobType.COP);
                     case DUAL, CULT -> getDefaultPoliceJobs();
                 });
 
@@ -109,107 +111,151 @@ public class GameUtil {
         return new ArrayDeque<>(policeJobs);
     }
 
-    private static ArrayDeque<Job> getSpatialCitizenJobs(int spatialCitizenCount, GameType gameType) {
-        List<Job> allSpatialCitizenJobs = new ArrayList<>(
+    private static ArrayDeque<JobType> getSpatialCitizenJobs(int spatialCitizenCount, GameType gameType) {
+        List<JobType> allSpatialCitizenJobs = new ArrayList<>(
                 switch (gameType) {
                     case CLASSIC -> getSpatialCitizenJobsByClassic();
                     case DUAL, CULT -> getDefaultSpatialCitizenJobs();
                 });
 
         Collections.shuffle(allSpatialCitizenJobs);
-        List<Job> selectedJobs = selectJobsWithCompanion(spatialCitizenCount, allSpatialCitizenJobs);
+        List<JobType> selectedJobs = selectJobsWithCompanion(spatialCitizenCount, allSpatialCitizenJobs);
 
         Collections.shuffle(selectedJobs);
         return new ArrayDeque<>(selectedJobs);
     }
 
-    private static List<Job> selectJobsWithCompanion(int count, List<Job> allJobs) {
-        ArrayDeque<Job> allJobsDeque = new ArrayDeque<>(allJobs);
+    private static List<JobType> selectJobsWithCompanion(int count, List<JobType> allJobs) {
+        ArrayDeque<JobType> allJobsDeque = new ArrayDeque<>(allJobs);
 
-        List<Job> selectedJobs = new ArrayList<>(count);
+        List<JobType> selectedJobs = new ArrayList<>(count);
 
         while (selectedJobs.size() < count && !allJobsDeque.isEmpty()) {
-            Job job = allJobsDeque.poll();
+            JobType jobType = allJobsDeque.poll();
 
-            if (job.requiredCompanion()) {
+            if (jobType.isRequiredCompanion()) {
                 if (selectedJobs.size() + 1 < count) {
-                    selectedJobs.add(job);
-                    selectedJobs.add(job);
+                    selectedJobs.add(jobType);
+                    selectedJobs.add(jobType);
                 }
             } else {
-                selectedJobs.add(job);
+                selectedJobs.add(jobType);
             }
         }
         return selectedJobs;
     }
 
-    private static Set<Job> getDefaultPoliceJobs() {
+    private static Set<JobType> getDefaultPoliceJobs() {
         return Set.of(
-                new Cop(),
-                new Vigilante(),
-                new Agent()
+                JobType.COP,
+                JobType.VIGILANTE,
+                JobType.AGENT
         );
     }
 
-    private static Set<Job> getDefaultMafiaAssistanceJobs() {
+    private static Set<JobType> getDefaultMafiaAssistanceJobs() {
         return Set.of(
-                new BeastMan(),
-                new HitMan(),
-                new Hostess(),
-                new MadScientist(),
-                new Spy(),
-                new Swindler(),
-                new Thief(),
-                new Villan(),
-                new Witch()
+                JobType.BEAST_MAN,
+                JobType.HIT_MAN,
+                JobType.HOSTESS,
+                JobType.MAD_SCIENTIST,
+                JobType.SPY,
+                JobType.SWINDLER,
+                JobType.THIEF,
+                JobType.VILLAN,
+                JobType.WITCH
         );
     }
 
-    private static Set<Job> getMafiaAssistanceJobsByClassic() {
+    private static Set<JobType> getMafiaAssistanceJobsByClassic() {
         return Set.of(
-                new BeastMan(),
-                new Hostess(),
-                new Spy(),
-                new Thief()
+                JobType.BEAST_MAN,
+                JobType.HOSTESS,
+                JobType.SPY,
+                JobType.THIEF
         );
     }
 
-    private static Set<Job> getSpatialCitizenJobsByClassic() {
+    private static Set<JobType> getSpatialCitizenJobsByClassic() {
         return Set.of(
-                new Soldier(),
-                new Politician(),
-                new Psychic(),
-                new Lover(),
-                new Detective(),
-                new Ghoul(),
-                new Martyr(),
-                new Priest()
+                JobType.SOLDIER,
+                JobType.POLITICIAN,
+                JobType.PSYCHIC,
+                JobType.LOVER,
+                JobType.DETECTIVE,
+                JobType.GHOUL,
+                JobType.MARTYR,
+                JobType.PRIEST
         );
     }
 
-    private static Set<Job> getDefaultSpatialCitizenJobs() {
+    private static Set<JobType> getDefaultSpatialCitizenJobs() {
         return Set.of(
-                new Administrator(),
-                new Cabal(),
-                new Detective(),
-                new FortuneTeller(),
-                new Gangster(),
-                new Ghoul(),
-                new Hacker(),
-                new Judge(),
-                new Lover(),
-                new Magician(),
-                new Martyr(),
-                new Mentalist(),
-                new Mercenary(),
-                new Nurse(),
-                new Paparazzi(),
-                new Politician(),
-                new Priest(),
-                new Prophet(),
-                new Psychic(),
-                new Reporter(),
-                new Soldier()
+                JobType.ADMINISTRATOR,
+                JobType.CABAL,
+                JobType.DETECTIVE,
+                JobType.FORTUNE_TELLER,
+                JobType.GANGSTER,
+                JobType.GHOUL,
+                JobType.HACKER,
+                JobType.JUDGE,
+                JobType.LOVER,
+                JobType.MAGICIAN,
+                JobType.MARTYR,
+                JobType.MENTALIST,
+                JobType.MERCENARY,
+                JobType.NURSE,
+                JobType.PAPARAZZI,
+                JobType.POLITICIAN,
+                JobType.PRIEST,
+                JobType.PROPHET,
+                JobType.PSYCHIC,
+                JobType.REPORTER,
+                JobType.SOLDIER
         );
+    }
+
+    public static Job convertToJob(JobType jobType, GameRoomUser owner) {
+        return switch (jobType) {
+            case MAFIA -> new Mafia(owner);
+            case VILLAN -> new Villan(owner);
+            case BEAST_MAN -> new BeastMan(owner);
+            case SPY -> new Spy(owner);
+            case HOSTESS -> new Hostess(owner);
+            case WITCH -> new Witch(owner);
+            case MAD_SCIENTIST -> new MadScientist(owner);
+            case THIEF -> new Thief(owner);
+            case SWINDLER -> new Swindler(owner);
+            case HIT_MAN -> new HitMan(owner);
+            case CULT_LEADER -> new CultLeader(owner);
+            case FANATIC -> new Fanatic(owner);
+            case CITIZEN -> new Citizen(owner);
+            case COP -> new Cop(owner);
+            case VIGILANTE -> new Vigilante(owner);
+            case AGENT -> new Agent(owner);
+            case DOCTOR -> new Doctor(owner);
+            case SOLDIER -> new Soldier(owner);
+            case POLITICIAN -> new Politician(owner);
+            case PSYCHIC -> new Psychic(owner);
+            case LOVER -> new Lover(owner);
+            case REPORTER -> new Reporter(owner);
+            case GANGSTER -> new Gangster(owner);
+            case DETECTIVE -> new Detective(owner);
+            case GHOUL -> new Ghoul(owner);
+            case MARTYR -> new Martyr(owner);
+            case PRIEST -> new Priest(owner);
+            case PROPHET -> new Prophet(owner);
+            case JUDGE -> new Judge(owner);
+            case NURSE -> new Nurse(owner);
+            case MAGICIAN -> new Magician(owner);
+            case HACKER -> new Hacker(owner);
+            case MENTALIST -> new Mentalist(owner);
+            case MERCENARY -> new Mercenary(owner);
+            case ADMINISTRATOR -> new Administrator(owner);
+            case CABAL -> new Cabal(owner);
+            case PAPARAZZI -> new Paparazzi(owner);
+            case HYPNOTIST -> new Hypnotist(owner);
+            case FORTUNE_TELLER -> new FortuneTeller(owner);
+        };
     }
 }

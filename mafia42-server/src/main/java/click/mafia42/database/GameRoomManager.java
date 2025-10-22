@@ -6,7 +6,6 @@ import click.mafia42.entity.room.GameType;
 import click.mafia42.entity.user.User;
 import click.mafia42.exception.GlobalException;
 import click.mafia42.exception.GlobalExceptionCode;
-import click.mafia42.job.Job;
 import click.mafia42.job.JobType;
 import click.mafia42.util.GameUtil;
 import org.mindrot.jbcrypt.BCrypt;
@@ -75,14 +74,15 @@ public class GameRoomManager {
             throw new GlobalException(GlobalExceptionCode.GAME_START_FAIL);
         }
 
-        ArrayDeque<Job> job = GameUtil.getJob(gameRoom.getPlayersCount(), gameRoom.getGameType());
+        ArrayDeque<JobType> job = GameUtil.getJob(gameRoom.getPlayersCount(), gameRoom.getGameType());
 
         if (!(job.size() == gameRoom.getPlayersCount())) {
             throw new GlobalException(GlobalExceptionCode.GAME_START_FAIL);
         }
 
         gameRoom.getPlayers().forEach(gameRoomUser -> {
-            gameRoomUser.updateJob(Objects.requireNonNull(job.poll()));
+            JobType jobType = Objects.requireNonNull(job.poll());
+            gameRoomUser.updateJob(GameUtil.convertToJob(jobType, gameRoomUser));
         });
 
         setMutualVisibilityByJobType(gameRoom, JobType.MAFIA);

@@ -10,6 +10,7 @@ import io.netty.util.concurrent.GlobalEventExecutor;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -37,7 +38,25 @@ public class ChannelManager {
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
-    public List<Channel> findChannelByGameRoom(GameRoom gameRoom) {
+    public Optional<Channel> findChannelByUser(User user) {
+        return channels.stream()
+                .filter(ch -> {
+                    User savedUser = ch.attr(USER).get();
+                    return savedUser != null && savedUser.equals(user);
+                })
+                .findFirst();
+    }
+
+    public List<Channel> findChannelsByUsers(List<User> users) {
+        return channels.stream()
+                .filter(ch -> {
+                    User user = ch.attr(USER).get();
+                    return user != null && users.contains(user) ;
+                })
+                .toList();
+    }
+
+    public List<Channel> findChannelsByGameRoom(GameRoom gameRoom) {
         return channels.stream()
                 .filter(ch -> {
                     User user = ch.attr(USER).get();

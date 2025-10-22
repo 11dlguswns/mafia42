@@ -23,6 +23,7 @@ public enum Commend {
     VOTE_USER(false),
     VOTE_AGREE(false),
     VOTE_DISAGREE(false),
+    USE_JOB_SKILL(false),
 
     // CLIENT
     CONSOLE_OUTPUT(false),

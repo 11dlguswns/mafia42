@@ -23,10 +23,12 @@ public class GameRoomUser implements Comparable<GameRoomUser> {
     private GameRoomUser voteUser;
     private Boolean voteAgree;
     private boolean isBlackmailed = false;
+    private GameRoom gameRoom;
 
     public GameRoomUser(GameRoom gameRoom, User user) {
         this.number = gameRoom.getUserNumber();
         this.user = user;
+        this.gameRoom = gameRoom;
         visibleToUserIds = new HashSet<>(Set.of(user.getId()));
     }
 
@@ -78,6 +80,9 @@ public class GameRoomUser implements Comparable<GameRoomUser> {
 
     public void addVisibleToUserIds(List<UUID> userIds) {
         userIds.forEach(this::addVisibleToUserId);
+    }
+    public void addVisibleAllUser() {
+        gameRoom.getPlayers().forEach(gUser -> addVisibleToUserId(gUser.getUser().getId()));
     }
 
     public void clearVote() {
@@ -158,5 +163,9 @@ public class GameRoomUser implements Comparable<GameRoomUser> {
 
     public boolean isBlackmailed() {
         return isBlackmailed;
+    }
+
+    public GameRoom getGameRoom() {
+        return gameRoom;
     }
 }

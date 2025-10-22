@@ -4,6 +4,11 @@ import click.mafia42.dto.client.SaveGameMessageReq;
 import click.mafia42.entity.user.User;
 import click.mafia42.exception.GlobalException;
 import click.mafia42.exception.GlobalExceptionCode;
+import click.mafia42.job.JobType;
+import click.mafia42.job.server.SkillResult;
+import click.mafia42.job.server.citizen.Doctor;
+import click.mafia42.job.server.citizen.special.Soldier;
+import click.mafia42.job.server.mafia.Mafia;
 import click.mafia42.util.TimeUtil;
 import org.mindrot.jbcrypt.BCrypt;
 
@@ -11,6 +16,9 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class GameRoom {
@@ -29,6 +37,7 @@ public class GameRoom {
     private final Set<UUID> timeControlUserIds = new HashSet<>();
     private final List<GameMessageDto> gameMessages = new ArrayList<>();
     private int day;
+    private final Lock lock = new ReentrantLock();
 
     public GameRoom(long id, String name, int maxPlayers, User manager, GameType gameType, String password) {
         this.id = id;
@@ -154,7 +163,7 @@ public class GameRoom {
         endTimeSecond = Instant.now().plus(getGameTime()).getEpochSecond();
     }
 
-    public synchronized boolean updateStatus() {
+    public boolean updateStatus() {
         if (!TimeUtil.isTimeOver(endTimeSecond)) {
             return false;
         }
@@ -174,8 +183,11 @@ public class GameRoom {
             case JUDGEMENT -> GameStatus.NIGHT;
         };
 
-        endTimeSecond = Instant.now().plus(getGameTime()).getEpochSecond();
         return true;
+    }
+
+    public void updateEndTime() {
+        endTimeSecond = Instant.now().plus(getGameTime()).getEpochSecond();
     }
 
     public void endMorningEvent() {
@@ -343,5 +355,48 @@ public class GameRoom {
         }
 
         gameRoomUser.voteDisagree();
+    }
+
+    public SkillResult dieUser(GameRoomUser target) {
+        List<GameRoomUser> doctors = findUsersByJobType(JobType.DOCTOR);
+
+        for (GameRoomUser gUser : doctors) {
+            if (gUser.getJob() instanceof Doctor doctor) {
+                SkillResult skillResult = doctor.useSkill();
+                if (skillResult != null) return skillResult;
+            }
+        }
+
+        if (target.getJob() instanceof Soldier soldier) {
+            SkillResult skillResult = soldier.usePassive();
+            if (skillResult != null) return skillResult;
+        }
+
+        target.die();
+        return new SkillResult(String.format("%s이(가) 살해당했습니다.", target.getUser().getNickname()), players);
+    }
+
+    public List<GameRoomUser> findUsersByJobType(JobType jobType) {
+        return players.stream()
+                .filter(gUser -> gUser.getJob().getJobType() == jobType)
+                .toList();
+    }
+
+    public GameRoomUser findMafiaTarget() {
+        GameRoomUser mafiaUser = findUsersByJobType(JobType.MAFIA).getFirst();
+
+        if (mafiaUser.getJob() instanceof Mafia mafia) {
+            return mafia.getTarget();
+        }
+        return null;
+    }
+
+    public <T> T doWithLock(Supplier<T> action) {
+        lock.lock();
+        try {
+            return action.get();
+        } finally {
+            lock.unlock();
+        }
     }
 }

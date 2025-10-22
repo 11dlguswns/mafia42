@@ -13,7 +13,11 @@ import click.mafia42.exception.GlobalException;
 import click.mafia42.exception.GlobalExceptionCode;
 import click.mafia42.job.Job;
 import click.mafia42.job.JobType;
-import click.mafia42.job.mafia.Thief;
+import click.mafia42.job.SkillTriggerTime;
+import click.mafia42.job.server.SkillJob;
+import click.mafia42.job.server.SkillResult;
+import click.mafia42.job.server.mafia.Mafia;
+import click.mafia42.job.server.mafia.Thief;
 import click.mafia42.payload.Commend;
 import click.mafia42.payload.Payload;
 import io.netty.channel.Channel;
@@ -197,7 +201,7 @@ public class GameRoomService {
     }
 
     public void sendCommendToGameRoomUsers(GameRoom gameRoom, Payload payload) {
-        List<Channel> userChannelByJoinGameRoom = channelManager.findChannelByGameRoom(gameRoom);
+        List<Channel> userChannelByJoinGameRoom = channelManager.findChannelsByGameRoom(gameRoom);
 
         channelManager.sendCommendToUsers(userChannelByJoinGameRoom, payload);
     }
@@ -322,6 +326,17 @@ public class GameRoomService {
         sendCommendToGameRoomUsers(gameRoom, payload);
     }
 
+    public void sendGameSystemMessageToUsers(GameRoom gameRoom, Set<GameRoomUser> affectedUsers, String message) {
+        SaveGameMessageReq saveGameMessageReq = new SaveGameMessageReq(null, message, MessageType.SYSTEM);
+        gameRoom.addGameMessage(saveGameMessageReq, affectedUsers);
+
+        Payload payload = new Payload(
+                Commend.SAVE_GAME_MESSAGE,
+                saveGameMessageReq);
+        List<Channel> channelsByAffectedUsers = channelManager.findChannelsByUsers(affectedUsers.stream().map(GameRoomUser::getUser).toList());
+        channelManager.sendCommendToUsers(channelsByAffectedUsers, payload);
+    }
+
     private Set<GameRoomUser> getVisibleChatToUsers(GameRoom gameRoom, MessageType messageType) {
         Set<GameRoomUser> visibleChatToUsers = new HashSet<>();
 
@@ -352,45 +367,73 @@ public class GameRoomService {
         GameRoom gameRoom = gameRoomManager.findGameRoomByGameRoomUser(user)
                 .orElseThrow(() -> new GlobalException(GlobalExceptionCode.NOT_JOIN_ROOM));
 
-        if (!gameRoom.updateStatus()) {
-            return new Payload(Commend.SAVE_GAME_ROOM, SaveDetailGameRoomReq.from(gameRoom, user.getId()));
-        }
+        return gameRoom.doWithLock(() -> {
+            if (!gameRoom.updateStatus()) {
+                return new Payload(Commend.SAVE_GAME_ROOM, SaveDetailGameRoomReq.from(gameRoom, user.getId()));
+            }
 
-        switch (gameRoom.getStatus()) {
-            case NIGHT -> {
-                Optional<GameRoomUser> mostVotedUserOptional = gameRoom.getMostVotedUser();
-                if (mostVotedUserOptional.isPresent()) {
-                    if (gameRoom.isVotePassed()) {
-                        GameRoomUser mostVotedUser = mostVotedUserOptional.get();
-                        mostVotedUser.die();
-                        sendGameSystemMessageToGameRoomUsers(gameRoom, mostVotedUser.getUser().getNickname() + "님이 처형당했습니다.");
-                    } else {
-                        sendGameSystemMessageToGameRoomUsers(gameRoom, "투표가 부결되었습니다.");
+            switch (gameRoom.getStatus()) {
+                case NIGHT -> {
+                    Optional<GameRoomUser> mostVotedUserOptional = gameRoom.getMostVotedUser();
+                    if (mostVotedUserOptional.isPresent()) {
+                        if (gameRoom.isVotePassed()) {
+                            GameRoomUser mostVotedUser = mostVotedUserOptional.get();
+                            mostVotedUser.die();
+                            sendGameSystemMessageToGameRoomUsers(gameRoom, mostVotedUser.getUser().getNickname() + "님이 투표로 처형당했습니다.");
+                        } else {
+                            sendGameSystemMessageToGameRoomUsers(gameRoom, "투표가 부결되었습니다.");
+                        }
                     }
+
+                    gameRoom.endMorningEvent();
+                    sendGameSystemMessageToGameRoomUsers(gameRoom, "밤이 되었습니다");
+                    useSkillBySkillTriggerTime(gameRoom, SkillTriggerTime.START_OF_NIGHT);
                 }
+                case MORNING -> {
+                    gameRoom.startMorningEvent();
+                    gameRoom.getPlayers().forEach(gameRoomUser -> {
+                        if (gameRoomUser.getJob() instanceof Mafia mafia) {
+                            GameRoomUser mafiaTarget = mafia.getTarget();
+                            if (mafiaTarget != null && mafiaTarget.getStatus() == GameUserStatus.ALIVE) {
+                                SkillResult skillResult = mafia.useSkill();
+                                sendGameSystemMessageToUsers(gameRoom, skillResult.affectedUsers(), skillResult.message());
+                            }
+                        }
+                    });
+                    useSkillBySkillTriggerTime(gameRoom, SkillTriggerTime.END_OF_NIGHT);
+                    sendGameSystemMessageToGameRoomUsers(gameRoom, "아침이 밝았습니다");
+                    useSkillBySkillTriggerTime(gameRoom, SkillTriggerTime.START_OF_MORNING);
+                }
+                case VOTING -> {
+                    gameRoom.clearVotes();
+                    sendGameSystemMessageToGameRoomUsers(gameRoom, "투표시간이 되었습니다");
+                }
+                case CONTRADICT -> {
+                    GameRoomUser gameRoomUser = gameRoom.getMostVotedUser().get();
+                    sendGameSystemMessageToGameRoomUsers(gameRoom, gameRoomUser.getUser().getNickname() + "님의 최후의 반론");
+                }
+                case JUDGEMENT -> {
+                    GameRoomUser gameRoomUser = gameRoom.getMostVotedUser().get();
+                    sendGameSystemMessageToGameRoomUsers(gameRoom, gameRoomUser.getUser().getNickname() + "님에 대한 찬반 투표");
+                }
+            }
 
-                gameRoom.endMorningEvent();
-                sendGameSystemMessageToGameRoomUsers(gameRoom, "밤이 되었습니다");
-            }
-            case MORNING -> {
-                gameRoom.startMorningEvent();
-                sendGameSystemMessageToGameRoomUsers(gameRoom, "아침이 밝았습니다");
-            }
-            case VOTING -> {
-                gameRoom.clearVotes();
-                sendGameSystemMessageToGameRoomUsers(gameRoom, "투표시간이 되었습니다");
-            }
-            case CONTRADICT -> {
-                GameRoomUser gameRoomUser = gameRoom.getMostVotedUser().get();
-                sendGameSystemMessageToGameRoomUsers(gameRoom, gameRoomUser.getUser().getNickname() + "님의 최후의 반론");
-            }
-            case JUDGEMENT -> {
-                GameRoomUser gameRoomUser = gameRoom.getMostVotedUser().get();
-                sendGameSystemMessageToGameRoomUsers(gameRoom, gameRoomUser.getUser().getNickname() + "님에 대한 찬반 투표");
-            }
-        }
+            gameRoom.updateEndTime();
+            return new Payload(Commend.SAVE_GAME_ROOM, SaveDetailGameRoomReq.from(gameRoom, user.getId()));
+        });
+    }
 
-        return new Payload(Commend.SAVE_GAME_ROOM, SaveDetailGameRoomReq.from(gameRoom, user.getId()));
+    private void useSkillBySkillTriggerTime(GameRoom gameRoom, SkillTriggerTime skillTriggerTime) {
+        gameRoom.getPlayers().forEach(gameRoomUser -> {
+            Job gameRoomUserJob = gameRoomUser.getJob();
+            if (gameRoomUserJob instanceof SkillJob skillJob && skillJob.isSkillTriggerTime(skillTriggerTime)) {
+                SkillResult skillResult = skillJob.skillAction();
+
+                if (skillResult != null) {
+                    sendGameSystemMessageToUsers(gameRoom, skillResult.affectedUsers(), skillResult.message());
+                }
+            }
+        });
     }
 
     public Payload increaseGameTime(IncreaseGameTimeReq request, ChannelHandlerContext ctx) {
@@ -457,5 +500,25 @@ public class GameRoomService {
         gameRoom.voteDisagree(gameRoomUser);
 
         return new Payload(Commend.NOTHING, null);
+    }
+
+    public Payload useJobSkill(UseJobSkillReq request, ChannelHandlerContext ctx) {
+        User user = ctx.channel().attr(USER).get();
+        GameRoom gameRoom = gameRoomManager.findGameRoomByGameRoomUser(user)
+                .orElseThrow(() -> new GlobalException(GlobalExceptionCode.NOT_JOIN_ROOM));
+        GameRoomUser gameRoomUser = gameRoom.getPlayer(user.getId())
+                .orElseThrow(() -> new GlobalException(GlobalExceptionCode.NOT_JOIN_ROOM));
+
+        GameRoomUser requestGameRoomUser = gameRoom.getPlayer(request.userId())
+                .orElseThrow(() -> new GlobalException(GlobalExceptionCode.NOT_FOUND_USER));
+        if (gameRoomUser.getJob() instanceof SkillJob skillJob) {
+            SkillResult skillResult = skillJob.setSkill(requestGameRoomUser, request.jobType());
+
+            if (skillResult != null) {
+                sendGameSystemMessageToUsers(gameRoom, skillResult.affectedUsers(), skillResult.message());
+            }
+        }
+
+        return new Payload(Commend.SAVE_GAME_ROOM, SaveDetailGameRoomReq.from(gameRoom, user.getId()));
     }
 }

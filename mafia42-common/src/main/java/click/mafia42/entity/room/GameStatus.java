@@ -15,6 +15,10 @@ public enum GameStatus {
         this.defaultTime = defaultTime;
     }
 
+    public boolean isAfterVoting() {
+        return this == CONTRADICT || this == JUDGEMENT;
+    }
+
     public String getAlias() {
         return alias;
     }
