@@ -23,6 +23,7 @@ public class GameRoomUser implements Comparable<GameRoomUser> {
     private GameRoomUser voteUser;
     private Boolean voteAgree;
     private boolean isBlackmailed = false;
+    private boolean timeControlUsed = false;
     private GameRoom gameRoom;
 
     public GameRoomUser(GameRoom gameRoom, User user) {
@@ -167,5 +168,17 @@ public class GameRoomUser implements Comparable<GameRoomUser> {
 
     public GameRoom getGameRoom() {
         return gameRoom;
+    }
+
+    public boolean timeControlUsed() {
+        return timeControlUsed;
+    }
+
+    public void timeControl() {
+        this.timeControlUsed = true;
+    }
+
+    public void resetTimeControl() {
+        this.timeControlUsed = false;
     }
 }

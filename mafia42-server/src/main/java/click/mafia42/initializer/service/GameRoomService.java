@@ -440,8 +440,10 @@ public class GameRoomService {
         User user = ctx.channel().attr(USER).get();
         GameRoom gameRoom = gameRoomManager.findGameRoomByGameRoomUser(user)
                 .orElseThrow(() -> new GlobalException(GlobalExceptionCode.NOT_JOIN_ROOM));
+        GameRoomUser gameRoomUser = gameRoom.getPlayer(user.getId())
+                .orElseThrow(() -> new GlobalException(GlobalExceptionCode.NOT_JOIN_ROOM));
 
-        gameRoom.increaseGameTime(user);
+        gameRoom.increaseGameTime(gameRoomUser);
         saveGameRoomToGameRoomUsers(gameRoom);
 
         sendGameSystemMessageToGameRoomUsers(gameRoom, user.getNickname() + "님이 시간을 증가시켰습니다.");
@@ -453,8 +455,10 @@ public class GameRoomService {
         User user = ctx.channel().attr(USER).get();
         GameRoom gameRoom = gameRoomManager.findGameRoomByGameRoomUser(user)
                 .orElseThrow(() -> new GlobalException(GlobalExceptionCode.NOT_JOIN_ROOM));
+        GameRoomUser gameRoomUser = gameRoom.getPlayer(user.getId())
+                .orElseThrow(() -> new GlobalException(GlobalExceptionCode.NOT_JOIN_ROOM));
 
-        gameRoom.decreaseGameTime(user);
+        gameRoom.decreaseGameTime(gameRoomUser);
         saveGameRoomToGameRoomUsers(gameRoom);
 
         sendGameSystemMessageToGameRoomUsers(gameRoom, user.getNickname() + "님이 시간을 감소시켰습니다.");

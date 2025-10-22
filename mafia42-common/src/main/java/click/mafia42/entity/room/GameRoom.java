@@ -34,7 +34,6 @@ public class GameRoom {
     private final AtomicInteger nextNumber = new AtomicInteger(1);
     private volatile GameStatus status;
     private long endTimeSecond;
-    private final Set<UUID> timeControlUserIds = new HashSet<>();
     private final List<GameMessageDto> gameMessages = new ArrayList<>();
     private int day;
     private final Lock lock = new ReentrantLock();
@@ -203,7 +202,7 @@ public class GameRoom {
 
 
     public void clearTimeControlUserIds() {
-        timeControlUserIds.clear();
+        players.forEach(GameRoomUser::resetTimeControl);
     }
 
     private void clearBlackMailed() {
@@ -273,9 +272,17 @@ public class GameRoom {
                 }).count();
     }
 
-    public void increaseGameTime(User user) {
-        if (timeControlUserIds.contains(user.getId())) {
+    public void increaseGameTime(GameRoomUser gameRoomUser) {
+        if (gameRoomUser.timeControlUsed()) {
             throw new GlobalException(GlobalExceptionCode.TIME_ALREADY_MODIFIED);
+        }
+
+        if (gameRoomUser.getStatus() == GameUserStatus.DIE) {
+            throw new GlobalException(GlobalExceptionCode.TIME_MODIFICATION_NOT_ALLOWED);
+        }
+
+        if (!isStarted) {
+            throw new GlobalException(GlobalExceptionCode.GAME_NOT_STARTED);
         }
 
         if (status != GameStatus.MORNING) {
@@ -283,12 +290,20 @@ public class GameRoom {
         }
 
         endTimeSecond += 15;
-        timeControlUserIds.add(user.getId());
+        gameRoomUser.timeControl();
     }
 
-    public void decreaseGameTime(User user) {
-        if (timeControlUserIds.contains(user.getId())) {
+    public void decreaseGameTime(GameRoomUser gameRoomUser) {
+        if (gameRoomUser.timeControlUsed()) {
             throw new GlobalException(GlobalExceptionCode.TIME_ALREADY_MODIFIED);
+        }
+
+        if (gameRoomUser.getStatus() == GameUserStatus.DIE) {
+            throw new GlobalException(GlobalExceptionCode.TIME_MODIFICATION_NOT_ALLOWED);
+        }
+
+        if (!isStarted) {
+            throw new GlobalException(GlobalExceptionCode.GAME_NOT_STARTED);
         }
 
         if (status != GameStatus.MORNING) {
@@ -296,7 +311,7 @@ public class GameRoom {
         }
 
         endTimeSecond -= 15;
-        timeControlUserIds.add(user.getId());
+        gameRoomUser.timeControl();
     }
 
     public void addGameMessage(SaveGameMessageReq message, Set<GameRoomUser> visibleChatToUsers) {

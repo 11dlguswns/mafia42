@@ -40,7 +40,7 @@ public enum GlobalExceptionCode {
     INVALID_SKILL_TARGET("스킬을 사용할 수 없는 대상입니다."),
     TIME_NOT_OVER("시간이 초과되지 않았습니다."),
     TIME_ALREADY_MODIFIED("시간이 이미 수정되었습니다."),
-    TIME_MODIFICATION_NOT_ALLOWED("현재는 시간을 수정할 수 없는 상태입니다."),
+    TIME_MODIFICATION_NOT_ALLOWED("시간을 수정할 수 없는 상태입니다."),
     CHATTING_NOT_ALLOWED("채팅을 할 수 없는 상태입니다."),
     VOTE_NOT_ALLOWED("투표를 할 수 없는 상태입니다."),
     VOTE_TARGET_DEAD_NOT_ALLOWED("죽은 대상을 투표할 수 없습니다."),
