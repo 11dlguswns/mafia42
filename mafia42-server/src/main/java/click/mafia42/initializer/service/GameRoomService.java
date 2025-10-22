@@ -231,7 +231,7 @@ public class GameRoomService {
                 .orElseThrow(() -> new GlobalException(GlobalExceptionCode.NOT_JOIN_ROOM));
 
         MessageType messageType = getMessageType(gameRoom, gameRoomUser);
-        Set<GameRoomUser> visibleChatToUsers = new HashSet<>(getVisibleChatToUsers(gameRoom, messageType));
+        Set<GameRoomUser> visibleChatToUsers = new HashSet<>(getVisibleChatToUsers(gameRoom, gameRoomUser, messageType));
 
         if (!gameRoom.isStarted()) {
             throw new GlobalException(GlobalExceptionCode.GAME_NOT_STARTED);
@@ -337,15 +337,17 @@ public class GameRoomService {
         channelManager.sendCommendToUsers(channelsByAffectedUsers, payload);
     }
 
-    private Set<GameRoomUser> getVisibleChatToUsers(GameRoom gameRoom, MessageType messageType) {
-        Set<GameRoomUser> visibleChatToUsers = new HashSet<>();
+    private Set<GameRoomUser> getVisibleChatToUsers(GameRoom gameRoom, GameRoomUser gameRoomUser, MessageType messageType) {
+        Set<GameRoomUser> visibleChatToUsers = new HashSet<>(Set.of(gameRoomUser));
 
         switch (messageType) {
             case ALL -> visibleChatToUsers.addAll(gameRoom.getPlayers());
             case LOVER -> visibleChatToUsers.addAll(gameRoom.getPlayers().stream()
                     .filter(gUser -> gUser.getJob().getJobType() == JobType.LOVER).toList());
             case PSYCHIC, DIE -> visibleChatToUsers.addAll(gameRoom.getPlayers().stream()
-                    .filter(gUser -> gUser.getStatus() == GameUserStatus.DIE).toList());
+                    .filter(gUser ->
+                            gUser.getStatus() == GameUserStatus.DIE ||
+                            gUser.getJob().getJobType() == JobType.PSYCHIC).toList());
             case MAFIA -> {
                 List<GameRoomUser> mafiaUsers = gameRoom.getPlayers().stream()
                         .filter(gUser -> gUser.getJob().getJobType() == JobType.MAFIA).toList();
