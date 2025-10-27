@@ -4,6 +4,7 @@ import click.mafia42.entity.user.User;
 import click.mafia42.exception.GlobalException;
 import click.mafia42.exception.GlobalExceptionCode;
 import click.mafia42.job.Job;
+import click.mafia42.job.JobType;
 import click.mafia42.job.Team;
 
 import java.util.HashSet;
@@ -18,8 +19,8 @@ public class GameRoomUser implements Comparable<GameRoomUser> {
     private Team team;
     private GameUserStatus status = GameUserStatus.ALIVE;
     private final Set<UUID> visibleToUserIds;
-    private final boolean isProselytized = false;
-    private final boolean isContacted = false;
+    private boolean isProselytized = false;
+    private boolean isContacted = false;
     private GameRoomUser voteUser;
     private Boolean voteAgree;
     private boolean isBlackmailed = false;
@@ -82,8 +83,18 @@ public class GameRoomUser implements Comparable<GameRoomUser> {
     public void addVisibleToUserIds(List<UUID> userIds) {
         userIds.forEach(this::addVisibleToUserId);
     }
+
     public void addVisibleAllUser() {
         gameRoom.getPlayers().forEach(gUser -> addVisibleToUserId(gUser.getUser().getId()));
+    }
+
+    public void connectWithMafia() {
+        isContacted = true;
+        gameRoom.findUsersByJobType(JobType.MAFIA)
+                .forEach(gUser -> {
+                    addVisibleToUserId(gUser.getUser().getId());
+                    gUser.addVisibleToUserId(user.getId());
+                });
     }
 
     public void clearVote() {

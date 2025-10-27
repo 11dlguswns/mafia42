@@ -5,6 +5,7 @@ import click.mafia42.entity.user.User;
 import click.mafia42.exception.GlobalException;
 import click.mafia42.exception.GlobalExceptionCode;
 import click.mafia42.job.JobType;
+import click.mafia42.job.server.MessageResult;
 import click.mafia42.job.server.SkillResult;
 import click.mafia42.job.server.citizen.Doctor;
 import click.mafia42.job.server.citizen.special.Soldier;
@@ -20,6 +21,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class GameRoom {
     private final long id;
@@ -373,6 +375,7 @@ public class GameRoom {
     }
 
     public SkillResult dieUser(GameRoomUser target) {
+        List<MessageResult> messageResults = new ArrayList<>();
         List<GameRoomUser> doctors = findUsersByJobType(JobType.DOCTOR);
 
         for (GameRoomUser gUser : doctors) {
@@ -388,7 +391,16 @@ public class GameRoom {
         }
 
         target.die();
-        return new SkillResult(String.format("%s이(가) 살해당했습니다.", target.getUser().getNickname()), players);
+        messageResults.add(new MessageResult(
+                String.format("%s이(가) 살해당했습니다.", target.getUser().getNickname()), players));
+        return new SkillResult(messageResults);
+    }
+
+    public Set<GameRoomUser> findUsersByMafiaTeam() {
+        return Stream.concat(
+                players.stream().filter(gUser -> gUser.getJob().getJobType() == JobType.MAFIA),
+                players.stream().filter(GameRoomUser::isContacted)
+        ).collect(Collectors.toSet());
     }
 
     public List<GameRoomUser> findUsersByJobType(JobType jobType) {

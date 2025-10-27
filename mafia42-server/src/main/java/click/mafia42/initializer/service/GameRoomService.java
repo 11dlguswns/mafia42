@@ -164,11 +164,15 @@ public class GameRoomService {
     }
 
     private void saveGameRoomToGameRoomUsers(GameRoom gameRoom) {
-        gameRoom.getPlayers().forEach(gameRoomUser -> {
-            Payload payload = new Payload(
+        saveGameRoomToUsers(gameRoom.getPlayers());
+    }
+
+    private void saveGameRoomToUsers(Set<GameRoomUser> gameRoomUsers) {
+        gameRoomUsers.forEach(gUser -> {
+            Payload saveGameRoomPayload = new Payload(
                     Commend.SAVE_GAME_ROOM,
-                    SaveDetailGameRoomReq.from(gameRoom, gameRoomUser.getUser().getId()));
-            channelManager.sendCommendToUser(gameRoomUser.getUser(), payload);
+                    SaveDetailGameRoomReq.from(gUser.getGameRoom(), gUser.getUser().getId()));
+            channelManager.sendCommendToUser(gUser.getUser(), saveGameRoomPayload);
         });
     }
 
@@ -349,13 +353,7 @@ public class GameRoomService {
                             gUser.getStatus() == GameUserStatus.DIE ||
                             gUser.getJob().getJobType() == JobType.PSYCHIC).toList());
             case MAFIA -> {
-                List<GameRoomUser> mafiaUsers = gameRoom.getPlayers().stream()
-                        .filter(gUser -> gUser.getJob().getJobType() == JobType.MAFIA).toList();
-                List<GameRoomUser> contactedUsers = gameRoom.getPlayers().stream()
-                        .filter(GameRoomUser::isContacted).toList();
-
-                visibleChatToUsers.addAll(mafiaUsers);
-                visibleChatToUsers.addAll(contactedUsers);
+                visibleChatToUsers.addAll(gameRoom.findUsersByMafiaTeam());
             }
             case CULT -> visibleChatToUsers.addAll(gameRoom.getPlayers().stream()
                     .filter(GameRoomUser::isProselytized).toList());
@@ -398,7 +396,10 @@ public class GameRoomService {
                             GameRoomUser mafiaTarget = mafia.getTarget();
                             if (mafiaTarget != null && mafiaTarget.getStatus() == GameUserStatus.ALIVE) {
                                 SkillResult skillResult = mafia.useSkill();
-                                sendGameSystemMessageToUsers(gameRoom, skillResult.affectedUsers(), skillResult.message());
+                                skillResult.messageResults().forEach(messageResult -> {
+                                    sendGameSystemMessageToUsers(gameRoom, messageResult.affectedUsers(), messageResult.message());
+                                    saveGameRoomToUsers(messageResult.affectedUsers());
+                                });
                             }
                         }
                     });
@@ -432,7 +433,10 @@ public class GameRoomService {
                 SkillResult skillResult = skillJob.skillAction();
 
                 if (skillResult != null) {
-                    sendGameSystemMessageToUsers(gameRoom, skillResult.affectedUsers(), skillResult.message());
+                    skillResult.messageResults().forEach(messageResult -> {
+                        sendGameSystemMessageToUsers(gameRoom, messageResult.affectedUsers(), messageResult.message());
+                        saveGameRoomToUsers(messageResult.affectedUsers());
+                    });
                 }
             }
         });
@@ -521,7 +525,10 @@ public class GameRoomService {
             SkillResult skillResult = skillJob.setSkill(requestGameRoomUser, request.jobType());
 
             if (skillResult != null) {
-                sendGameSystemMessageToUsers(gameRoom, skillResult.affectedUsers(), skillResult.message());
+                skillResult.messageResults().forEach(messageResult -> {
+                    sendGameSystemMessageToUsers(gameRoom, messageResult.affectedUsers(), messageResult.message());
+                    saveGameRoomToUsers(messageResult.affectedUsers());
+                });
             }
         }
 
