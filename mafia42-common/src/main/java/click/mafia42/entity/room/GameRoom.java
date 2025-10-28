@@ -9,6 +9,7 @@ import click.mafia42.job.server.MessageResult;
 import click.mafia42.job.server.SharedActiveType;
 import click.mafia42.job.server.SkillJob;
 import click.mafia42.job.server.SkillResult;
+import click.mafia42.job.server.citizen.special.Politician;
 import click.mafia42.job.server.citizen.special.Soldier;
 import click.mafia42.util.TimeUtil;
 import org.mindrot.jbcrypt.BCrypt;
@@ -223,18 +224,49 @@ public class GameRoom {
         players.forEach(GameRoomUser::resetSeduced);
     }
 
-    private long getAgreeUserCount() {
-        return players.stream().filter(GameRoomUser::isVoteAgree).count();
-    }
-
     public boolean isVotePassed() {
         return getAgreeUserCount() > getVoteAllowedPlayerCount() / 2;
+    }
+
+    private long getAgreeUserCount() {
+        return players.stream()
+                .filter(GameRoomUser::isVoteAgree)
+                .mapToLong(gUser -> {
+                    if (gUser.getJob() instanceof Politician && !gUser.isSeduced()) {
+                        return 2L;
+                    } else {
+                        return 1L;
+                    }
+                })
+                .sum();
+    }
+
+    private long getVoteAllowedPlayerCount() {
+        return players.stream()
+                .filter(gameRoomUser -> {
+                    boolean isAlive = gameRoomUser.getStatus() == GameUserStatus.ALIVE;
+                    boolean isNotBlackmailed = !gameRoomUser.isBlackmailed();
+                    return isAlive && isNotBlackmailed;
+                }).mapToLong(gUser -> {
+                    if (!gUser.isVoteAgree() && gUser.getJob() instanceof Politician && !gUser.isSeduced()) {
+                        return 2L;
+                    } else {
+                        return 1L;
+                    }
+                })
+                .sum();
     }
 
     public Optional<GameRoomUser> getMostVotedUser() {
         Map<GameRoomUser, Long> voteCountMap = players.stream()
                 .filter(gUser -> gUser.getVoteUser() != null)
                 .collect(Collectors.groupingBy(GameRoomUser::getVoteUser, Collectors.counting()));
+
+        voteCountMap.forEach((gUser, voteCount) -> {
+            if (gUser.getJob() instanceof Politician && !gUser.isSeduced()) {
+                voteCountMap.put(gUser, voteCount + 1);
+            }
+        });
 
         long maxVotes = voteCountMap.values().stream()
                 .max(Long::compare)
@@ -267,15 +299,6 @@ public class GameRoom {
     private long getAlivePlayerCount() {
         return players.stream()
                 .filter(gameRoomUser -> gameRoomUser.getStatus() == GameUserStatus.ALIVE).count();
-    }
-
-    private long getVoteAllowedPlayerCount() {
-        return players.stream()
-                .filter(gameRoomUser -> {
-                    boolean isAlive = gameRoomUser.getStatus() == GameUserStatus.ALIVE;
-                    boolean isNotBlackmailed = !gameRoomUser.isBlackmailed();
-                    return isAlive && isNotBlackmailed;
-                }).count();
     }
 
     public void increaseGameTime(GameRoomUser gameRoomUser) {
@@ -349,6 +372,10 @@ public class GameRoom {
     }
 
     public long getUserVoteCount(GameRoomUser gameRoomUser) {
+        if (gameRoomUser == null) {
+            return 0;
+        }
+
         return players.stream()
                 .filter(gUser -> gameRoomUser.equals(gUser.getVoteUser()))
                 .count();
@@ -399,6 +426,7 @@ public class GameRoom {
                         players))));
         return skillResult;
     }
+
     private SkillResult useSkillByJobType(JobType jobType) {
         SkillResult skillResult = new SkillResult();
 

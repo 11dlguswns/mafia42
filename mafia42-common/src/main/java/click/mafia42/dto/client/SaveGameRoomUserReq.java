@@ -19,6 +19,10 @@ public record SaveGameRoomUserReq(
     }
 
     public static SaveGameRoomUserReq from(GameRoomUser gameRoomUser, UUID currentUserId, long voteCount) {
+        if (gameRoomUser == null) {
+            return null;
+        }
+
         return new SaveGameRoomUserReq(
                 gameRoomUser.getNumber(),
                 gameRoomUser.getUser().getId(),

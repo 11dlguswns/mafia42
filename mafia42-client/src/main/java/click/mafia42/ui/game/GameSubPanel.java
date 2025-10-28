@@ -168,7 +168,7 @@ public class GameSubPanel extends JPanel {
     }
 
     public void showJudgmentVoteDialog() {
-        Optional<SaveGameRoomUserReq> mostVotedUser = DetailGameRoomProvider.detailGameRoom.fetchMostVotedUser();
+        Optional<SaveGameRoomUserReq> mostVotedUser = Optional.ofNullable(DetailGameRoomProvider.detailGameRoom.mostVotedUser());
         Optional<SaveGameRoomUserReq> currentUser = DetailGameRoomProvider.detailGameRoom.getGameRoomUser(UserInfoProvider.id);
         boolean isUserInStateDied = currentUser.isPresent() && currentUser.get().gameUserStatus() == GameUserStatus.DIE;
 

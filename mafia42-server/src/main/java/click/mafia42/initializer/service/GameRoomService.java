@@ -17,6 +17,7 @@ import click.mafia42.job.SkillTriggerTime;
 import click.mafia42.job.server.SharedActiveType;
 import click.mafia42.job.server.SkillJob;
 import click.mafia42.job.server.SkillResult;
+import click.mafia42.job.server.citizen.special.Politician;
 import click.mafia42.job.server.mafia.Thief;
 import click.mafia42.payload.Commend;
 import click.mafia42.payload.Payload;
@@ -383,8 +384,13 @@ public class GameRoomService {
                     if (mostVotedUserOptional.isPresent()) {
                         if (gameRoom.isVotePassed()) {
                             GameRoomUser mostVotedUser = mostVotedUserOptional.get();
-                            mostVotedUser.die();
-                            sendGameSystemMessageToGameRoomUsers(gameRoom, mostVotedUser.getUser().getNickname() + "님이 투표로 처형당했습니다.");
+
+                            if (mostVotedUser.getJob() instanceof Politician politician && !mostVotedUser.isSeduced()) {
+                                sendSkillResultByAffectedUsers(politician.passiveAction(), gameRoom);
+                            } else {
+                                mostVotedUser.die();
+                                sendGameSystemMessageToGameRoomUsers(gameRoom, mostVotedUser.getUser().getNickname() + "님이 투표로 처형당했습니다.");
+                            }
                         } else {
                             sendGameSystemMessageToGameRoomUsers(gameRoom, "투표가 부결되었습니다.");
                         }
@@ -405,12 +411,7 @@ public class GameRoomService {
                             sendGameSystemMessageToGameRoomUsers(gameRoom, "조용하게 밤이 넘어갔습니다.");
                         }
 
-                        if (!skillResult.isEmpty()) {
-                            skillResult.getMessageResults().forEach(messageResult -> {
-                                sendGameSystemMessageToUsers(gameRoom, messageResult.affectedUsers(), messageResult.message());
-                                saveGameRoomToUsers(messageResult.affectedUsers());
-                            });
-                        }
+                        sendSkillResultByAffectedUsers(skillResult, gameRoom);
                     }
 
                     useSkillBySkillTriggerTime(gameRoom, SkillTriggerTime.END_OF_NIGHT);
@@ -433,6 +434,17 @@ public class GameRoomService {
 
             gameRoom.updateEndTime();
             return new Payload(Commend.SAVE_GAME_ROOM, SaveDetailGameRoomReq.from(gameRoom, user.getId()));
+        });
+    }
+
+    private void sendSkillResultByAffectedUsers(SkillResult skillResult, GameRoom gameRoom) {
+        if (skillResult.isEmpty()) {
+            return;
+        }
+
+        skillResult.getMessageResults().forEach(messageResult -> {
+            sendGameSystemMessageToUsers(gameRoom, messageResult.affectedUsers(), messageResult.message());
+            saveGameRoomToUsers(messageResult.affectedUsers());
         });
     }
 
@@ -534,12 +546,7 @@ public class GameRoomService {
         if (gameRoomUser.getJob() instanceof SkillJob skillJob) {
             SkillResult skillResult = skillJob.setSkill(requestGameRoomUser, request.jobType());
 
-            if (!skillResult.isEmpty()) {
-                skillResult.getMessageResults().forEach(messageResult -> {
-                    sendGameSystemMessageToUsers(gameRoom, messageResult.affectedUsers(), messageResult.message());
-                    saveGameRoomToUsers(messageResult.affectedUsers());
-                });
-            }
+            sendSkillResultByAffectedUsers(skillResult, gameRoom);
         }
 
         return new Payload(Commend.SAVE_GAME_ROOM, SaveDetailGameRoomReq.from(gameRoom, user.getId()));
