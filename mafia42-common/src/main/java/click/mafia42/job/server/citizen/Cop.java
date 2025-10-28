@@ -5,9 +5,12 @@ import click.mafia42.entity.room.GameStatus;
 import click.mafia42.entity.room.GameUserStatus;
 import click.mafia42.job.JobType;
 import click.mafia42.job.SkillTriggerTime;
+import click.mafia42.job.server.MessageResult;
 import click.mafia42.job.server.SharedActiveType;
 import click.mafia42.job.server.SkillJob;
 import click.mafia42.job.server.SkillResult;
+
+import java.util.Set;
 
 public class Cop extends SkillJob {
     public Cop(GameRoomUser owner) {
@@ -21,8 +24,22 @@ public class Cop extends SkillJob {
 
     @Override
     public SkillResult skillAction() {
-        // TODO skill 구현
-        return null;
+        SkillResult skillResult = new SkillResult();
+
+        if (target.getJob().getJobType() == JobType.MAFIA) {
+            target.addVisibleToUserId(owner.getUser().getId());
+            skillResult.concat(new SkillResult(
+                    new MessageResult(
+                            target.getUser().getNickname() + "님은 마피아입니다.",
+                            Set.of(owner))));
+            return skillResult;
+        }
+
+        skillResult.concat(new SkillResult(
+                new MessageResult(
+                        target.getUser().getNickname() + "님은 마피아가 아닙니다.",
+                        Set.of(owner))));
+        return skillResult;
     }
 
     @Override
