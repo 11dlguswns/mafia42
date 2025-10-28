@@ -26,26 +26,27 @@ public class Spy extends SkillJob {
 
     @Override
     public SkillResult skillAction() {
-        List<MessageResult> messageResults = new ArrayList<>();
+        SkillResult skillResult = new SkillResult();
         target.addVisibleToUserId(owner.getUser().getId());
 
         if (target.getJob().getJobType() == JobType.MAFIA) {
             owner.connectWithMafia();
-            messageResults.add(new MessageResult("접선했습니다.", owner.getGameRoom().findUsersByMafiaTeam()));
-            return new SkillResult(messageResults);
+            skillResult.concat(new SkillResult(
+                    new MessageResult("접선했습니다.", owner.getGameRoom().findUsersByMafiaTeam())));
+            return skillResult;
         }
 
         if (target.getJob().getJobType() == JobType.SOLDIER) {
-            messageResults.add(new MessageResult(
+            skillResult.concat(new SkillResult(new MessageResult(
                     String.format("스파이 %s님이 당신을 조사했습니다.", owner.getUser().getNickname()),
-                    Set.of(target)));
+                    Set.of(target))));
             owner.addVisibleToUserId(target.getUser().getId());
         }
 
         target.addVisibleToUserId(owner.getUser().getId());
-        messageResults.add(new MessageResult("그 사람의 직업은 " + target.getJob().getJobType().getAlias(),
-                Set.of(owner)));
-        return new SkillResult(messageResults);
+        skillResult.concat(new SkillResult(
+                new MessageResult("그 사람의 직업은 " + target.getJob().getJobType().getAlias(), Set.of(owner))));
+        return skillResult;
     }
 
     @Override

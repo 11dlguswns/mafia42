@@ -6,5 +6,6 @@ public enum SkillTriggerTime {
     START_OF_MORNING,
     START_OF_NIGHT,
     ON_DEATH,
+    END_OF_VOTING,
     SPECIAL
 }

@@ -11,7 +11,10 @@ public abstract class PassiveJob extends Job {
 
     public SkillResult usePassive() {
         if (getOwner().getStatus() == GameUserStatus.DIE) {
-            return null;
+            return new SkillResult();
+        }
+        if (owner.isSeduced()) {
+            return new SkillResult();
         }
 
         return passiveAction();

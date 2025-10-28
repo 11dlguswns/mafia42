@@ -38,6 +38,9 @@ public abstract class SkillJob extends Job {
         if (getOwner().getStatus() == GameUserStatus.DIE) {
             return new SkillResult();
         }
+        if (owner.isSeduced()) {
+            return new SkillResult();
+        }
 
         SkillResult actionResult = skillAction();
         clearSkillAction();
@@ -59,6 +62,9 @@ public abstract class SkillJob extends Job {
         }
         if (!isValidTarget(target.getStatus())) {
             throw new GlobalException(GlobalExceptionCode.INVALID_SKILL_TARGET);
+        }
+        if (owner.isSeduced()) {
+            throw new GlobalException(GlobalExceptionCode.SEDUCED_CANNOT_USE_SKILL);
         }
 
         if (sharedActiveType == SharedActiveType.NONE) {

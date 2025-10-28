@@ -24,6 +24,7 @@ public class GameRoomUser implements Comparable<GameRoomUser> {
     private GameRoomUser voteUser;
     private Boolean voteAgree;
     private boolean isBlackmailed = false;
+    private boolean isSeduced = false;
     private boolean timeControlUsed = false;
     private GameRoom gameRoom;
 
@@ -102,6 +103,10 @@ public class GameRoomUser implements Comparable<GameRoomUser> {
     }
 
     public void die() {
+        if (job.getJobType() == JobType.HOSTESS) {
+            gameRoom.clearSeduced();
+        }
+
         status = GameUserStatus.DIE;
     }
 
@@ -191,5 +196,17 @@ public class GameRoomUser implements Comparable<GameRoomUser> {
 
     public void resetTimeControl() {
         this.timeControlUsed = false;
+    }
+
+    public boolean isSeduced() {
+        return isSeduced;
+    }
+
+    public void seduced() {
+        isSeduced = true;
+    }
+
+    public void resetSeduced() {
+        isSeduced = false;
     }
 }

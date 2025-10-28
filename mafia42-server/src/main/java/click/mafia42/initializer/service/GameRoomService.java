@@ -368,8 +368,13 @@ public class GameRoomService {
                 .orElseThrow(() -> new GlobalException(GlobalExceptionCode.NOT_JOIN_ROOM));
 
         return gameRoom.doWithLock(() -> {
+            GameStatus updateBeforeStatus = gameRoom.getStatus();
             if (!gameRoom.updateStatus()) {
                 return new Payload(Commend.SAVE_GAME_ROOM, SaveDetailGameRoomReq.from(gameRoom, user.getId()));
+            }
+
+            if (updateBeforeStatus == GameStatus.VOTING) {
+                useSkillBySkillTriggerTime(gameRoom, SkillTriggerTime.END_OF_VOTING);
             }
 
             switch (gameRoom.getStatus()) {
@@ -437,7 +442,7 @@ public class GameRoomService {
             if (gameRoomUserJob instanceof SkillJob skillJob && skillJob.isSkillTriggerTime(skillTriggerTime)) {
                 SkillResult skillResult = skillJob.skillAction();
 
-                if (skillResult != null) {
+                if (skillResult != null && !skillResult.isEmpty()) {
                     skillResult.getMessageResults().forEach(messageResult -> {
                         sendGameSystemMessageToUsers(gameRoom, messageResult.affectedUsers(), messageResult.message());
                         saveGameRoomToUsers(messageResult.affectedUsers());

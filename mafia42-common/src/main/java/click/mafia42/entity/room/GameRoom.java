@@ -219,6 +219,10 @@ public class GameRoom {
         players.forEach(GameRoomUser::clearVote);
     }
 
+    public void clearSeduced() {
+        players.forEach(GameRoomUser::resetSeduced);
+    }
+
     private long getAgreeUserCount() {
         return players.stream().filter(GameRoomUser::isVoteAgree).count();
     }
@@ -395,7 +399,6 @@ public class GameRoom {
                         players))));
         return skillResult;
     }
-
     private SkillResult useSkillByJobType(JobType jobType) {
         SkillResult skillResult = new SkillResult();
 
