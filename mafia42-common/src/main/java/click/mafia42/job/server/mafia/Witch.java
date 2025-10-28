@@ -3,14 +3,15 @@ package click.mafia42.job.server.mafia;
 import click.mafia42.entity.room.GameRoomUser;
 import click.mafia42.entity.room.GameStatus;
 import click.mafia42.entity.room.GameUserStatus;
-import click.mafia42.job.server.ActiveJob;
 import click.mafia42.job.JobType;
+import click.mafia42.job.server.SharedActiveType;
+import click.mafia42.job.server.SkillJob;
 import click.mafia42.job.server.SkillResult;
 import click.mafia42.job.SkillTriggerTime;
 
-public class Witch extends ActiveJob {
+public class Witch extends SkillJob {
     public Witch(GameRoomUser owner) {
-        super(owner);
+        super(owner, SharedActiveType.NONE);
     }
 
     @Override

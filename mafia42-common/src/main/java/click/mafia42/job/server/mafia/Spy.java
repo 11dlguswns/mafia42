@@ -5,17 +5,18 @@ import click.mafia42.entity.room.GameStatus;
 import click.mafia42.entity.room.GameUserStatus;
 import click.mafia42.job.JobType;
 import click.mafia42.job.SkillTriggerTime;
-import click.mafia42.job.server.ActiveJob;
 import click.mafia42.job.server.MessageResult;
+import click.mafia42.job.server.SharedActiveType;
+import click.mafia42.job.server.SkillJob;
 import click.mafia42.job.server.SkillResult;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-public class Spy extends ActiveJob {
+public class Spy extends SkillJob {
     public Spy(GameRoomUser owner) {
-        super(owner);
+        super(owner, SharedActiveType.NONE);
     }
 
     @Override

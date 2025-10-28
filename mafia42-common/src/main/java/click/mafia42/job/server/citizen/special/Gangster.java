@@ -3,14 +3,15 @@ package click.mafia42.job.server.citizen.special;
 import click.mafia42.entity.room.GameRoomUser;
 import click.mafia42.entity.room.GameStatus;
 import click.mafia42.entity.room.GameUserStatus;
-import click.mafia42.job.server.ActiveJob;
 import click.mafia42.job.JobType;
-import click.mafia42.job.server.SkillResult;
 import click.mafia42.job.SkillTriggerTime;
+import click.mafia42.job.server.SharedActiveType;
+import click.mafia42.job.server.SkillJob;
+import click.mafia42.job.server.SkillResult;
 
-public class Gangster extends ActiveJob {
+public class Gangster extends SkillJob {
     public Gangster(GameRoomUser owner) {
-        super(owner);
+        super(owner, SharedActiveType.NONE);
     }
 
     @Override

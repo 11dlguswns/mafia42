@@ -3,16 +3,16 @@ package click.mafia42.job.server.citizen;
 import click.mafia42.entity.room.GameRoomUser;
 import click.mafia42.entity.room.GameStatus;
 import click.mafia42.entity.room.GameUserStatus;
-import click.mafia42.job.server.ActiveJob;
 import click.mafia42.job.JobType;
+import click.mafia42.job.SkillTriggerTime;
 import click.mafia42.job.server.MessageResult;
 import click.mafia42.job.server.SharedActiveType;
+import click.mafia42.job.server.SkillJob;
 import click.mafia42.job.server.SkillResult;
-import click.mafia42.job.SkillTriggerTime;
 
-public class Doctor extends ActiveJob {
+public class Doctor extends SkillJob {
     public Doctor(GameRoomUser owner) {
-        super(owner);
+        super(owner, SharedActiveType.NONE);
     }
 
     @Override
@@ -28,7 +28,7 @@ public class Doctor extends ActiveJob {
         if (target != null && target.equals(mafiaTarget)) {
             skillResult.concat(
                     new SkillResult(new MessageResult(target.getUser().getNickname() + "님이 의사의 치료를 받았습니다.",
-                    owner.getGameRoom().getPlayers())));
+                            owner.getGameRoom().getPlayers())));
             return skillResult;
         }
 
