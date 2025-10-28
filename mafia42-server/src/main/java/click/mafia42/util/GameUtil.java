@@ -169,7 +169,10 @@ public class GameUtil {
 
     private static Set<JobType> getMafiaAssistanceJobsByClassic() {
         return Set.of(
-                JobType.HOSTESS
+                JobType.BEAST_MAN,
+                JobType.HOSTESS,
+                JobType.SPY,
+                JobType.THIEF
         );
     }
 
