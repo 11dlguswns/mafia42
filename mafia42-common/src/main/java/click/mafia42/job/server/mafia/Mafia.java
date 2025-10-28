@@ -4,13 +4,14 @@ import click.mafia42.entity.room.GameRoomUser;
 import click.mafia42.entity.room.GameStatus;
 import click.mafia42.entity.room.GameUserStatus;
 import click.mafia42.job.JobType;
-import click.mafia42.job.server.SharedActiveJob;
+import click.mafia42.job.server.SharedActiveType;
+import click.mafia42.job.server.SkillJob;
 import click.mafia42.job.server.SkillResult;
 import click.mafia42.job.SkillTriggerTime;
 
-public class Mafia extends SharedActiveJob {
+public class Mafia extends SkillJob {
     public Mafia(GameRoomUser owner) {
-        super(owner);
+        super(owner, SharedActiveType.MAFIA);
     }
 
     @Override
@@ -20,11 +21,15 @@ public class Mafia extends SharedActiveJob {
 
     @Override
     public SkillResult skillAction() {
+        SkillResult skillResult = new SkillResult();
+
         if (target == null) {
-            return null;
+            return skillResult;
         }
 
-        return target.getGameRoom().dieUser(target);
+        skillResult.concat(target.getGameRoom().dieUser(target));
+
+        return skillResult;
     }
 
     @Override

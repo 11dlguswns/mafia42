@@ -6,10 +6,10 @@ import click.mafia42.exception.GlobalException;
 import click.mafia42.exception.GlobalExceptionCode;
 import click.mafia42.job.JobType;
 import click.mafia42.job.server.MessageResult;
+import click.mafia42.job.server.SharedActiveType;
+import click.mafia42.job.server.SkillJob;
 import click.mafia42.job.server.SkillResult;
-import click.mafia42.job.server.citizen.Doctor;
 import click.mafia42.job.server.citizen.special.Soldier;
-import click.mafia42.job.server.mafia.Mafia;
 import click.mafia42.util.TimeUtil;
 import org.mindrot.jbcrypt.BCrypt;
 
@@ -375,25 +375,38 @@ public class GameRoom {
     }
 
     public SkillResult dieUser(GameRoomUser target) {
-        List<MessageResult> messageResults = new ArrayList<>();
-        List<GameRoomUser> doctors = findUsersByJobType(JobType.DOCTOR);
+        SkillResult skillResult = new SkillResult();
 
-        for (GameRoomUser gUser : doctors) {
-            if (gUser.getJob() instanceof Doctor doctor) {
-                SkillResult skillResult = doctor.useSkill();
-                if (skillResult != null) return skillResult;
-            }
-        }
+        skillResult.concat(useSkillByJobType(JobType.BEAST_MAN));
+        if (!skillResult.isEmpty()) return skillResult;
+
+        skillResult.concat(useSkillByJobType(JobType.DOCTOR));
+        if (!skillResult.isEmpty()) return skillResult;
 
         if (target.getJob() instanceof Soldier soldier) {
-            SkillResult skillResult = soldier.usePassive();
-            if (skillResult != null) return skillResult;
+            skillResult.concat(soldier.usePassive());
+            if (!skillResult.isEmpty()) return skillResult;
         }
 
         target.die();
-        messageResults.add(new MessageResult(
-                String.format("%s이(가) 살해당했습니다.", target.getUser().getNickname()), players));
-        return new SkillResult(messageResults);
+        skillResult.concat(new SkillResult(
+                List.of(new MessageResult(
+                        String.format("%s이(가) 살해당했습니다.", target.getUser().getNickname()),
+                        players))));
+        return skillResult;
+    }
+
+    private SkillResult useSkillByJobType(JobType jobType) {
+        SkillResult skillResult = new SkillResult();
+
+        List<GameRoomUser> usersByJobType = findUsersByJobType(jobType);
+        for (GameRoomUser gUser : usersByJobType) {
+            if (gUser.getJob() instanceof SkillJob skillJob) {
+                skillResult.concat(skillJob.useSkill());
+            }
+        }
+
+        return skillResult;
     }
 
     public Set<GameRoomUser> findUsersByMafiaTeam() {
@@ -409,13 +422,27 @@ public class GameRoom {
                 .toList();
     }
 
-    public GameRoomUser findMafiaTarget() {
-        GameRoomUser mafiaUser = findUsersByJobType(JobType.MAFIA).getFirst();
+    public GameRoomUser findSharedActiveTarget(SharedActiveType sharedActiveType) {
+        Optional<GameRoomUser> sharedActiveUser = findUserBySharedActive(sharedActiveType);
 
-        if (mafiaUser.getJob() instanceof Mafia mafia) {
-            return mafia.getTarget();
+        if (sharedActiveUser.isPresent()) {
+            if (sharedActiveUser.get().getJob() instanceof SkillJob skillJob) {
+                return skillJob.getTarget();
+            }
         }
+
         return null;
+    }
+
+    public Optional<GameRoomUser> findUserBySharedActive(SharedActiveType sharedActiveType) {
+        return players.stream()
+                .filter(gUser -> {
+                    if (gUser.getStatus() == GameUserStatus.ALIVE && gUser.getJob() instanceof SkillJob skillJob) {
+                        return skillJob.getSharedActiveType() == sharedActiveType;
+                    }
+
+                    return false;
+                }).findFirst();
     }
 
     public <T> T doWithLock(Supplier<T> action) {

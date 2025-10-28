@@ -12,20 +12,16 @@ import click.mafia42.job.SkillTriggerTime;
 public abstract class SkillJob extends Job {
     protected GameRoomUser target;
     protected JobType skillJobType;
+    protected SharedActiveType sharedActiveType;
 
-    protected SkillJob(GameRoomUser owner) {
+    protected SkillJob(GameRoomUser owner, SharedActiveType sharedActiveType) {
         super(owner);
+        this.sharedActiveType = sharedActiveType;
     }
 
     protected SkillResult setSkillTarget(GameRoomUser target, JobType skillJobType) {
         if (getOwner().getStatus() == GameUserStatus.DIE) {
             throw new GlobalException(GlobalExceptionCode.SKILL_USE_NOT_ALLOWED);
-        }
-        if (!isSkillSetApproved(target.getGameRoom().getStatus())) {
-            throw new GlobalException(GlobalExceptionCode.SKILL_USE_NOT_ALLOWED);
-        }
-        if (!isValidTarget(target.getStatus())) {
-            throw new GlobalException(GlobalExceptionCode.INVALID_SKILL_TARGET);
         }
 
         this.target = target;
@@ -35,12 +31,12 @@ public abstract class SkillJob extends Job {
             return useSkill();
         }
 
-        return null;
+        return new SkillResult();
     }
 
     public SkillResult useSkill() {
         if (getOwner().getStatus() == GameUserStatus.DIE) {
-            return null;
+            return new SkillResult();
         }
 
         SkillResult actionResult = skillAction();
@@ -53,7 +49,37 @@ public abstract class SkillJob extends Job {
         return target;
     }
 
-    abstract public SkillResult setSkill(GameRoomUser target, JobType skillJobType);
+    public SharedActiveType getSharedActiveType() {
+        return sharedActiveType;
+    }
+
+    public SkillResult setSkill(GameRoomUser target, JobType skillJobType) {
+        if (!isSkillSetApproved(target.getGameRoom().getStatus())) {
+            throw new GlobalException(GlobalExceptionCode.SKILL_USE_NOT_ALLOWED);
+        }
+        if (!isValidTarget(target.getStatus())) {
+            throw new GlobalException(GlobalExceptionCode.INVALID_SKILL_TARGET);
+        }
+
+        if (sharedActiveType == SharedActiveType.NONE) {
+            return setSkillTarget(target, skillJobType);
+        }
+
+        for (GameRoomUser gUser : owner.getGameRoom().getPlayers()) {
+            if (gUser.getJob() instanceof SkillJob skillJob) {
+                if (skillJob.sharedActiveType != sharedActiveType) {
+                    continue;
+                }
+                if (skillJob.getOwner().getStatus() == GameUserStatus.DIE) {
+                    continue;
+                }
+
+                return skillJob.setSkillTarget(target, skillJobType);
+            }
+        }
+
+        return new SkillResult();
+    }
 
     public void clearSkill() {
         target = null;
@@ -62,7 +88,22 @@ public abstract class SkillJob extends Job {
 
     abstract public SkillResult skillAction();
 
-    abstract public void clearSkillAction();
+    public void clearSkillAction() {
+        if (sharedActiveType == SharedActiveType.NONE) {
+            clearSkill();
+            return;
+        }
+
+        for (GameRoomUser gUser : owner.getGameRoom().getPlayers()) {
+            if (gUser.getJob() instanceof SkillJob skillJob) {
+                if (skillJob.sharedActiveType != sharedActiveType) {
+                    continue;
+                }
+
+                skillJob.clearSkill();
+            }
+        }
+    }
 
     abstract public boolean isSkillTriggerTime(SkillTriggerTime skillTriggerTime);
 

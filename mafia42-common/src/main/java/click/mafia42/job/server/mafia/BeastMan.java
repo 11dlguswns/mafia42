@@ -3,14 +3,16 @@ package click.mafia42.job.server.mafia;
 import click.mafia42.entity.room.GameRoomUser;
 import click.mafia42.entity.room.GameStatus;
 import click.mafia42.entity.room.GameUserStatus;
-import click.mafia42.job.server.ActiveJob;
 import click.mafia42.job.JobType;
-import click.mafia42.job.server.SkillResult;
 import click.mafia42.job.SkillTriggerTime;
+import click.mafia42.job.server.MessageResult;
+import click.mafia42.job.server.SharedActiveType;
+import click.mafia42.job.server.SkillJob;
+import click.mafia42.job.server.SkillResult;
 
-public class BeastMan extends ActiveJob {
+public class BeastMan extends SkillJob {
     public BeastMan(GameRoomUser owner) {
-        super(owner);
+        super(owner, SharedActiveType.NONE);
     }
 
     @Override
@@ -20,13 +22,40 @@ public class BeastMan extends ActiveJob {
 
     @Override
     public SkillResult skillAction() {
-        // TODO skill 구현
-        return null;
+        SkillResult skillResult = new SkillResult();
+
+        if (owner.equals(owner.getGameRoom().findSharedActiveTarget(SharedActiveType.MAFIA))) {
+            if (!owner.isContacted()) {
+                owner.connectWithMafia();
+                sharedActiveType = SharedActiveType.MAFIA;
+                skillResult.concat(new SkillResult(
+                        new MessageResult("길들여졌습니다.", owner.getGameRoom().findUsersByMafiaTeam())));
+            }
+
+            return skillResult;
+        }
+
+        if (target != null && target.equals(owner.getGameRoom().findSharedActiveTarget(SharedActiveType.MAFIA))) {
+            target.die();
+            skillResult.concat(new SkillResult(new MessageResult(
+                    target.getUser().getNickname() + "님이 짐승에게 습격당하였습니다.",
+                    owner.getGameRoom().getPlayers())));
+
+            if (!owner.isContacted()) {
+                owner.connectWithMafia();
+                sharedActiveType = SharedActiveType.MAFIA;
+                skillResult.concat(new SkillResult(
+                        new MessageResult("길들여졌습니다.", owner.getGameRoom().findUsersByMafiaTeam())));
+            }
+            return skillResult;
+        }
+
+        return skillResult;
     }
 
     @Override
     public boolean isSkillTriggerTime(SkillTriggerTime skillTriggerTime) {
-        return skillTriggerTime == SkillTriggerTime.END_OF_NIGHT;
+        return skillTriggerTime == SkillTriggerTime.SPECIAL;
     }
 
     @Override

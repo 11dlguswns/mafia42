@@ -14,9 +14,9 @@ import click.mafia42.exception.GlobalExceptionCode;
 import click.mafia42.job.Job;
 import click.mafia42.job.JobType;
 import click.mafia42.job.SkillTriggerTime;
+import click.mafia42.job.server.SharedActiveType;
 import click.mafia42.job.server.SkillJob;
 import click.mafia42.job.server.SkillResult;
-import click.mafia42.job.server.mafia.Mafia;
 import click.mafia42.job.server.mafia.Thief;
 import click.mafia42.payload.Commend;
 import click.mafia42.payload.Payload;
@@ -351,7 +351,7 @@ public class GameRoomService {
             case PSYCHIC, DIE -> visibleChatToUsers.addAll(gameRoom.getPlayers().stream()
                     .filter(gUser ->
                             gUser.getStatus() == GameUserStatus.DIE ||
-                            gUser.getJob().getJobType() == JobType.PSYCHIC).toList());
+                                    gUser.getJob().getJobType() == JobType.PSYCHIC).toList());
             case MAFIA -> {
                 visibleChatToUsers.addAll(gameRoom.findUsersByMafiaTeam());
             }
@@ -391,20 +391,25 @@ public class GameRoomService {
                 }
                 case MORNING -> {
                     gameRoom.startMorningEvent();
-                    gameRoom.getPlayers().forEach(gameRoomUser -> {
-                        if (gameRoomUser.getJob() instanceof Mafia mafia) {
-                            GameRoomUser mafiaTarget = mafia.getTarget();
-                            if (mafiaTarget != null && mafiaTarget.getStatus() == GameUserStatus.ALIVE) {
-                                SkillResult skillResult = mafia.useSkill();
-                                skillResult.messageResults().forEach(messageResult -> {
-                                    sendGameSystemMessageToUsers(gameRoom, messageResult.affectedUsers(), messageResult.message());
-                                    saveGameRoomToUsers(messageResult.affectedUsers());
-                                });
-                            }
+                    Optional<GameRoomUser> mafiaUser = gameRoom.findUserBySharedActive(SharedActiveType.MAFIA);
+
+                    if (mafiaUser.isPresent() && mafiaUser.get().getJob() instanceof SkillJob skillJob) {
+                        SkillResult skillResult = skillJob.useSkill();
+
+                        if (skillResult.isEmpty() || !skillResult.hasMessageToAllUser(gameRoom)) {
+                            sendGameSystemMessageToGameRoomUsers(gameRoom, "조용하게 밤이 넘어갔습니다.");
                         }
-                    });
+
+                        if (!skillResult.isEmpty()) {
+                            skillResult.getMessageResults().forEach(messageResult -> {
+                                sendGameSystemMessageToUsers(gameRoom, messageResult.affectedUsers(), messageResult.message());
+                                saveGameRoomToUsers(messageResult.affectedUsers());
+                            });
+                        }
+                    }
+
                     useSkillBySkillTriggerTime(gameRoom, SkillTriggerTime.END_OF_NIGHT);
-                    sendGameSystemMessageToGameRoomUsers(gameRoom, "아침이 밝았습니다");
+                    sendGameSystemMessageToGameRoomUsers(gameRoom, "날이 밝았습니다.");
                     useSkillBySkillTriggerTime(gameRoom, SkillTriggerTime.START_OF_MORNING);
                 }
                 case VOTING -> {
@@ -433,7 +438,7 @@ public class GameRoomService {
                 SkillResult skillResult = skillJob.skillAction();
 
                 if (skillResult != null) {
-                    skillResult.messageResults().forEach(messageResult -> {
+                    skillResult.getMessageResults().forEach(messageResult -> {
                         sendGameSystemMessageToUsers(gameRoom, messageResult.affectedUsers(), messageResult.message());
                         saveGameRoomToUsers(messageResult.affectedUsers());
                     });
@@ -524,8 +529,8 @@ public class GameRoomService {
         if (gameRoomUser.getJob() instanceof SkillJob skillJob) {
             SkillResult skillResult = skillJob.setSkill(requestGameRoomUser, request.jobType());
 
-            if (skillResult != null) {
-                skillResult.messageResults().forEach(messageResult -> {
+            if (!skillResult.isEmpty()) {
+                skillResult.getMessageResults().forEach(messageResult -> {
                     sendGameSystemMessageToUsers(gameRoom, messageResult.affectedUsers(), messageResult.message());
                     saveGameRoomToUsers(messageResult.affectedUsers());
                 });

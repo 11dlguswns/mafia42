@@ -6,11 +6,9 @@ import click.mafia42.entity.room.GameUserStatus;
 import click.mafia42.job.server.ActiveJob;
 import click.mafia42.job.JobType;
 import click.mafia42.job.server.MessageResult;
+import click.mafia42.job.server.SharedActiveType;
 import click.mafia42.job.server.SkillResult;
 import click.mafia42.job.SkillTriggerTime;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class Doctor extends ActiveJob {
     public Doctor(GameRoomUser owner) {
@@ -24,16 +22,17 @@ public class Doctor extends ActiveJob {
 
     @Override
     public SkillResult skillAction() {
-        List<MessageResult> messageResults = new ArrayList<>();
+        SkillResult skillResult = new SkillResult();
 
-        GameRoomUser mafiaTarget = owner.getGameRoom().findMafiaTarget();
+        GameRoomUser mafiaTarget = owner.getGameRoom().findSharedActiveTarget(SharedActiveType.MAFIA);
         if (target != null && target.equals(mafiaTarget)) {
-            messageResults.add(new MessageResult(target.getUser().getNickname() + "님이 의사의 치료를 받았습니다.",
-                    owner.getGameRoom().getPlayers()));
-            return new SkillResult(messageResults);
+            skillResult.concat(
+                    new SkillResult(new MessageResult(target.getUser().getNickname() + "님이 의사의 치료를 받았습니다.",
+                    owner.getGameRoom().getPlayers())));
+            return skillResult;
         }
 
-        return null;
+        return skillResult;
     }
 
     @Override

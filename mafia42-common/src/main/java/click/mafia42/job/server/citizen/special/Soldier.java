@@ -6,9 +6,6 @@ import click.mafia42.job.server.MessageResult;
 import click.mafia42.job.server.PassiveJob;
 import click.mafia42.job.server.SkillResult;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class Soldier extends PassiveJob {
     private boolean isBulletBlocked = false;
 
@@ -18,19 +15,19 @@ public class Soldier extends PassiveJob {
 
     @Override
     public SkillResult passiveAction() {
-        List<MessageResult> messageResults = new ArrayList<>();
+        SkillResult skillResult = new SkillResult();
 
         if (!isBulletBlocked) {
             owner.addVisibleAllUser();
             isBulletBlocked = true;
 
-            messageResults.add(new MessageResult(
+            skillResult.concat(new SkillResult(new MessageResult(
                     String.format("군인 %s님이 공격을 버텨냈습니다.", owner.getUser().getNickname()),
-                    owner.getGameRoom().getPlayers()));
-            return new SkillResult(messageResults);
+                    owner.getGameRoom().getPlayers())));
+            return skillResult;
         }
 
-        return null;
+        return skillResult;
     }
 
     @Override

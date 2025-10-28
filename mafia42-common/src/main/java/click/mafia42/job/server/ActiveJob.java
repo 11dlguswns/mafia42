@@ -5,7 +5,7 @@ import click.mafia42.job.JobType;
 
 public abstract class ActiveJob extends SkillJob {
     public ActiveJob(GameRoomUser owner) {
-        super(owner);
+        super(owner, SharedActiveType.NONE);
     }
 
     @Override
