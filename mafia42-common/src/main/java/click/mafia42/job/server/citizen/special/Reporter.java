@@ -5,9 +5,7 @@ import click.mafia42.entity.room.GameStatus;
 import click.mafia42.entity.room.GameUserStatus;
 import click.mafia42.job.JobType;
 import click.mafia42.job.SkillTriggerTime;
-import click.mafia42.job.server.SharedActiveType;
-import click.mafia42.job.server.SkillJob;
-import click.mafia42.job.server.SkillResult;
+import click.mafia42.job.server.*;
 
 public class Reporter extends SkillJob {
     public Reporter(GameRoomUser owner) {
@@ -21,8 +19,16 @@ public class Reporter extends SkillJob {
 
     @Override
     public SkillResult skillAction() {
-        // TODO skill 구현
-        return null;
+        SkillResult skillResult = new SkillResult();
+
+        target.addVisibleAllUser();
+        skillResult.concat(new SkillResult(
+                new MessageResult(String.format("특종입니다! %s님이 %s(이)라는 소식입니다!",
+                        target.getUser().getNickname(),
+                        target.getJob().getJobType().getAlias()
+                ), owner.getGameRoom().getPlayers())));
+
+        return skillResult;
     }
 
     @Override
