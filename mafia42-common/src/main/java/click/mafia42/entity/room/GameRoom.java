@@ -9,6 +9,7 @@ import click.mafia42.job.server.MessageResult;
 import click.mafia42.job.server.SharedActiveType;
 import click.mafia42.job.server.SkillJob;
 import click.mafia42.job.server.SkillResult;
+import click.mafia42.job.server.citizen.special.Lover;
 import click.mafia42.job.server.citizen.special.Politician;
 import click.mafia42.job.server.citizen.special.Soldier;
 import click.mafia42.util.TimeUtil;
@@ -416,6 +417,11 @@ public class GameRoom {
 
         if (target.getJob() instanceof Soldier soldier) {
             skillResult.concat(soldier.usePassive());
+            if (!skillResult.isEmpty()) return skillResult;
+        }
+
+        if (target.getJob() instanceof Lover lover) {
+            skillResult.concat(lover.usePassive());
             if (!skillResult.isEmpty()) return skillResult;
         }
 
