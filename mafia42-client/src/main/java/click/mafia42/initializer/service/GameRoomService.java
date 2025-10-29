@@ -92,10 +92,16 @@ public class GameRoomService {
         SaveGameRoomUserReq gameRoomUser = DetailGameRoomProvider.detailGameRoom.getGameRoomUser(request.userId())
                 .orElseThrow(() -> new GlobalException(GlobalExceptionCode.NOT_JOIN_ROOM));
 
+        String message = String.format("[%s] %s | %s",
+                gameRoomUser.fetchJobAlias(),
+                gameRoomUser.name(),
+                request.message());
+
+        if (gameRoomUser.isAscended()) {
+            message = "(성불) " + message;
+        }
+
         clientUI.getGamePanel().chatAreaAppendText(
-                String.format("[%s] %s | %s",
-                        gameRoomUser.fetchJobAlias(),
-                        gameRoomUser.name(),
-                        request.message()), request.messageType().getColor());
+                message, request.messageType().getColor());
     }
 }

@@ -25,6 +25,7 @@ public class GameRoomUser implements Comparable<GameRoomUser> {
     private Boolean voteAgree;
     private boolean isBlackmailed = false;
     private boolean isSeduced = false;
+    private boolean isAscended = false;
     private boolean timeControlUsed = false;
     private GameRoom gameRoom;
 
@@ -208,5 +209,18 @@ public class GameRoomUser implements Comparable<GameRoomUser> {
 
     public void resetSeduced() {
         isSeduced = false;
+    }
+
+    public boolean isAscended() {
+        return isAscended;
+    }
+
+    public void ascended(GameRoomUser owner) {
+        visibleToUserIds.add(owner.getUser().getId());
+        isAscended = true;
+    }
+
+    public void resetAscended() {
+        isAscended = false;
     }
 }

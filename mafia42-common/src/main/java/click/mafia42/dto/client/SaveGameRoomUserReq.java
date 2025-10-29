@@ -12,7 +12,10 @@ public record SaveGameRoomUserReq(
         String name,
         JobType jobType,
         GameUserStatus gameUserStatus,
-        long voteCount
+        long voteCount,
+        boolean isBlackmailed,
+        boolean isSeduced,
+        boolean isAscended
 ) {
     public String fetchJobAlias() {
         return jobType != null ? jobType.getAlias() : "?";
@@ -29,8 +32,35 @@ public record SaveGameRoomUserReq(
                 gameRoomUser.getUser().getNickname(),
                 getJobType(gameRoomUser, currentUserId),
                 gameRoomUser.getStatus(),
-                voteCount
+                voteCount,
+                isBlackmailed(gameRoomUser, currentUserId),
+                isSeduced(gameRoomUser, currentUserId),
+                isAscended(gameRoomUser, currentUserId)
         );
+    }
+
+    private static boolean isBlackmailed(GameRoomUser gameRoomUser, UUID currentUserId) {
+        if (gameRoomUser.getUser().getId().equals(currentUserId)) {
+            return gameRoomUser.isBlackmailed();
+        } else {
+            return false;
+        }
+    }
+
+    private static boolean isSeduced(GameRoomUser gameRoomUser, UUID currentUserId) {
+        if (gameRoomUser.getUser().getId().equals(currentUserId)) {
+            return gameRoomUser.isSeduced();
+        } else {
+            return false;
+        }
+    }
+
+    private static boolean isAscended(GameRoomUser gameRoomUser, UUID currentUserId) {
+        if (gameRoomUser.getUser().getId().equals(currentUserId) || gameRoomUser.getJob() != null && gameRoomUser.getJob().getJobType() == JobType.PSYCHIC) {
+            return gameRoomUser.isAscended();
+        } else {
+            return false;
+        }
     }
 
     private static JobType getJobType(GameRoomUser gameRoomUser, UUID currentUserId) {

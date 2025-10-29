@@ -245,6 +245,10 @@ public class GameRoomService {
         visibleChatToUsers.addAll(gameRoom.getPlayers().stream()
                 .filter(gUser -> gUser.getStatus() == GameUserStatus.DIE).toList());
 
+        if (gameRoomUser.isAscended()) {
+            visibleChatToUsers = Set.of(gameRoomUser);
+        }
+
         SaveGameMessageReq saveGameMessageReq = new SaveGameMessageReq(user.getId(), request.message(), messageType);
         gameRoom.addGameMessage(saveGameMessageReq, visibleChatToUsers);
         Payload payload = new Payload(
