@@ -172,6 +172,10 @@ public class GameSubPanel extends JPanel {
         Optional<SaveGameRoomUserReq> currentUser = DetailGameRoomProvider.detailGameRoom.getGameRoomUser(UserInfoProvider.id);
         boolean isUserInStateDied = currentUser.isPresent() && currentUser.get().gameUserStatus() == GameUserStatus.DIE;
 
+        if (currentUser.isPresent() && currentUser.get().isBlackmailed()) {
+            return;
+        }
+
         if (mostVotedUser.isEmpty() || isUserInStateDied) {
             return;
         }

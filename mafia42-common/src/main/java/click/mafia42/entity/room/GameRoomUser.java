@@ -128,6 +128,10 @@ public class GameRoomUser implements Comparable<GameRoomUser> {
             throw new GlobalException(GlobalExceptionCode.VOTE_NOT_ALLOWED);
         }
 
+        if (isBlackmailed) {
+            throw new GlobalException(GlobalExceptionCode.BLACKMAILED_CANNOT_VOTE);
+        }
+
         this.voteUser = voteUser;
     }
 
@@ -144,6 +148,10 @@ public class GameRoomUser implements Comparable<GameRoomUser> {
             throw new GlobalException(GlobalExceptionCode.VOTE_AGREE_OR_DISAGREE_NOT_ALLOWED);
         }
 
+        if (isBlackmailed) {
+            throw new GlobalException(GlobalExceptionCode.BLACKMAILED_CANNOT_VOTE_AGREE_OR_DISAGREE);
+        }
+
         voteAgree = true;
     }
 
@@ -154,6 +162,10 @@ public class GameRoomUser implements Comparable<GameRoomUser> {
 
         if (status == GameUserStatus.DIE) {
             throw new GlobalException(GlobalExceptionCode.VOTE_AGREE_OR_DISAGREE_NOT_ALLOWED);
+        }
+
+        if (isBlackmailed) {
+            throw new GlobalException(GlobalExceptionCode.BLACKMAILED_CANNOT_VOTE_AGREE_OR_DISAGREE);
         }
 
         voteAgree = false;

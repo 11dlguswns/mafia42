@@ -5,9 +5,12 @@ import click.mafia42.entity.room.GameStatus;
 import click.mafia42.entity.room.GameUserStatus;
 import click.mafia42.job.JobType;
 import click.mafia42.job.SkillTriggerTime;
+import click.mafia42.job.server.MessageResult;
 import click.mafia42.job.server.SharedActiveType;
 import click.mafia42.job.server.SkillJob;
 import click.mafia42.job.server.SkillResult;
+
+import java.util.Set;
 
 public class Gangster extends SkillJob {
     public Gangster(GameRoomUser owner) {
@@ -21,8 +24,15 @@ public class Gangster extends SkillJob {
 
     @Override
     public SkillResult skillAction() {
-        // TODO skill 구현
-        return null;
+        SkillResult skillResult = new SkillResult();
+
+        target.blackmailed();
+        skillResult.concat(new SkillResult(
+                new MessageResult(target.getUser().getNickname() + "님에게 위협을 가하였습니다.", Set.of(owner))));
+        skillResult.concat(new SkillResult(
+                new MessageResult("의문의 괴한으로부터 협박을 당했습니다.", Set.of(target))));
+
+        return skillResult;
     }
 
     @Override

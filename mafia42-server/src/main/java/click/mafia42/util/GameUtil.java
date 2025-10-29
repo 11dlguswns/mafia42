@@ -182,6 +182,8 @@ public class GameUtil {
                 JobType.POLITICIAN,
                 JobType.PSYCHIC,
                 JobType.LOVER,
+                JobType.GANGSTER,
+                JobType.REPORTER,
                 JobType.DETECTIVE,
                 JobType.GHOUL,
                 JobType.MARTYR,
