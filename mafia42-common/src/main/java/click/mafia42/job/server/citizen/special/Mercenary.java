@@ -11,7 +11,7 @@ import click.mafia42.job.server.SkillResult;
 
 public class Mercenary extends SkillJob {
     public Mercenary(GameRoomUser owner) {
-        super(owner, SharedActiveType.NONE);
+        super(owner, SharedActiveType.NONE, true);
     }
 
     @Override

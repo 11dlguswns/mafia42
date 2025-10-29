@@ -11,7 +11,7 @@ import click.mafia42.job.server.SkillResult;
 
 public class Hacker extends SkillJob {
     public Hacker(GameRoomUser owner) {
-        super(owner, SharedActiveType.NONE);
+        super(owner, SharedActiveType.NONE, false);
     }
 
     @Override

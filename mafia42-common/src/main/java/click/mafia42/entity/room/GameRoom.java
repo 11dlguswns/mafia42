@@ -193,10 +193,11 @@ public class GameRoom {
         endTimeSecond = Instant.now().plus(getGameTime()).getEpochSecond();
     }
 
-    public void endMorningEvent() {
+    public void startNightEvent() {
         clearVotes();
         clearAgreeUser();
         clearBlackMailed();
+        clearJobSkill();
     }
 
     public void startMorningEvent() {
@@ -219,6 +220,14 @@ public class GameRoom {
 
     public void clearVotes() {
         players.forEach(GameRoomUser::clearVote);
+    }
+
+    public void clearJobSkill() {
+        players.forEach(gUser -> {
+            if (gUser.getJob() instanceof SkillJob skillJob && skillJob.isCanClearSkill()) {
+                skillJob.clearSkillAction();
+            }
+        });
     }
 
     public void clearSeduced() {

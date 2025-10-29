@@ -14,7 +14,7 @@ import java.util.Set;
 
 public class Hostess extends SkillJob {
     public Hostess(GameRoomUser owner) {
-        super(owner, SharedActiveType.NONE);
+        super(owner, SharedActiveType.NONE, true);
     }
 
     @Override

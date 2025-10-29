@@ -14,7 +14,7 @@ import java.util.Set;
 
 public class Cop extends SkillJob {
     public Cop(GameRoomUser owner) {
-        super(owner, SharedActiveType.NONE);
+        super(owner, SharedActiveType.NONE, true);
     }
 
     @Override
@@ -49,7 +49,7 @@ public class Cop extends SkillJob {
 
     @Override
     public boolean isSkillSetApproved(GameStatus gameStatus) {
-        return gameStatus == GameStatus.NIGHT;
+        return gameStatus == GameStatus.NIGHT && target == null;
     }
 
     @Override

@@ -12,7 +12,7 @@ import click.mafia42.job.server.SkillResult;
 
 public class Doctor extends SkillJob {
     public Doctor(GameRoomUser owner) {
-        super(owner, SharedActiveType.NONE);
+        super(owner, SharedActiveType.NONE, true);
     }
 
     @Override

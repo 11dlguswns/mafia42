@@ -13,10 +13,12 @@ public abstract class SkillJob extends Job {
     protected GameRoomUser target;
     protected JobType skillJobType;
     protected SharedActiveType sharedActiveType;
+    protected boolean canClearSkill;
 
-    protected SkillJob(GameRoomUser owner, SharedActiveType sharedActiveType) {
+    protected SkillJob(GameRoomUser owner, SharedActiveType sharedActiveType, boolean canClearSkill) {
         super(owner);
         this.sharedActiveType = sharedActiveType;
+        this.canClearSkill = canClearSkill;
     }
 
     protected SkillResult setSkillTarget(GameRoomUser target, JobType skillJobType) {
@@ -42,10 +44,7 @@ public abstract class SkillJob extends Job {
             return new SkillResult();
         }
 
-        SkillResult actionResult = skillAction();
-        clearSkillAction();
-
-        return actionResult;
+        return skillAction();
     }
 
     public GameRoomUser getTarget() {
@@ -54,6 +53,10 @@ public abstract class SkillJob extends Job {
 
     public SharedActiveType getSharedActiveType() {
         return sharedActiveType;
+    }
+
+    public boolean isCanClearSkill() {
+        return canClearSkill;
     }
 
     public SkillResult setSkill(GameRoomUser target, JobType skillJobType) {

@@ -400,7 +400,7 @@ public class GameRoomService {
                         }
                     }
 
-                    gameRoom.endMorningEvent();
+                    gameRoom.startNightEvent();
                     sendGameSystemMessageToGameRoomUsers(gameRoom, "밤이 되었습니다");
                     useSkillBySkillTriggerTime(gameRoom, SkillTriggerTime.START_OF_NIGHT);
                 }

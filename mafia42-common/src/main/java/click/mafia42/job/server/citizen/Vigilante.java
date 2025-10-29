@@ -11,7 +11,7 @@ import click.mafia42.job.server.SkillResult;
 
 public class Vigilante extends SkillJob {
     public Vigilante(GameRoomUser owner) {
-        super(owner, SharedActiveType.NONE);
+        super(owner, SharedActiveType.NONE, false);
     }
 
     @Override

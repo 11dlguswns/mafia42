@@ -14,7 +14,7 @@ import java.util.Set;
 
 public class Gangster extends SkillJob {
     public Gangster(GameRoomUser owner) {
-        super(owner, SharedActiveType.NONE);
+        super(owner, SharedActiveType.NONE, true);
     }
 
     @Override

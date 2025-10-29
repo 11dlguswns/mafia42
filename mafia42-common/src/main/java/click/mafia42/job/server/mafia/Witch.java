@@ -11,7 +11,7 @@ import click.mafia42.job.SkillTriggerTime;
 
 public class Witch extends SkillJob {
     public Witch(GameRoomUser owner) {
-        super(owner, SharedActiveType.NONE);
+        super(owner, SharedActiveType.NONE, true);
     }
 
     @Override

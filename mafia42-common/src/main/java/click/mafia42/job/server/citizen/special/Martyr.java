@@ -13,7 +13,7 @@ import java.util.Optional;
 
 public class Martyr extends SkillJob {
     public Martyr(GameRoomUser owner) {
-        super(owner, SharedActiveType.NONE);
+        super(owner, SharedActiveType.NONE, true);
     }
 
     @Override

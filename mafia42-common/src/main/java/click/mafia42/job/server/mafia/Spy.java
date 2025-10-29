@@ -16,7 +16,7 @@ import java.util.Set;
 
 public class Spy extends SkillJob {
     public Spy(GameRoomUser owner) {
-        super(owner, SharedActiveType.NONE);
+        super(owner, SharedActiveType.NONE, true);
     }
 
     @Override

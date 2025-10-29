@@ -48,6 +48,7 @@ public enum GlobalExceptionCode {
     VOTE_TARGET_DEAD_NOT_ALLOWED("죽은 대상을 투표할 수 없습니다."),
     VOTE_AGREE_OR_DISAGREE_NOT_ALLOWED("찬성 반대 투표를 할 수 없는 상태입니다."),
     BLACKMAILED_CANNOT_VOTE_AGREE_OR_DISAGREE("협박당해 찬성 반대 투표를 할 수 없습니다."),
+    ALREADY_USED_SKILL("이미 스킬을 사용했습니다."),
     ;
 
     private final String message;

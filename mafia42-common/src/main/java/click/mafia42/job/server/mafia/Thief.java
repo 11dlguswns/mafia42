@@ -14,7 +14,7 @@ public class Thief extends SkillJob {
     private Job stealJob;
 
     public Thief(GameRoomUser owner) {
-        super(owner, SharedActiveType.NONE);
+        super(owner, SharedActiveType.NONE, true);
     }
 
     public Job getStealJob() {

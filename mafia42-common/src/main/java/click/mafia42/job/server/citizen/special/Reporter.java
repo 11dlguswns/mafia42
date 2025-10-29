@@ -11,7 +11,7 @@ import click.mafia42.job.server.SkillResult;
 
 public class Reporter extends SkillJob {
     public Reporter(GameRoomUser owner) {
-        super(owner, SharedActiveType.NONE);
+        super(owner, SharedActiveType.NONE, false);
     }
 
     @Override
@@ -32,7 +32,7 @@ public class Reporter extends SkillJob {
 
     @Override
     public boolean isSkillSetApproved(GameStatus gameStatus) {
-        return gameStatus == GameStatus.NIGHT;
+        return gameStatus == GameStatus.NIGHT && target == null;
     }
 
     @Override

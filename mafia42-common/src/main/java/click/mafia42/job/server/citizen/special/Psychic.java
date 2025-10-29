@@ -14,7 +14,7 @@ import java.util.Set;
 
 public class Psychic extends SkillJob {
     public Psychic(GameRoomUser owner) {
-        super(owner, SharedActiveType.NONE);
+        super(owner, SharedActiveType.NONE, true);
     }
 
     @Override

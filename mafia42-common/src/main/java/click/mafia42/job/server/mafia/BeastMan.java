@@ -12,7 +12,7 @@ import click.mafia42.job.server.SkillResult;
 
 public class BeastMan extends SkillJob {
     public BeastMan(GameRoomUser owner) {
-        super(owner, SharedActiveType.NONE);
+        super(owner, SharedActiveType.NONE, true);
     }
 
     @Override
