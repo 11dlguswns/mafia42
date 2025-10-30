@@ -14,6 +14,7 @@ import click.mafia42.exception.GlobalExceptionCode;
 import click.mafia42.job.Job;
 import click.mafia42.job.JobType;
 import click.mafia42.job.SkillTriggerTime;
+import click.mafia42.job.server.PassiveJob;
 import click.mafia42.job.server.SharedActiveType;
 import click.mafia42.job.server.SkillJob;
 import click.mafia42.job.server.SkillResult;
@@ -434,6 +435,7 @@ public class GameRoomService {
                     useSkillBySkillTriggerTime(gameRoom, SkillTriggerTime.END_OF_NIGHT);
                     sendGameSystemMessageToGameRoomUsers(gameRoom, "날이 밝았습니다.");
                     useSkillBySkillTriggerTime(gameRoom, SkillTriggerTime.START_OF_MORNING);
+                    usePassiveSkillByJobType(gameRoom, JobType.GHOUL);
                 }
                 case VOTING -> {
                     gameRoom.clearVotes();
@@ -454,14 +456,13 @@ public class GameRoomService {
         });
     }
 
-    private void sendSkillResultByAffectedUsers(SkillResult skillResult, GameRoom gameRoom) {
-        if (skillResult.isEmpty()) {
-            return;
-        }
-
-        skillResult.getMessageResults().forEach(messageResult -> {
-            sendGameSystemMessageToUsers(gameRoom, messageResult.affectedUsers(), messageResult.message());
-            saveGameRoomToUsers(messageResult.affectedUsers());
+    private void usePassiveSkillByJobType(GameRoom gameRoom, JobType jobType) {
+        gameRoom.getPlayers().forEach(gameRoomUser -> {
+            Job gameRoomUserJob = gameRoomUser.getJob();
+            if (gameRoomUserJob instanceof PassiveJob passiveJob && passiveJob.getJobType() == jobType) {
+                SkillResult skillResult = passiveJob.passiveAction();
+                sendSkillResultByAffectedUsers(skillResult, gameRoom);
+            }
         });
     }
 
@@ -470,14 +471,19 @@ public class GameRoomService {
             Job gameRoomUserJob = gameRoomUser.getJob();
             if (gameRoomUserJob instanceof SkillJob skillJob && skillJob.isSkillTriggerTime(skillTriggerTime)) {
                 SkillResult skillResult = skillJob.skillAction();
-
-                if (skillResult != null && !skillResult.isEmpty()) {
-                    skillResult.getMessageResults().forEach(messageResult -> {
-                        sendGameSystemMessageToUsers(gameRoom, messageResult.affectedUsers(), messageResult.message());
-                        saveGameRoomToUsers(messageResult.affectedUsers());
-                    });
-                }
+                sendSkillResultByAffectedUsers(skillResult, gameRoom);
             }
+        });
+    }
+
+    private void sendSkillResultByAffectedUsers(SkillResult skillResult, GameRoom gameRoom) {
+        if (skillResult == null || skillResult.isEmpty()) {
+            return;
+        }
+
+        skillResult.getMessageResults().forEach(messageResult -> {
+            sendGameSystemMessageToUsers(gameRoom, messageResult.affectedUsers(), messageResult.message());
+            saveGameRoomToUsers(messageResult.affectedUsers());
         });
     }
 

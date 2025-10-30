@@ -57,6 +57,7 @@ public class GameRoomUser implements Comparable<GameRoomUser> {
     }
 
     public void updateJob(Job job) {
+        job.updateOwner(this);
         this.job = job;
         this.team = job.getJobType().getRole().getTeam();
     }
