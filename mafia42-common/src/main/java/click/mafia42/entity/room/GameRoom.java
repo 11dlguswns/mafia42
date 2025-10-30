@@ -5,11 +5,9 @@ import click.mafia42.entity.user.User;
 import click.mafia42.exception.GlobalException;
 import click.mafia42.exception.GlobalExceptionCode;
 import click.mafia42.job.JobType;
-import click.mafia42.job.server.MessageResult;
-import click.mafia42.job.server.SharedActiveType;
-import click.mafia42.job.server.SkillJob;
-import click.mafia42.job.server.SkillResult;
+import click.mafia42.job.server.*;
 import click.mafia42.job.server.citizen.special.Lover;
+import click.mafia42.job.server.citizen.special.Martyr;
 import click.mafia42.job.server.citizen.special.Politician;
 import click.mafia42.job.server.citizen.special.Soldier;
 import click.mafia42.util.TimeUtil;
@@ -434,7 +432,13 @@ public class GameRoom {
             if (!skillResult.isEmpty()) return skillResult;
         }
 
+        if (target.getJob() instanceof Martyr martyr) {
+            skillResult.concat(martyr.useSkill());
+            if (!skillResult.isEmpty()) return skillResult;
+        }
+
         target.die();
+
         skillResult.concat(new SkillResult(
                 List.of(new MessageResult(
                         String.format("%s이(가) 살해당했습니다.", target.getUser().getNickname()),
@@ -442,13 +446,16 @@ public class GameRoom {
         return skillResult;
     }
 
-    private SkillResult useSkillByJobType(JobType jobType) {
+    public SkillResult useSkillByJobType(JobType jobType) {
         SkillResult skillResult = new SkillResult();
 
         Set<GameRoomUser> usersByJobType = findUsersByJobType(jobType);
         for (GameRoomUser gUser : usersByJobType) {
             if (gUser.getJob() instanceof SkillJob skillJob) {
                 skillResult.concat(skillJob.useSkill());
+            }
+            if (gUser.getJob() instanceof PassiveJob passiveJob) {
+                skillResult.concat(passiveJob.usePassive());
             }
         }
 

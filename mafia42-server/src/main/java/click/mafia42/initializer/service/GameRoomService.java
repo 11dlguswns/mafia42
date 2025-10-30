@@ -406,8 +406,10 @@ public class GameRoomService {
                             if (mostVotedUser.getJob() instanceof Politician politician && !mostVotedUser.isSeduced()) {
                                 sendSkillResultByAffectedUsers(politician.passiveAction(), gameRoom);
                             } else {
-                                mostVotedUser.die();
                                 sendGameSystemMessageToGameRoomUsers(gameRoom, mostVotedUser.getUser().getNickname() + "님이 투표로 처형당했습니다.");
+                                SkillResult skillResult = gameRoom.useSkillByJobType(JobType.MARTYR);
+                                sendSkillResultByAffectedUsers(skillResult, gameRoom);
+                                mostVotedUser.die();
                             }
                         } else {
                             sendGameSystemMessageToGameRoomUsers(gameRoom, "투표가 부결되었습니다.");
@@ -435,7 +437,8 @@ public class GameRoomService {
                     useSkillBySkillTriggerTime(gameRoom, SkillTriggerTime.END_OF_NIGHT);
                     sendGameSystemMessageToGameRoomUsers(gameRoom, "날이 밝았습니다.");
                     useSkillBySkillTriggerTime(gameRoom, SkillTriggerTime.START_OF_MORNING);
-                    usePassiveSkillByJobType(gameRoom, JobType.GHOUL);
+                    gameRoom.useSkillByJobType(JobType.GHOUL);
+                    gameRoom.clearJobSkill();
                 }
                 case VOTING -> {
                     gameRoom.clearVotes();
@@ -453,16 +456,6 @@ public class GameRoomService {
 
             gameRoom.updateEndTime();
             return new Payload(Commend.SAVE_GAME_ROOM, SaveDetailGameRoomReq.from(gameRoom, gameRoomUser));
-        });
-    }
-
-    private void usePassiveSkillByJobType(GameRoom gameRoom, JobType jobType) {
-        gameRoom.getPlayers().forEach(gameRoomUser -> {
-            Job gameRoomUserJob = gameRoomUser.getJob();
-            if (gameRoomUserJob instanceof PassiveJob passiveJob && passiveJob.getJobType() == jobType) {
-                SkillResult skillResult = passiveJob.passiveAction();
-                sendSkillResultByAffectedUsers(skillResult, gameRoom);
-            }
         });
     }
 
