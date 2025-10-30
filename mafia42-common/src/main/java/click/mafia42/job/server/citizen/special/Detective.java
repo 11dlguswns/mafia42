@@ -5,9 +5,12 @@ import click.mafia42.entity.room.GameStatus;
 import click.mafia42.entity.room.GameUserStatus;
 import click.mafia42.job.JobType;
 import click.mafia42.job.SkillTriggerTime;
+import click.mafia42.job.server.MessageResult;
 import click.mafia42.job.server.SharedActiveType;
 import click.mafia42.job.server.SkillJob;
 import click.mafia42.job.server.SkillResult;
+
+import java.util.Set;
 
 public class Detective extends SkillJob {
     public Detective(GameRoomUser owner) {
@@ -21,8 +24,12 @@ public class Detective extends SkillJob {
 
     @Override
     public SkillResult skillAction() {
-        // TODO skill 구현
-        return null;
+        SkillResult skillResult = new SkillResult();
+
+        skillResult.concat(new SkillResult(
+                new MessageResult(target.getUser().getNickname() + "님을 상대로 수사를 진행합니다.", Set.of(owner))));
+
+        return skillResult;
     }
 
     @Override
@@ -32,7 +39,7 @@ public class Detective extends SkillJob {
 
     @Override
     public boolean isSkillSetApproved(GameStatus gameStatus) {
-        return gameStatus == GameStatus.NIGHT;
+        return gameStatus == GameStatus.NIGHT && target == null;
     }
 
     @Override

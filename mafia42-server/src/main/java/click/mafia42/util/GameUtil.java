@@ -178,7 +178,16 @@ public class GameUtil {
 
     private static Set<JobType> getSpatialCitizenJobsByClassic() {
         return Set.of(
-                JobType.REPORTER
+                JobType.SOLDIER,
+                JobType.POLITICIAN,
+                JobType.PSYCHIC,
+                JobType.LOVER,
+                JobType.GANGSTER,
+                JobType.REPORTER,
+                JobType.DETECTIVE,
+                JobType.GHOUL,
+                JobType.MARTYR,
+                JobType.PRIEST
         );
     }
 

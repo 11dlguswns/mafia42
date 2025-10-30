@@ -17,6 +17,7 @@ import click.mafia42.job.SkillTriggerTime;
 import click.mafia42.job.server.SharedActiveType;
 import click.mafia42.job.server.SkillJob;
 import click.mafia42.job.server.SkillResult;
+import click.mafia42.job.server.citizen.special.Detective;
 import click.mafia42.job.server.citizen.special.Politician;
 import click.mafia42.job.server.mafia.Thief;
 import click.mafia42.payload.Commend;
@@ -57,8 +58,11 @@ public class GameRoomService {
         );
         GameRoom gameRoom = gameRoomManager.findById(gameRoomId)
                 .orElseThrow(() -> new GlobalException(GlobalExceptionCode.NOT_FOUND_ROOM));
+        GameRoomUser gameRoomUser = gameRoom.getPlayer(user.getId())
+                .orElseThrow(() -> new GlobalException(GlobalExceptionCode.NOT_FOUND_ROOM));
 
-        return new Payload(Commend.SAVE_GAME_ROOM, SaveDetailGameRoomReq.from(gameRoom, user.getId()));
+
+        return new Payload(Commend.SAVE_GAME_ROOM, SaveDetailGameRoomReq.from(gameRoom, gameRoomUser));
     }
 
     private String getPassword(CreateGameRoomReq request) {
@@ -168,11 +172,18 @@ public class GameRoomService {
         saveGameRoomToUsers(gameRoom.getPlayers());
     }
 
+    private void saveGameRoomToUser(GameRoomUser gameRoomUser) {
+        Payload saveGameRoomPayload = new Payload(
+                Commend.SAVE_GAME_ROOM,
+                SaveDetailGameRoomReq.from(gameRoomUser.getGameRoom(), gameRoomUser));
+        channelManager.sendCommendToUser(gameRoomUser.getUser(), saveGameRoomPayload);
+    }
+
     private void saveGameRoomToUsers(Set<GameRoomUser> gameRoomUsers) {
         gameRoomUsers.forEach(gUser -> {
             Payload saveGameRoomPayload = new Payload(
                     Commend.SAVE_GAME_ROOM,
-                    SaveDetailGameRoomReq.from(gUser.getGameRoom(), gUser.getUser().getId()));
+                    SaveDetailGameRoomReq.from(gUser.getGameRoom(), gUser));
             channelManager.sendCommendToUser(gUser.getUser(), saveGameRoomPayload);
         });
     }
@@ -371,11 +382,13 @@ public class GameRoomService {
         User user = ctx.channel().attr(USER).get();
         GameRoom gameRoom = gameRoomManager.findGameRoomByGameRoomUser(user)
                 .orElseThrow(() -> new GlobalException(GlobalExceptionCode.NOT_JOIN_ROOM));
+        GameRoomUser gameRoomUser = gameRoom.getPlayer(user.getId())
+                .orElseThrow(() -> new GlobalException(GlobalExceptionCode.NOT_JOIN_ROOM));
 
         return gameRoom.doWithLock(() -> {
             GameStatus updateBeforeStatus = gameRoom.getStatus();
             if (!gameRoom.updateStatus()) {
-                return new Payload(Commend.SAVE_GAME_ROOM, SaveDetailGameRoomReq.from(gameRoom, user.getId()));
+                return new Payload(Commend.SAVE_GAME_ROOM, SaveDetailGameRoomReq.from(gameRoom, gameRoomUser));
             }
 
             if (updateBeforeStatus == GameStatus.VOTING) {
@@ -427,17 +440,17 @@ public class GameRoomService {
                     sendGameSystemMessageToGameRoomUsers(gameRoom, "투표시간이 되었습니다");
                 }
                 case CONTRADICT -> {
-                    GameRoomUser gameRoomUser = gameRoom.getMostVotedUser().get();
-                    sendGameSystemMessageToGameRoomUsers(gameRoom, gameRoomUser.getUser().getNickname() + "님의 최후의 반론");
+                    GameRoomUser mostVotedUser = gameRoom.getMostVotedUser().get();
+                    sendGameSystemMessageToGameRoomUsers(gameRoom, mostVotedUser.getUser().getNickname() + "님의 최후의 반론");
                 }
                 case JUDGEMENT -> {
-                    GameRoomUser gameRoomUser = gameRoom.getMostVotedUser().get();
-                    sendGameSystemMessageToGameRoomUsers(gameRoom, gameRoomUser.getUser().getNickname() + "님에 대한 찬반 투표");
+                    GameRoomUser mostVotedUser = gameRoom.getMostVotedUser().get();
+                    sendGameSystemMessageToGameRoomUsers(gameRoom, mostVotedUser.getUser().getNickname() + "님에 대한 찬반 투표");
                 }
             }
 
             gameRoom.updateEndTime();
-            return new Payload(Commend.SAVE_GAME_ROOM, SaveDetailGameRoomReq.from(gameRoom, user.getId()));
+            return new Payload(Commend.SAVE_GAME_ROOM, SaveDetailGameRoomReq.from(gameRoom, gameRoomUser));
         });
     }
 
@@ -550,9 +563,16 @@ public class GameRoomService {
         if (gameRoomUser.getJob() instanceof SkillJob skillJob) {
             SkillResult skillResult = skillJob.setSkill(requestGameRoomUser, request.jobType());
 
+            Set<GameRoomUser> detectiveUsers = gameRoom.findUsersByJobType(JobType.DETECTIVE);
+            detectiveUsers.forEach(gUser -> {
+                if (gUser.getJob() instanceof Detective detective && gameRoomUser.equals(detective.getTarget())) {
+                    saveGameRoomToUser(gUser);
+                }
+            });
+
             sendSkillResultByAffectedUsers(skillResult, gameRoom);
         }
 
-        return new Payload(Commend.SAVE_GAME_ROOM, SaveDetailGameRoomReq.from(gameRoom, user.getId()));
+        return new Payload(Commend.SAVE_GAME_ROOM, SaveDetailGameRoomReq.from(gameRoom, gameRoomUser));
     }
 }

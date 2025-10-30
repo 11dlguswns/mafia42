@@ -7,7 +7,7 @@ import click.mafia42.job.server.MessageResult;
 import click.mafia42.job.server.PassiveJob;
 import click.mafia42.job.server.SkillResult;
 
-import java.util.List;
+import java.util.Set;
 
 public class Lover extends PassiveJob {
     public Lover(GameRoomUser owner) {
@@ -18,7 +18,7 @@ public class Lover extends PassiveJob {
     public SkillResult passiveAction() {
         SkillResult skillResult = new SkillResult();
 
-        List<GameRoomUser> lovers = owner.getGameRoom().findUsersByJobType(JobType.LOVER);
+        Set<GameRoomUser> lovers = owner.getGameRoom().findUsersByJobType(JobType.LOVER);
         GameRoomUser partner = lovers.stream()
                 .filter(gUser -> !gUser.equals(owner))
                 .findFirst()

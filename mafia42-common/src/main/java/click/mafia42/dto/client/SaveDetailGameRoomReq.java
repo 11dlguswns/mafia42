@@ -22,7 +22,7 @@ public record SaveDetailGameRoomReq(
         int day,
         SaveGameRoomUserReq mostVotedUser
 ) {
-    public static SaveDetailGameRoomReq from(GameRoom gameRoom, UUID currentUserId) {
+    public static SaveDetailGameRoomReq from(GameRoom gameRoom, GameRoomUser currentUser) {
         GameRoomUser mostVotedUser;
         if (gameRoom.getStatus() == GameStatus.JUDGEMENT) {
             mostVotedUser = gameRoom.getMostVotedUser().orElse(null);
@@ -38,19 +38,19 @@ public record SaveDetailGameRoomReq(
                         .stream()
                         .map(gameRoomUser -> SaveGameRoomUserReq.from(
                                 gameRoomUser,
-                                currentUserId,
+                                currentUser,
                                 gameRoom.getUserVoteCount(gameRoomUser)))
                         .toList(),
                 SaveGameRoomUserReq.from(
                         gameRoom.getManager(),
-                        currentUserId,
+                        currentUser,
                         gameRoom.getUserVoteCount(gameRoom.getManager())),
                 gameRoom.getGameType(),
                 gameRoom.isStarted(),
                 gameRoom.getStatus(),
                 gameRoom.getEndTimeSecond(),
                 gameRoom.getDay(),
-                SaveGameRoomUserReq.from(mostVotedUser, currentUserId, gameRoom.getUserVoteCount(mostVotedUser))
+                SaveGameRoomUserReq.from(mostVotedUser, currentUser, gameRoom.getUserVoteCount(mostVotedUser))
         );
     }
 

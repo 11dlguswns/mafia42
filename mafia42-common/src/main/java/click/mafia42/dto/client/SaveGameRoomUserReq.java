@@ -3,6 +3,8 @@ package click.mafia42.dto.client;
 import click.mafia42.entity.room.GameRoomUser;
 import click.mafia42.entity.room.GameUserStatus;
 import click.mafia42.job.JobType;
+import click.mafia42.job.server.SkillJob;
+import click.mafia42.job.server.citizen.special.Detective;
 
 import java.util.UUID;
 
@@ -11,6 +13,7 @@ public record SaveGameRoomUserReq(
         UUID id,
         String name,
         JobType jobType,
+        UUID targetId,
         GameUserStatus gameUserStatus,
         long voteCount,
         boolean isBlackmailed,
@@ -21,42 +24,67 @@ public record SaveGameRoomUserReq(
         return jobType != null ? jobType.getAlias() : "?";
     }
 
-    public static SaveGameRoomUserReq from(GameRoomUser gameRoomUser, UUID currentUserId, long voteCount) {
+    public static SaveGameRoomUserReq from(GameRoomUser gameRoomUser, GameRoomUser currentUser, long voteCount) {
         if (gameRoomUser == null) {
             return null;
         }
+
+        getTargetId(gameRoomUser, currentUser);
 
         return new SaveGameRoomUserReq(
                 gameRoomUser.getNumber(),
                 gameRoomUser.getUser().getId(),
                 gameRoomUser.getUser().getNickname(),
-                getJobType(gameRoomUser, currentUserId),
+                getJobType(gameRoomUser, currentUser.getUser().getId()),
+                getTargetId(gameRoomUser, currentUser),
                 gameRoomUser.getStatus(),
                 voteCount,
-                isBlackmailed(gameRoomUser, currentUserId),
-                isSeduced(gameRoomUser, currentUserId),
-                isAscended(gameRoomUser, currentUserId)
+                isBlackmailed(gameRoomUser, currentUser),
+                isSeduced(gameRoomUser, currentUser),
+                isAscended(gameRoomUser, currentUser)
         );
     }
 
-    private static boolean isBlackmailed(GameRoomUser gameRoomUser, UUID currentUserId) {
-        if (gameRoomUser.getUser().getId().equals(currentUserId)) {
+    private static UUID getTargetId(GameRoomUser gameRoomUser, GameRoomUser currentUser) {
+        if (gameRoomUser.getJob() == null) {
+            return null;
+        }
+
+        if (gameRoomUser.getJob() instanceof SkillJob skillJob) {
+            if (skillJob.getTarget() == null) {
+                return null;
+            }
+
+            boolean isCurrentUser = gameRoomUser.equals(currentUser);
+            boolean detectiveTarget = currentUser.getJob() instanceof Detective detective &&
+                    detective.getTarget().equals(gameRoomUser);
+
+            if (isCurrentUser || detectiveTarget) {
+                return skillJob.getTarget().getUser().getId();
+            }
+        }
+
+        return null;
+    }
+
+    private static boolean isBlackmailed(GameRoomUser gameRoomUser, GameRoomUser currentUser) {
+        if (gameRoomUser.equals(currentUser)) {
             return gameRoomUser.isBlackmailed();
         } else {
             return false;
         }
     }
 
-    private static boolean isSeduced(GameRoomUser gameRoomUser, UUID currentUserId) {
-        if (gameRoomUser.getUser().getId().equals(currentUserId)) {
+    private static boolean isSeduced(GameRoomUser gameRoomUser, GameRoomUser currentUser) {
+        if (gameRoomUser.equals(currentUser)) {
             return gameRoomUser.isSeduced();
         } else {
             return false;
         }
     }
 
-    private static boolean isAscended(GameRoomUser gameRoomUser, UUID currentUserId) {
-        if (gameRoomUser.getUser().getId().equals(currentUserId) || gameRoomUser.getJob() != null && gameRoomUser.getJob().getJobType() == JobType.PSYCHIC) {
+    private static boolean isAscended(GameRoomUser gameRoomUser, GameRoomUser currentUser) {
+        if (gameRoomUser.equals(currentUser) || gameRoomUser.getJob() != null && gameRoomUser.getJob().getJobType() == JobType.PSYCHIC) {
             return gameRoomUser.isAscended();
         } else {
             return false;

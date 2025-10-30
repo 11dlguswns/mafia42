@@ -445,7 +445,7 @@ public class GameRoom {
     private SkillResult useSkillByJobType(JobType jobType) {
         SkillResult skillResult = new SkillResult();
 
-        List<GameRoomUser> usersByJobType = findUsersByJobType(jobType);
+        Set<GameRoomUser> usersByJobType = findUsersByJobType(jobType);
         for (GameRoomUser gUser : usersByJobType) {
             if (gUser.getJob() instanceof SkillJob skillJob) {
                 skillResult.concat(skillJob.useSkill());
@@ -462,10 +462,10 @@ public class GameRoom {
         ).collect(Collectors.toSet());
     }
 
-    public List<GameRoomUser> findUsersByJobType(JobType jobType) {
+    public Set<GameRoomUser> findUsersByJobType(JobType jobType) {
         return players.stream()
                 .filter(gUser -> gUser.getJob().getJobType() == jobType)
-                .toList();
+                .collect(Collectors.toSet());
     }
 
     public GameRoomUser findSharedActiveTarget(SharedActiveType sharedActiveType) {

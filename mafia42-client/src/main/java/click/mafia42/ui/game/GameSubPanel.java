@@ -93,10 +93,17 @@ public class GameSubPanel extends JPanel {
                     if (user.number() == buttonNumber) {
                         String jobAlias = user.fetchJobAlias();
 
+                        StringBuilder nameArea = new StringBuilder(user.name());
+                        for (SaveGameRoomUserReq gUser : DetailGameRoomProvider.detailGameRoom.users()) {
+                            if (user.id().equals(gUser.targetId())) {
+                                nameArea.insert(0, "&lt;").append("&gt;");
+                            }
+                        }
+
                         String voteCountMark = getVoteCountMark(user.voteCount());
                         jButton.setText(
                                 "<html><div style='text-align: center;'>" +
-                                        user.name() + "<br>" +
+                                        nameArea + "<br>" +
                                         jobAlias + "<br>" +
                                         voteCountMark +
                                         "</div></html>"
