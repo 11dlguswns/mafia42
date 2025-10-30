@@ -23,8 +23,12 @@ public class Martyr extends SkillJob {
     }
 
     @Override
-    public SkillResult skillAction() {
+    protected SkillResult skillAction() {
         SkillResult skillResult = new SkillResult();
+
+        if (target == null) {
+            return skillResult;
+        }
 
         GameStatus gameStatus = owner.getGameRoom().getStatus();
         Optional<GameRoomUser> mostVotedUser = owner.getGameRoom().getMostVotedUser();
@@ -34,8 +38,9 @@ public class Martyr extends SkillJob {
             GameRoomUser mafiaTarget = owner.getGameRoom().findSharedActiveTarget(SharedActiveType.MAFIA);
 
             boolean mafiaTargetIsOwner = mafiaTarget != null && mafiaTarget.equals(owner);
-            boolean targetIsMafia = target != null && target.getJob().getJobType().equals(JobType.MAFIA);
+            boolean targetIsMafia = target.getJob().getJobType().equals(JobType.MAFIA);
             if (mafiaTargetIsOwner && targetIsMafia) {
+                isUseSkill = true;
                 owner.die();
                 target.die();
                 target.addVisibleAllUser();
@@ -49,6 +54,7 @@ public class Martyr extends SkillJob {
                 ));
             }
         } else if (gameStatus == GameStatus.NIGHT && isMostVoted && owner.getGameRoom().isVotePassed()) {
+            isUseSkill = true;
             owner.die();
             target.die();
             owner.addVisibleAllUser();
@@ -70,7 +76,7 @@ public class Martyr extends SkillJob {
     }
 
     @Override
-    public boolean isSkillSetApproved(GameStatus gameStatus) {
+    protected boolean isSkillSetApproved(GameStatus gameStatus) {
         Optional<GameRoomUser> mostVotedUser = getOwner().getGameRoom().getMostVotedUser();
         boolean isOwnerMostVoted = mostVotedUser.isPresent() && mostVotedUser.get().equals(getOwner());
         return gameStatus == GameStatus.NIGHT ||
@@ -78,7 +84,7 @@ public class Martyr extends SkillJob {
     }
 
     @Override
-    public boolean isValidTarget(GameUserStatus gameUserStatus) {
+    protected boolean isValidTarget(GameUserStatus gameUserStatus) {
         return gameUserStatus == GameUserStatus.ALIVE;
     }
 }

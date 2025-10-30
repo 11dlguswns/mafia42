@@ -23,10 +23,11 @@ public class Hostess extends SkillJob {
     }
 
     @Override
-    public SkillResult skillAction() {
+    protected SkillResult skillAction() {
         SkillResult skillResult = new SkillResult();
 
         if (owner.getVoteUser() != null) {
+            isUseSkill = true;
             target = owner.getVoteUser();
 
             if (target.getJob().getJobType() == JobType.MAFIA) {
@@ -50,12 +51,12 @@ public class Hostess extends SkillJob {
     }
 
     @Override
-    public boolean isSkillSetApproved(GameStatus gameStatus) {
+    protected boolean isSkillSetApproved(GameStatus gameStatus) {
         return false;
     }
 
     @Override
-    public boolean isValidTarget(GameUserStatus gameUserStatus) {
+    protected boolean isValidTarget(GameUserStatus gameUserStatus) {
         return gameUserStatus == GameUserStatus.ALIVE;
     }
 }

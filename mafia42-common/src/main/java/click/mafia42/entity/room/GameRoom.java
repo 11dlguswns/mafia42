@@ -222,8 +222,8 @@ public class GameRoom {
 
     public void clearJobSkill() {
         players.forEach(gUser -> {
-            if (gUser.getJob() instanceof SkillJob skillJob && skillJob.isCanClearSkill()) {
-                skillJob.clearSkillAction();
+            if (gUser.getJob() instanceof SkillJob skillJob) {
+                skillJob.clearSkill();
             }
         });
     }

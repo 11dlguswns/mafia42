@@ -20,7 +20,7 @@ public class Mafia extends SkillJob {
     }
 
     @Override
-    public SkillResult skillAction() {
+    protected SkillResult skillAction() {
         SkillResult skillResult = new SkillResult();
 
         if (target == null) {
@@ -29,6 +29,7 @@ public class Mafia extends SkillJob {
 
         skillResult.concat(target.getGameRoom().dieUser(target));
 
+        isUseSkill = true;
         return skillResult;
     }
 
@@ -38,12 +39,12 @@ public class Mafia extends SkillJob {
     }
 
     @Override
-    public boolean isSkillSetApproved(GameStatus gameStatus) {
+    protected boolean isSkillSetApproved(GameStatus gameStatus) {
         return gameStatus == GameStatus.NIGHT;
     }
 
     @Override
-    public boolean isValidTarget(GameUserStatus gameUserStatus) {
+    protected boolean isValidTarget(GameUserStatus gameUserStatus) {
         return gameUserStatus == GameUserStatus.ALIVE;
     }
 }

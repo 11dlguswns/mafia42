@@ -23,9 +23,14 @@ public class Detective extends SkillJob {
     }
 
     @Override
-    public SkillResult skillAction() {
+    protected SkillResult skillAction() {
         SkillResult skillResult = new SkillResult();
 
+        if (target == null) {
+            return skillResult;
+        }
+
+        isUseSkill = true;
         skillResult.concat(new SkillResult(
                 new MessageResult(target.getUser().getNickname() + "님을 상대로 수사를 진행합니다.", Set.of(owner))));
 
@@ -38,12 +43,12 @@ public class Detective extends SkillJob {
     }
 
     @Override
-    public boolean isSkillSetApproved(GameStatus gameStatus) {
+    protected boolean isSkillSetApproved(GameStatus gameStatus) {
         return gameStatus == GameStatus.NIGHT && target == null;
     }
 
     @Override
-    public boolean isValidTarget(GameUserStatus gameUserStatus) {
+    protected boolean isValidTarget(GameUserStatus gameUserStatus) {
         return gameUserStatus == GameUserStatus.ALIVE;
     }
 }

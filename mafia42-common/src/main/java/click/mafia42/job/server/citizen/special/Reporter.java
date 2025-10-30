@@ -18,9 +18,14 @@ public class Reporter extends SkillJob {
     }
 
     @Override
-    public SkillResult skillAction() {
+    protected SkillResult skillAction() {
         SkillResult skillResult = new SkillResult();
 
+        if (target == null) {
+            return skillResult;
+        }
+
+        isUseSkill = true;
         target.addVisibleAllUser();
         skillResult.concat(new SkillResult(
                 new MessageResult(String.format("특종입니다! %s님이 %s(이)라는 소식입니다!",
@@ -37,12 +42,12 @@ public class Reporter extends SkillJob {
     }
 
     @Override
-    public boolean isSkillSetApproved(GameStatus gameStatus) {
-        return gameStatus == GameStatus.NIGHT && target == null;
+    protected boolean isSkillSetApproved(GameStatus gameStatus) {
+        return gameStatus == GameStatus.NIGHT;
     }
 
     @Override
-    public boolean isValidTarget(GameUserStatus gameUserStatus) {
+    protected boolean isValidTarget(GameUserStatus gameUserStatus) {
         return gameUserStatus == GameUserStatus.ALIVE;
     }
 }

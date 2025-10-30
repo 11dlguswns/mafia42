@@ -23,9 +23,14 @@ public class Psychic extends SkillJob {
     }
 
     @Override
-    public SkillResult skillAction() {
+    protected SkillResult skillAction() {
         SkillResult skillResult = new SkillResult();
 
+        if (target == null) {
+            return skillResult;
+        }
+
+        isUseSkill = true;
         target.ascended(owner);
         skillResult.concat(new SkillResult(
                 new MessageResult(target.getUser().getNickname() + "님을 성불하였습니다.", Set.of(owner))));
@@ -41,12 +46,12 @@ public class Psychic extends SkillJob {
     }
 
     @Override
-    public boolean isSkillSetApproved(GameStatus gameStatus) {
-        return gameStatus == GameStatus.NIGHT;
+    protected boolean isSkillSetApproved(GameStatus gameStatus) {
+        return gameStatus == GameStatus.NIGHT && target == null;
     }
 
     @Override
-    public boolean isValidTarget(GameUserStatus gameUserStatus) {
+    protected boolean isValidTarget(GameUserStatus gameUserStatus) {
         return gameUserStatus == GameUserStatus.DIE;
     }
 }

@@ -20,7 +20,7 @@ public class Hacker extends SkillJob {
     }
 
     @Override
-    public SkillResult skillAction() {
+    protected SkillResult skillAction() {
         // TODO skill 구현
         return null;
     }
@@ -31,12 +31,12 @@ public class Hacker extends SkillJob {
     }
 
     @Override
-    public boolean isSkillSetApproved(GameStatus gameStatus) {
+    protected boolean isSkillSetApproved(GameStatus gameStatus) {
         return gameStatus == GameStatus.MORNING;
     }
 
     @Override
-    public boolean isValidTarget(GameUserStatus gameUserStatus) {
+    protected boolean isValidTarget(GameUserStatus gameUserStatus) {
         return gameUserStatus == GameUserStatus.ALIVE;
     }
 }

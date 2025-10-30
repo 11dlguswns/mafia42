@@ -463,7 +463,7 @@ public class GameRoomService {
         gameRoom.getPlayers().forEach(gameRoomUser -> {
             Job gameRoomUserJob = gameRoomUser.getJob();
             if (gameRoomUserJob instanceof SkillJob skillJob && skillJob.isSkillTriggerTime(skillTriggerTime)) {
-                SkillResult skillResult = skillJob.skillAction();
+                SkillResult skillResult = skillJob.useSkill();
                 sendSkillResultByAffectedUsers(skillResult, gameRoom);
             }
         });

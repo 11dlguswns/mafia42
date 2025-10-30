@@ -25,10 +25,11 @@ public class Spy extends SkillJob {
     }
 
     @Override
-    public SkillResult skillAction() {
+    protected SkillResult skillAction() {
         SkillResult skillResult = new SkillResult();
         target.addVisibleToUserId(owner.getUser().getId());
 
+        isUseSkill = true;
         if (target.getJob().getJobType() == JobType.MAFIA) {
             owner.connectWithMafia();
             skillResult.concat(new SkillResult(
@@ -46,6 +47,7 @@ public class Spy extends SkillJob {
         target.addVisibleToUserId(owner.getUser().getId());
         skillResult.concat(new SkillResult(
                 new MessageResult("그 사람의 직업은 " + target.getJob().getJobType().getAlias(), Set.of(owner))));
+
         return skillResult;
     }
 
@@ -55,12 +57,12 @@ public class Spy extends SkillJob {
     }
 
     @Override
-    public boolean isSkillSetApproved(GameStatus gameStatus) {
+    protected boolean isSkillSetApproved(GameStatus gameStatus) {
         return gameStatus == GameStatus.NIGHT && target == null;
     }
 
     @Override
-    public boolean isValidTarget(GameUserStatus gameUserStatus) {
+    protected boolean isValidTarget(GameUserStatus gameUserStatus) {
         return gameUserStatus == GameUserStatus.ALIVE;
     }
 }

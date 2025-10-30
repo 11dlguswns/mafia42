@@ -14,6 +14,7 @@ public abstract class SkillJob extends Job {
     protected JobType skillJobType;
     protected SharedActiveType sharedActiveType;
     protected boolean canClearSkill;
+    protected boolean isUseSkill;
 
     protected SkillJob(GameRoomUser owner, SharedActiveType sharedActiveType, boolean canClearSkill) {
         super(owner);
@@ -55,10 +56,6 @@ public abstract class SkillJob extends Job {
         return sharedActiveType;
     }
 
-    public boolean isCanClearSkill() {
-        return canClearSkill;
-    }
-
     public SkillResult setSkill(GameRoomUser target, JobType skillJobType) {
         if (!isSkillSetApproved(target.getGameRoom().getStatus())) {
             throw new GlobalException(GlobalExceptionCode.SKILL_USE_NOT_ALLOWED);
@@ -68,6 +65,9 @@ public abstract class SkillJob extends Job {
         }
         if (owner.isSeduced()) {
             throw new GlobalException(GlobalExceptionCode.SEDUCED_CANNOT_USE_SKILL);
+        }
+        if (isUseSkill) {
+            throw new GlobalException(GlobalExceptionCode.ALREADY_USED_SKILL);
         }
 
         if (sharedActiveType == SharedActiveType.NONE) {
@@ -91,15 +91,8 @@ public abstract class SkillJob extends Job {
     }
 
     public void clearSkill() {
-        target = null;
-        skillJobType = null;
-    }
-
-    abstract public SkillResult skillAction();
-
-    public void clearSkillAction() {
         if (sharedActiveType == SharedActiveType.NONE) {
-            clearSkill();
+            clearSkillAction();
             return;
         }
 
@@ -109,14 +102,24 @@ public abstract class SkillJob extends Job {
                     continue;
                 }
 
-                skillJob.clearSkill();
+                skillJob.clearSkillAction();
             }
+        }
+    }
+
+    abstract protected SkillResult skillAction();
+
+    protected void clearSkillAction() {
+        target = null;
+        skillJobType = null;
+        if (canClearSkill) {
+            isUseSkill = false;
         }
     }
 
     abstract public boolean isSkillTriggerTime(SkillTriggerTime skillTriggerTime);
 
-    abstract public boolean isSkillSetApproved(GameStatus gameStatus);
+    abstract protected boolean isSkillSetApproved(GameStatus gameStatus);
 
-    abstract public boolean isValidTarget(GameUserStatus gameUserStatus);
+    abstract protected boolean isValidTarget(GameUserStatus gameUserStatus);
 }

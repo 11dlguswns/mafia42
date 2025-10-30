@@ -21,7 +21,7 @@ public class BeastMan extends SkillJob {
     }
 
     @Override
-    public SkillResult skillAction() {
+    protected SkillResult skillAction() {
         SkillResult skillResult = new SkillResult();
 
         if (owner.equals(owner.getGameRoom().findSharedActiveTarget(SharedActiveType.MAFIA))) {
@@ -35,7 +35,11 @@ public class BeastMan extends SkillJob {
             return skillResult;
         }
 
-        if (target != null && target.equals(owner.getGameRoom().findSharedActiveTarget(SharedActiveType.MAFIA))) {
+        if (target == null) {
+            return skillResult;
+        }
+
+        if (target.equals(owner.getGameRoom().findSharedActiveTarget(SharedActiveType.MAFIA))) {
             target.die();
             skillResult.concat(new SkillResult(new MessageResult(
                     target.getUser().getNickname() + "님이 짐승에게 습격당하였습니다.",
@@ -59,12 +63,12 @@ public class BeastMan extends SkillJob {
     }
 
     @Override
-    public boolean isSkillSetApproved(GameStatus gameStatus) {
+    protected boolean isSkillSetApproved(GameStatus gameStatus) {
         return gameStatus == GameStatus.NIGHT;
     }
 
     @Override
-    public boolean isValidTarget(GameUserStatus gameUserStatus) {
+    protected boolean isValidTarget(GameUserStatus gameUserStatus) {
         return gameUserStatus == GameUserStatus.ALIVE;
     }
 }

@@ -21,11 +21,16 @@ public class Doctor extends SkillJob {
     }
 
     @Override
-    public SkillResult skillAction() {
+    protected SkillResult skillAction() {
         SkillResult skillResult = new SkillResult();
 
+        if (target == null) {
+            return skillResult;
+        }
+
+        isUseSkill = true;
         GameRoomUser mafiaTarget = owner.getGameRoom().findSharedActiveTarget(SharedActiveType.MAFIA);
-        if (target != null && target.equals(mafiaTarget)) {
+        if (target.equals(mafiaTarget)) {
             skillResult.concat(
                     new SkillResult(new MessageResult(target.getUser().getNickname() + "님이 의사의 치료를 받았습니다.",
                             owner.getGameRoom().getPlayers())));
@@ -41,12 +46,12 @@ public class Doctor extends SkillJob {
     }
 
     @Override
-    public boolean isSkillSetApproved(GameStatus gameStatus) {
+    protected boolean isSkillSetApproved(GameStatus gameStatus) {
         return gameStatus == GameStatus.NIGHT;
     }
 
     @Override
-    public boolean isValidTarget(GameUserStatus gameUserStatus) {
+    protected boolean isValidTarget(GameUserStatus gameUserStatus) {
         return gameUserStatus == GameUserStatus.ALIVE;
     }
 }

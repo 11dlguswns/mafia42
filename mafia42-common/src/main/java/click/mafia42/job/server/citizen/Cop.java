@@ -23,9 +23,14 @@ public class Cop extends SkillJob {
     }
 
     @Override
-    public SkillResult skillAction() {
+    protected SkillResult skillAction() {
         SkillResult skillResult = new SkillResult();
 
+        if (target == null) {
+            return skillResult;
+        }
+
+        isUseSkill = true;
         if (target.getJob().getJobType() == JobType.MAFIA) {
             target.addVisibleToUserId(owner.getUser().getId());
             skillResult.concat(new SkillResult(
@@ -48,12 +53,12 @@ public class Cop extends SkillJob {
     }
 
     @Override
-    public boolean isSkillSetApproved(GameStatus gameStatus) {
+    protected boolean isSkillSetApproved(GameStatus gameStatus) {
         return gameStatus == GameStatus.NIGHT && target == null;
     }
 
     @Override
-    public boolean isValidTarget(GameUserStatus gameUserStatus) {
+    protected boolean isValidTarget(GameUserStatus gameUserStatus) {
         return gameUserStatus == GameUserStatus.ALIVE;
     }
 }
