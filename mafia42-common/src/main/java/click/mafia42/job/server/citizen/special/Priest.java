@@ -5,6 +5,7 @@ import click.mafia42.entity.room.GameStatus;
 import click.mafia42.entity.room.GameUserStatus;
 import click.mafia42.job.JobType;
 import click.mafia42.job.SkillTriggerTime;
+import click.mafia42.job.server.MessageResult;
 import click.mafia42.job.server.SharedActiveType;
 import click.mafia42.job.server.SkillJob;
 import click.mafia42.job.server.SkillResult;
@@ -20,9 +21,21 @@ public class Priest extends SkillJob {
     }
 
     @Override
-    public SkillResult skillAction() {
-        // TODO skill 구현
-        return null;
+    protected SkillResult skillAction() {
+        SkillResult skillResult = new SkillResult();
+
+        if (target == null) {
+            return skillResult;
+        }
+
+        isUseSkill = true;
+        target.resurrection();
+        skillResult.concat(new SkillResult(
+                new MessageResult(
+                        target.getUser().getNickname() + "님이 부활하셨습니다.",
+                        getOwner().getGameRoom().getPlayers())));
+
+        return skillResult;
     }
 
     @Override
@@ -31,12 +44,12 @@ public class Priest extends SkillJob {
     }
 
     @Override
-    public boolean isSkillSetApproved(GameStatus gameStatus) {
+    protected boolean isSkillSetApproved(GameStatus gameStatus) {
         return gameStatus == GameStatus.NIGHT;
     }
 
     @Override
-    public boolean isValidTarget(GameUserStatus gameUserStatus) {
+    protected boolean isValidTarget(GameUserStatus gameUserStatus) {
         return gameUserStatus == GameUserStatus.DIE;
     }
 }
