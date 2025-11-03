@@ -60,7 +60,8 @@ public class LobbySubPanel extends JPanel {
         Map<JRadioButton, GameType> radioMap = new LinkedHashMap<>();
 
         boolean first = true;
-        for (GameType type : GameType.values()) {
+        //for (GameType type : GameType.values()) {
+        GameType type = GameType.CLASSIC;
             JRadioButton radio = new JRadioButton(type.name());
 
             if (first) {
@@ -71,7 +72,7 @@ public class LobbySubPanel extends JPanel {
             group.add(radio);
             typePanel.add(radio);
             radioMap.put(radio, type);
-        }
+        //}
 
         radioMap.keySet().iterator().next().setSelected(true);
 
