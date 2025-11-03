@@ -8,6 +8,7 @@ import click.mafia42.initializer.handler.CommendHandler;
 import click.mafia42.initializer.provider.TokenProvider;
 import click.mafia42.payload.Commend;
 import click.mafia42.payload.Payload;
+import click.mafia42.ui.ClientPage;
 import click.mafia42.ui.ClientUI;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
@@ -35,27 +36,18 @@ public class Mafia42Client {
     private static final Logger log = LoggerFactory.getLogger(Mafia42Client.class);
     public static final ExecutorService SYNC_EXECUTOR = Executors.newCachedThreadPool();
     private static final BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+    private static final MultiThreadIoEventLoopGroup eventLoopGroup = new MultiThreadIoEventLoopGroup(1, NioIoHandler.newFactory());
+    private static ClientUI clientUI;
+    private static Channel channel;
 
     public void start() {
-        MultiThreadIoEventLoopGroup eventLoopGroup = new MultiThreadIoEventLoopGroup(1, NioIoHandler.newFactory());
         try {
             Bootstrap bootstrap = new Bootstrap();
-            setGroupToBootstrap(bootstrap, eventLoopGroup);
-            Channel channel = bootstrap.connect().sync().channel();
+            setGroupToBootstrap(bootstrap);
+            channel = bootstrap.connect().sync().channel();
 
-            Payload fetchUserInfoPayload = new Payload(
-                    FETCH_USER_INFO_MYSELF,
-                    new FetchUserInfoMyselfReq()
-            );
-            sendRequest(channel, fetchUserInfoPayload);
+            SwingUtilities.invokeLater(() -> clientUI = ClientUI.getInstance(channel));
 
-            Payload fetchGameRoomsPayload = new Payload(
-                    FETCH_GAME_ROOMS,
-                    new FetchGameRoomsReq()
-            );
-            sendRequest(channel, fetchGameRoomsPayload);
-
-            SwingUtilities.invokeLater(() -> ClientUI.getInstance(channel));
             channel.closeFuture().sync();
         } catch (Exception e) {
             log.error(e.getMessage());
@@ -68,7 +60,7 @@ public class Mafia42Client {
         }
     }
 
-    private void setGroupToBootstrap(Bootstrap bootstrap, MultiThreadIoEventLoopGroup eventLoopGroup) {
+    private static void setGroupToBootstrap(Bootstrap bootstrap) {
         bootstrap.group(eventLoopGroup)
                 .channel(NioSocketChannel.class)
                 .remoteAddress("localhost", 8080)
@@ -81,9 +73,14 @@ public class Mafia42Client {
     }
 
     public static void sendRequest(Channel channel, Payload payload) {
-        if (isAccessTokenExpired()) {
+        if (payload.getCommend() != Commend.SIGN_IN && payload.getCommend() != SIGN_UP && isAccessTokenExpired()) {
             try {
                 Payload tokenPayload = handleExpiredAccessToken();
+
+                if (tokenPayload == null) {
+                    return;
+                }
+
                 tokenPayload.updatePayloadId(UUID.randomUUID());
                 sendRequestSync(channel, tokenPayload);
             } catch (Exception e) {
@@ -137,44 +134,13 @@ public class Mafia42Client {
 
     private static Payload handleExpiredAccessToken() throws IOException {
         if (isRefreshTokenExpired()) {
-            return choiceSignOption();
+            choiceSignOption();
+            return null;
         }
         return new Payload(REISSUE_TOKEN, new ReissueTokenReq(TokenProvider.refreshToken));
     }
 
-    private static Payload choiceSignOption() throws IOException {
-        log.warn("이미 계정이 있으신가요? (Y/N)");
-        while (true) {
-            String selectedSignOption = br.readLine().toLowerCase();
-
-            switch (selectedSignOption) {
-                case "y":
-                    return requestSignIn();
-                case "n":
-                    return requestSignUp();
-                default:
-                    log.warn("Y 또는 N 값을 입력해주세요.");
-            }
-        }
-    }
-
-    private static Payload requestSignUp() throws IOException {
-        log.warn("닉네임을 입력해주세요");
-        String id = br.readLine();
-
-        log.warn("비밀번호를 입력해주세요");
-        String pw = br.readLine();
-
-        return new Payload(SIGN_UP, new SignUpReq(id, pw));
-    }
-
-    private static Payload requestSignIn() throws IOException {
-        log.warn("닉네임을 입력해주세요");
-        String id = br.readLine();
-
-        log.warn("비밀번호를 입력해주세요");
-        String pw = br.readLine();
-
-        return new Payload(SIGN_IN, new SignInReq(id, pw));
+    private static void choiceSignOption() {
+        clientUI.setCardLayout(ClientPage.AUTH);
     }
 }

@@ -2,6 +2,7 @@ package click.mafia42.ui;
 
 import click.mafia42.exception.GlobalException;
 import click.mafia42.exception.GlobalExceptionCode;
+import click.mafia42.ui.auth.AuthPanel;
 import click.mafia42.ui.game.GamePanel;
 import click.mafia42.ui.game.GameSubPanel;
 import click.mafia42.ui.game_lobby.GameLobbyPanel;
@@ -25,6 +26,8 @@ public class ClientUI {
     private final JPanel subPanel;
     private final CardLayout mainCardLayout = new CardLayout();
     private final CardLayout subCardLayout = new CardLayout();
+
+    private final AuthPanel authPanel;
 
     private final LobbyPanel lobbyPanel;
     private final LobbySubPanel lobbySubPanel;
@@ -53,15 +56,19 @@ public class ClientUI {
         mainPanel = new JPanel(mainCardLayout);
         subPanel = new JPanel(subCardLayout);
 
+        authPanel = new AuthPanel(channel);
+
         lobbyPanel = new LobbyPanel(channel);
         lobbySubPanel = new LobbySubPanel(channel);
+
         gameLobbyPanel = new GameLobbyPanel(channel);
         gameLobbySubPanel = new GameLobbySubPanel(channel);
+
         gamePanel = new GamePanel(channel);
         gameSubPanel = new GameSubPanel(channel);
 
         setFrame();
-        setCardLayout(ClientPage.LOBBY);
+        setCardLayout(ClientPage.AUTH);
     }
 
     private void setFrame() {
@@ -75,6 +82,8 @@ public class ClientUI {
     }
 
     private void setUIPanel() {
+        mainPanel.add(authPanel, ClientPage.AUTH.name());
+
         mainPanel.add(lobbyPanel, ClientPage.LOBBY.name());
         subPanel.add(lobbySubPanel, ClientPage.LOBBY.name());
 
