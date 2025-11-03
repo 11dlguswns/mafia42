@@ -4,10 +4,7 @@ import click.mafia42.database.ChannelManager;
 import click.mafia42.database.GameRoomManager;
 import click.mafia42.dto.client.*;
 import click.mafia42.dto.server.*;
-import click.mafia42.entity.room.GameRoom;
-import click.mafia42.entity.room.GameRoomUser;
-import click.mafia42.entity.room.GameStatus;
-import click.mafia42.entity.room.GameUserStatus;
+import click.mafia42.entity.room.*;
 import click.mafia42.entity.user.User;
 import click.mafia42.exception.GlobalException;
 import click.mafia42.exception.GlobalExceptionCode;
@@ -103,6 +100,28 @@ public class GameRoomService {
                         .toList()
         );
         return new Payload(Commend.SAVE_GAME_ROOM_LIST, body);
+    }
+
+    public Payload fetchJoinedGameRoom(FetchJoinedGameRoomReq request, ChannelHandlerContext ctx) {
+        User user = ctx.channel().attr(USER).get();
+        Optional<GameRoom> gameRoom = gameRoomManager.findGameRoomByGameRoomUser(user);
+
+        if (gameRoom.isEmpty()) {
+            return new Payload(Commend.NOTHING, null);
+        }
+
+        GameRoomUser gameRoomUser = gameRoom.get().getPlayer(user.getId())
+                .orElseThrow(() -> new GlobalException(GlobalExceptionCode.NOT_JOIN_ROOM));
+
+
+        saveGameRoomToUser(gameRoomUser);
+
+        List<SaveGameMessageReq> visibleGameMessages = gameRoom.get().getGameMessages().stream()
+                .filter(messageDto -> messageDto.visibleChatToUsers().contains(gameRoomUser))
+                .map(GameMessageDto::saveGameMessageReq)
+                .toList();
+
+        return new Payload(Commend.SAVE_GAME_MESSAGES, new SaveGameMessagesReq(visibleGameMessages));
     }
 
     public Payload exitGameRoomMyself(ExitGameRoomReq request, ChannelHandlerContext ctx) {

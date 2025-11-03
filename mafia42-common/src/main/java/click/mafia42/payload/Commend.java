@@ -24,6 +24,7 @@ public enum Commend {
     VOTE_AGREE(false),
     VOTE_DISAGREE(false),
     USE_JOB_SKILL(false),
+    FETCH_JOINED_GAME_ROOM(true),
 
     // CLIENT
     CONSOLE_OUTPUT(false),
@@ -35,6 +36,7 @@ public enum Commend {
     SAVE_GAME_ROOM_LOBBY_MESSAGE(false),
     SAVE_GAME_ROOM_LOBBY_SYSTEM_MESSAGE(false),
     SAVE_GAME_MESSAGE(false),
+    SAVE_GAME_MESSAGES(false),
     ;
     private final boolean isSyncReq;
 

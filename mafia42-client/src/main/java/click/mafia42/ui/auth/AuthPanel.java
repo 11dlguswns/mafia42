@@ -1,10 +1,8 @@
 package click.mafia42.ui.auth;
 
 import click.mafia42.Mafia42Client;
-import click.mafia42.dto.server.FetchGameRoomsReq;
-import click.mafia42.dto.server.FetchUserInfoMyselfReq;
-import click.mafia42.dto.server.SignInReq;
-import click.mafia42.dto.server.SignUpReq;
+import click.mafia42.dto.server.*;
+import click.mafia42.initializer.provider.DetailGameRoomProvider;
 import click.mafia42.payload.Commend;
 import click.mafia42.payload.Payload;
 import click.mafia42.ui.ClientPage;
@@ -14,8 +12,7 @@ import io.netty.channel.Channel;
 import javax.swing.*;
 import java.awt.*;
 
-import static click.mafia42.payload.Commend.FETCH_GAME_ROOMS;
-import static click.mafia42.payload.Commend.FETCH_USER_INFO_MYSELF;
+import static click.mafia42.payload.Commend.*;
 
 public class AuthPanel extends JPanel {
     private final Channel channel;
@@ -124,8 +121,19 @@ public class AuthPanel extends JPanel {
                 FETCH_GAME_ROOMS,
                 new FetchGameRoomsReq()
         );
-
-        ClientUI.getInstance().setCardLayout(ClientPage.LOBBY);
         Mafia42Client.sendRequest(channel, fetchGameRoomsPayload);
+
+        Payload fetchJoinedGameRoom = new Payload(
+                FETCH_JOINED_GAME_ROOM,
+                new FetchJoinedGameRoomReq()
+        );
+        Mafia42Client.sendRequest(channel, fetchJoinedGameRoom);
+
+        if (DetailGameRoomProvider.detailGameRoom == null) {
+            ClientUI.getInstance().setCardLayout(ClientPage.LOBBY);
+        } else {
+            ClientUI.getInstance().setCardLayout(ClientPage.GAME);
+        }
+
     }
 }

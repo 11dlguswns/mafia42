@@ -10,7 +10,6 @@ import click.mafia42.job.server.citizen.special.Lover;
 import click.mafia42.job.server.citizen.special.Martyr;
 import click.mafia42.job.server.citizen.special.Politician;
 import click.mafia42.job.server.citizen.special.Soldier;
-import click.mafia42.job.server.mafia.Thief;
 import click.mafia42.util.TimeUtil;
 import org.mindrot.jbcrypt.BCrypt;
 
@@ -356,7 +355,7 @@ public class GameRoom {
         gameMessages.add(new GameMessageDto(message, visibleChatToUsers));
     }
 
-    public List<GameMessageDto> getChatMessages() {
+    public List<GameMessageDto> getGameMessages() {
         return gameMessages;
     }
 

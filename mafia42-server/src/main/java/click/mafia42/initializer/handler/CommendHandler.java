@@ -89,6 +89,8 @@ public class CommendHandler extends SimpleChannelInboundHandler<Payload> {
                 gameRoomService.voteDisagree(ValidationUtil.validationAndGet(payload.getBody(), VoteDisagreeReq.class), ctx);
             case USE_JOB_SKILL ->
                 gameRoomService.useJobSkill(ValidationUtil.validationAndGet(payload.getBody(), UseJobSkillReq.class), ctx);
+            case FETCH_JOINED_GAME_ROOM ->
+                gameRoomService.fetchJoinedGameRoom(ValidationUtil.validationAndGet(payload.getBody(), FetchJoinedGameRoomReq.class), ctx);
             default -> {
                 throw new GlobalException(GlobalExceptionCode.UNSUPPORTED_COMMAND);
             }

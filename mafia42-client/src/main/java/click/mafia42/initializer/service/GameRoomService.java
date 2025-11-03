@@ -104,4 +104,14 @@ public class GameRoomService {
         clientUI.getGamePanel().chatAreaAppendText(
                 message, request.messageType().getColor());
     }
+
+    public void saveGameMessages(SaveGameMessagesReq request) {
+        if (DetailGameRoomProvider.detailGameRoom == null) {
+            throw new GlobalException(GlobalExceptionCode.NOT_JOIN_ROOM);
+        }
+
+        for (SaveGameMessageReq message : request.messages()) {
+            saveGameMessage(message);
+        }
+    }
 }
