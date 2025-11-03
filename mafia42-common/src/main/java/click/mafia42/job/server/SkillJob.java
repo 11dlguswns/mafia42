@@ -22,6 +22,15 @@ public abstract class SkillJob extends Job {
         this.canClearSkill = canClearSkill;
     }
 
+    protected SkillJob(SkillJob skillJob) {
+        super(skillJob);
+        this.target = skillJob.target;
+        this.skillJobType = skillJob.skillJobType;
+        this.sharedActiveType = skillJob.sharedActiveType;
+        this.canClearSkill = skillJob.canClearSkill;
+        this.isUseSkill = skillJob.isUseSkill;
+    }
+
     protected SkillResult setSkillTarget(GameRoomUser target, JobType skillJobType) {
         if (getOwner().getStatus() == GameUserStatus.DIE) {
             throw new GlobalException(GlobalExceptionCode.SKILL_USE_NOT_ALLOWED);
@@ -70,13 +79,13 @@ public abstract class SkillJob extends Job {
             throw new GlobalException(GlobalExceptionCode.ALREADY_USED_SKILL);
         }
 
-        if (sharedActiveType == SharedActiveType.NONE) {
+        if (getSharedActiveType() == SharedActiveType.NONE) {
             return setSkillTarget(target, skillJobType);
         }
 
         for (GameRoomUser gUser : owner.getGameRoom().getPlayers()) {
             if (gUser.getJob() instanceof SkillJob skillJob) {
-                if (skillJob.sharedActiveType != sharedActiveType) {
+                if (skillJob.getSharedActiveType() != getSharedActiveType()) {
                     continue;
                 }
                 if (skillJob.getOwner().getStatus() == GameUserStatus.DIE) {
@@ -119,7 +128,7 @@ public abstract class SkillJob extends Job {
 
     abstract public boolean isSkillTriggerTime(SkillTriggerTime skillTriggerTime);
 
-    abstract protected boolean isSkillSetApproved(GameStatus gameStatus);
+    abstract public boolean isSkillSetApproved(GameStatus gameStatus);
 
-    abstract protected boolean isValidTarget(GameUserStatus gameUserStatus);
+    abstract public boolean isValidTarget(GameUserStatus gameUserStatus);
 }

@@ -3,6 +3,7 @@ package click.mafia42.job.server.mafia;
 import click.mafia42.entity.room.GameRoomUser;
 import click.mafia42.entity.room.GameStatus;
 import click.mafia42.entity.room.GameUserStatus;
+import click.mafia42.job.Job;
 import click.mafia42.job.JobType;
 import click.mafia42.job.SkillTriggerTime;
 import click.mafia42.job.server.SharedActiveType;
@@ -19,6 +20,15 @@ public class Swindler extends SkillJob {
         return JobType.SWINDLER;
     }
 
+    protected Swindler(Swindler swindler) {
+        super(swindler);
+    }
+
+    @Override
+    protected Job copyInternal() {
+        return new Swindler(this);
+    }
+
     @Override
     protected SkillResult skillAction() {
         // TODO skill 구현
@@ -31,12 +41,12 @@ public class Swindler extends SkillJob {
     }
 
     @Override
-    protected boolean isSkillSetApproved(GameStatus gameStatus) {
+    public boolean isSkillSetApproved(GameStatus gameStatus) {
         return gameStatus == GameStatus.NIGHT;
     }
 
     @Override
-    protected boolean isValidTarget(GameUserStatus gameUserStatus) {
+    public boolean isValidTarget(GameUserStatus gameUserStatus) {
         return gameUserStatus == GameUserStatus.ALIVE;
     }
 }

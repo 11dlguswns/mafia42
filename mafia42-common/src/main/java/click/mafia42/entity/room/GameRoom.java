@@ -10,6 +10,7 @@ import click.mafia42.job.server.citizen.special.Lover;
 import click.mafia42.job.server.citizen.special.Martyr;
 import click.mafia42.job.server.citizen.special.Politician;
 import click.mafia42.job.server.citizen.special.Soldier;
+import click.mafia42.job.server.mafia.Thief;
 import click.mafia42.util.TimeUtil;
 import org.mindrot.jbcrypt.BCrypt;
 
@@ -422,7 +423,7 @@ public class GameRoom {
         skillResult.concat(useSkillByJobType(JobType.DOCTOR));
         if (!skillResult.isEmpty()) return skillResult;
 
-        if (target.getJob() instanceof Soldier soldier) {
+        if (target.getJobOrStealJob() instanceof Soldier soldier) {
             skillResult.concat(soldier.usePassive());
             if (!skillResult.isEmpty()) return skillResult;
         }
@@ -432,7 +433,7 @@ public class GameRoom {
             if (!skillResult.isEmpty()) return skillResult;
         }
 
-        if (target.getJob() instanceof Martyr martyr) {
+        if (target.getJobOrStealJob() instanceof Martyr martyr) {
             skillResult.concat(martyr.useSkill());
             if (!skillResult.isEmpty()) return skillResult;
         }
@@ -451,10 +452,10 @@ public class GameRoom {
 
         Set<GameRoomUser> usersByJobType = findUsersByJobType(jobType);
         for (GameRoomUser gUser : usersByJobType) {
-            if (gUser.getJob() instanceof SkillJob skillJob) {
+            if (gUser.getJobOrStealJob() instanceof SkillJob skillJob) {
                 skillResult.concat(skillJob.useSkill());
             }
-            if (gUser.getJob() instanceof PassiveJob passiveJob) {
+            if (gUser.getJobOrStealJob() instanceof PassiveJob passiveJob) {
                 skillResult.concat(passiveJob.usePassive());
             }
         }
@@ -496,6 +497,17 @@ public class GameRoom {
 
                     return false;
                 }).findFirst();
+    }
+
+    public Set<GameRoomUser> findUsersBySharedActive(SharedActiveType sharedActiveType) {
+        return players.stream()
+                .filter(gUser -> {
+                    if (gUser.getStatus() == GameUserStatus.ALIVE && gUser.getJob() instanceof SkillJob skillJob) {
+                        return skillJob.getSharedActiveType() == sharedActiveType;
+                    }
+
+                    return false;
+                }).collect(Collectors.toSet());
     }
 
     public <T> T doWithLock(Supplier<T> action) {

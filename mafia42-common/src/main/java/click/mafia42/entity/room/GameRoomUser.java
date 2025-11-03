@@ -6,6 +6,7 @@ import click.mafia42.exception.GlobalExceptionCode;
 import click.mafia42.job.Job;
 import click.mafia42.job.JobType;
 import click.mafia42.job.Team;
+import click.mafia42.job.server.mafia.Thief;
 
 import java.util.HashSet;
 import java.util.List;
@@ -45,6 +46,14 @@ public class GameRoomUser implements Comparable<GameRoomUser> {
     }
 
     public Job getJob() {
+        return job;
+    }
+
+    public Job getJobOrStealJob() {
+        if (job instanceof Thief thief) {
+            return thief.getStealJob();
+        }
+
         return job;
     }
 

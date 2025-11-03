@@ -3,6 +3,7 @@ package click.mafia42.job.server.citizen.special;
 import click.mafia42.entity.room.GameRoomUser;
 import click.mafia42.entity.room.GameStatus;
 import click.mafia42.entity.room.GameUserStatus;
+import click.mafia42.job.Job;
 import click.mafia42.job.JobType;
 import click.mafia42.job.SkillTriggerTime;
 import click.mafia42.job.server.MessageResult;
@@ -15,6 +16,15 @@ import java.util.Optional;
 public class Martyr extends SkillJob {
     public Martyr(GameRoomUser owner) {
         super(owner, SharedActiveType.NONE, true);
+    }
+
+    protected Martyr(Martyr martyr) {
+        super(martyr);
+    }
+
+    @Override
+    protected Job copyInternal() {
+        return new Martyr(this);
     }
 
     @Override
@@ -76,7 +86,7 @@ public class Martyr extends SkillJob {
     }
 
     @Override
-    protected boolean isSkillSetApproved(GameStatus gameStatus) {
+    public boolean isSkillSetApproved(GameStatus gameStatus) {
         Optional<GameRoomUser> mostVotedUser = getOwner().getGameRoom().getMostVotedUser();
         boolean isOwnerMostVoted = mostVotedUser.isPresent() && mostVotedUser.get().equals(getOwner());
         return gameStatus == GameStatus.NIGHT ||
@@ -84,7 +94,7 @@ public class Martyr extends SkillJob {
     }
 
     @Override
-    protected boolean isValidTarget(GameUserStatus gameUserStatus) {
+    public boolean isValidTarget(GameUserStatus gameUserStatus) {
         return gameUserStatus == GameUserStatus.ALIVE;
     }
 }

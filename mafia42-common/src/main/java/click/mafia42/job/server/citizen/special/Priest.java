@@ -3,6 +3,7 @@ package click.mafia42.job.server.citizen.special;
 import click.mafia42.entity.room.GameRoomUser;
 import click.mafia42.entity.room.GameStatus;
 import click.mafia42.entity.room.GameUserStatus;
+import click.mafia42.job.Job;
 import click.mafia42.job.JobType;
 import click.mafia42.job.SkillTriggerTime;
 import click.mafia42.job.server.MessageResult;
@@ -13,6 +14,15 @@ import click.mafia42.job.server.SkillResult;
 public class Priest extends SkillJob {
     public Priest(GameRoomUser owner) {
         super(owner, SharedActiveType.NONE, false);
+    }
+
+    protected Priest(Priest priest) {
+        super(priest);
+    }
+
+    @Override
+    protected Job copyInternal() {
+        return new Priest(this);
     }
 
     @Override
@@ -44,12 +54,12 @@ public class Priest extends SkillJob {
     }
 
     @Override
-    protected boolean isSkillSetApproved(GameStatus gameStatus) {
+    public boolean isSkillSetApproved(GameStatus gameStatus) {
         return gameStatus == GameStatus.NIGHT;
     }
 
     @Override
-    protected boolean isValidTarget(GameUserStatus gameUserStatus) {
+    public boolean isValidTarget(GameUserStatus gameUserStatus) {
         return gameUserStatus == GameUserStatus.DIE;
     }
 }

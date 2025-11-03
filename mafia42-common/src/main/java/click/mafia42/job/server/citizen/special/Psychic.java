@@ -3,6 +3,7 @@ package click.mafia42.job.server.citizen.special;
 import click.mafia42.entity.room.GameRoomUser;
 import click.mafia42.entity.room.GameStatus;
 import click.mafia42.entity.room.GameUserStatus;
+import click.mafia42.job.Job;
 import click.mafia42.job.JobType;
 import click.mafia42.job.SkillTriggerTime;
 import click.mafia42.job.server.MessageResult;
@@ -15,6 +16,15 @@ import java.util.Set;
 public class Psychic extends SkillJob {
     public Psychic(GameRoomUser owner) {
         super(owner, SharedActiveType.NONE, true);
+    }
+
+    protected Psychic(Psychic psychic) {
+        super(psychic);
+    }
+
+    @Override
+    protected Job copyInternal() {
+        return new Psychic(this);
     }
 
     @Override
@@ -46,12 +56,12 @@ public class Psychic extends SkillJob {
     }
 
     @Override
-    protected boolean isSkillSetApproved(GameStatus gameStatus) {
+    public boolean isSkillSetApproved(GameStatus gameStatus) {
         return gameStatus == GameStatus.NIGHT && target == null;
     }
 
     @Override
-    protected boolean isValidTarget(GameUserStatus gameUserStatus) {
+    public boolean isValidTarget(GameUserStatus gameUserStatus) {
         return gameUserStatus == GameUserStatus.DIE;
     }
 }

@@ -1,6 +1,7 @@
 package click.mafia42.job.server.citizen.special;
 
 import click.mafia42.entity.room.GameRoomUser;
+import click.mafia42.job.Job;
 import click.mafia42.job.JobType;
 import click.mafia42.job.server.PassiveJob;
 import click.mafia42.job.server.SkillResult;
@@ -8,6 +9,15 @@ import click.mafia42.job.server.SkillResult;
 public class Judge extends PassiveJob {
     public Judge(GameRoomUser owner) {
         super(owner);
+    }
+
+    protected Judge(Judge judge) {
+        super(judge);
+    }
+
+    @Override
+    protected Job copyInternal() {
+        return new Judge(this);
     }
 
     @Override

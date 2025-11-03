@@ -3,6 +3,7 @@ package click.mafia42.job.server.cult;
 import click.mafia42.entity.room.GameRoomUser;
 import click.mafia42.entity.room.GameStatus;
 import click.mafia42.entity.room.GameUserStatus;
+import click.mafia42.job.Job;
 import click.mafia42.job.JobType;
 import click.mafia42.job.SkillTriggerTime;
 import click.mafia42.job.server.SharedActiveType;
@@ -12,6 +13,15 @@ import click.mafia42.job.server.SkillResult;
 public class Fanatic extends SkillJob {
     public Fanatic(GameRoomUser owner) {
         super(owner, SharedActiveType.NONE, true);
+    }
+
+    protected Fanatic(Fanatic fanatic) {
+        super(fanatic);
+    }
+
+    @Override
+    protected Job copyInternal() {
+        return new Fanatic(this);
     }
 
     @Override
@@ -31,12 +41,12 @@ public class Fanatic extends SkillJob {
     }
 
     @Override
-    protected boolean isSkillSetApproved(GameStatus gameStatus) {
+    public boolean isSkillSetApproved(GameStatus gameStatus) {
         return gameStatus == GameStatus.NIGHT;
     }
 
     @Override
-    protected boolean isValidTarget(GameUserStatus gameUserStatus) {
+    public boolean isValidTarget(GameUserStatus gameUserStatus) {
         return gameUserStatus == GameUserStatus.ALIVE;
     }
 }

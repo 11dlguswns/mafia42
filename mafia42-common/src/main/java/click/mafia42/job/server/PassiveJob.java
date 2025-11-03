@@ -9,6 +9,10 @@ public abstract class PassiveJob extends Job {
         super(owner);
     }
 
+    protected PassiveJob(Job job) {
+        super(job);
+    }
+
     public SkillResult usePassive() {
         if (getOwner().getStatus() == GameUserStatus.DIE) {
             return new SkillResult();

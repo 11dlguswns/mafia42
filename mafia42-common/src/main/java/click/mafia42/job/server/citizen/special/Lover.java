@@ -2,6 +2,7 @@ package click.mafia42.job.server.citizen.special;
 
 import click.mafia42.entity.room.GameRoomUser;
 import click.mafia42.entity.room.GameUserStatus;
+import click.mafia42.job.Job;
 import click.mafia42.job.JobType;
 import click.mafia42.job.server.MessageResult;
 import click.mafia42.job.server.PassiveJob;
@@ -12,6 +13,15 @@ import java.util.Set;
 public class Lover extends PassiveJob {
     public Lover(GameRoomUser owner) {
         super(owner);
+    }
+
+    protected Lover(Lover lover) {
+        super(lover);
+    }
+
+    @Override
+    protected Job copyInternal() {
+        return new Lover(this);
     }
 
     @Override

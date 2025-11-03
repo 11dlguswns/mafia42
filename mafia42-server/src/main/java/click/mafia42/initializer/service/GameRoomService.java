@@ -14,7 +14,6 @@ import click.mafia42.exception.GlobalExceptionCode;
 import click.mafia42.job.Job;
 import click.mafia42.job.JobType;
 import click.mafia42.job.SkillTriggerTime;
-import click.mafia42.job.server.PassiveJob;
 import click.mafia42.job.server.SharedActiveType;
 import click.mafia42.job.server.SkillJob;
 import click.mafia42.job.server.SkillResult;
@@ -296,6 +295,10 @@ public class GameRoomService {
         }
 
         if (gameRoom.getStatus() == GameStatus.NIGHT) {
+            if (gameRoom.findUsersByMafiaTeam().contains(gameRoomUser)) {
+                return MessageType.MAFIA;
+            }
+
             switch (gameRoomUser.getJob().getJobType()) {
                 case LOVER -> {
                     return MessageType.LOVER;
@@ -304,9 +307,6 @@ public class GameRoomService {
                     if (gameRoom.getDay() != 0) {
                         return MessageType.PSYCHIC;
                     }
-                }
-                case MAFIA -> {
-                    return MessageType.MAFIA;
                 }
                 case CULT_LEADER -> {
                     return MessageType.CULT;
@@ -364,7 +364,7 @@ public class GameRoomService {
         switch (messageType) {
             case ALL -> visibleChatToUsers.addAll(gameRoom.getPlayers());
             case LOVER -> visibleChatToUsers.addAll(gameRoom.getPlayers().stream()
-                    .filter(gUser -> gUser.getJob().getJobType() == JobType.LOVER).toList());
+                    .filter(gUser -> gUser.getJobOrStealJob().getJobType() == JobType.LOVER).toList());
             case PSYCHIC, DIE -> visibleChatToUsers.addAll(gameRoom.getPlayers().stream()
                     .filter(gUser ->
                             gUser.getStatus() == GameUserStatus.DIE ||
@@ -404,6 +404,10 @@ public class GameRoomService {
                             GameRoomUser mostVotedUser = mostVotedUserOptional.get();
 
                             if (mostVotedUser.getJob() instanceof Politician politician && !mostVotedUser.isSeduced()) {
+                                sendSkillResultByAffectedUsers(politician.passiveAction(), gameRoom);
+                            } else if (mostVotedUser.getJob() instanceof Thief thief && thief.getStealJob() instanceof Politician politician &&
+                                    !mostVotedUser.isSeduced() && !thief.hasUsedPoliticianAbility()) {
+                                thief.usedPoliticianAbility();
                                 sendSkillResultByAffectedUsers(politician.passiveAction(), gameRoom);
                             } else {
                                 sendGameSystemMessageToGameRoomUsers(gameRoom, mostVotedUser.getUser().getNickname() + "님이 투표로 처형당했습니다.");
@@ -561,6 +565,7 @@ public class GameRoomService {
                 .orElseThrow(() -> new GlobalException(GlobalExceptionCode.NOT_FOUND_USER));
         if (gameRoomUser.getJob() instanceof SkillJob skillJob) {
             SkillResult skillResult = skillJob.setSkill(requestGameRoomUser, request.jobType());
+            saveGameRoomToUsers(gameRoom.findUsersBySharedActive(skillJob.getSharedActiveType()));
 
             Set<GameRoomUser> detectiveUsers = gameRoom.findUsersByJobType(JobType.DETECTIVE);
             detectiveUsers.forEach(gUser -> {

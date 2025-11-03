@@ -3,6 +3,7 @@ package click.mafia42.job.server.mafia;
 import click.mafia42.entity.room.GameRoomUser;
 import click.mafia42.entity.room.GameStatus;
 import click.mafia42.entity.room.GameUserStatus;
+import click.mafia42.job.Job;
 import click.mafia42.job.JobType;
 import click.mafia42.job.SkillTriggerTime;
 import click.mafia42.job.server.MessageResult;
@@ -10,8 +11,6 @@ import click.mafia42.job.server.SharedActiveType;
 import click.mafia42.job.server.SkillJob;
 import click.mafia42.job.server.SkillResult;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 
 public class Spy extends SkillJob {
@@ -22,6 +21,15 @@ public class Spy extends SkillJob {
     @Override
     public JobType getJobType() {
         return JobType.SPY;
+    }
+
+    protected Spy(Spy spy) {
+        super(spy);
+    }
+
+    @Override
+    protected Job copyInternal() {
+        return new Spy(this);
     }
 
     @Override
@@ -57,12 +65,12 @@ public class Spy extends SkillJob {
     }
 
     @Override
-    protected boolean isSkillSetApproved(GameStatus gameStatus) {
+    public boolean isSkillSetApproved(GameStatus gameStatus) {
         return gameStatus == GameStatus.NIGHT && target == null;
     }
 
     @Override
-    protected boolean isValidTarget(GameUserStatus gameUserStatus) {
+    public boolean isValidTarget(GameUserStatus gameUserStatus) {
         return gameUserStatus == GameUserStatus.ALIVE;
     }
 }

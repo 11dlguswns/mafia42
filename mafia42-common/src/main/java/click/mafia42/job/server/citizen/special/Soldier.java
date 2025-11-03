@@ -1,6 +1,7 @@
 package click.mafia42.job.server.citizen.special;
 
 import click.mafia42.entity.room.GameRoomUser;
+import click.mafia42.job.Job;
 import click.mafia42.job.JobType;
 import click.mafia42.job.server.MessageResult;
 import click.mafia42.job.server.PassiveJob;
@@ -11,6 +12,16 @@ public class Soldier extends PassiveJob {
 
     public Soldier(GameRoomUser owner) {
         super(owner);
+    }
+
+    protected Soldier(Soldier soldier) {
+        super(soldier);
+        this.isBulletBlocked = soldier.isBulletBlocked;
+    }
+
+    @Override
+    protected Job copyInternal() {
+        return new Soldier(this);
     }
 
     @Override

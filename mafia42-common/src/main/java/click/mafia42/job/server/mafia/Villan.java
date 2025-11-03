@@ -9,6 +9,15 @@ public class Villan extends Job {
         super(owner);
     }
 
+    public Villan(Villan villan) {
+        super(villan);
+    }
+
+    @Override
+    protected Job copyInternal() {
+        return new Villan(this);
+    }
+
     @Override
     public JobType getJobType() {
         return JobType.VILLAN;

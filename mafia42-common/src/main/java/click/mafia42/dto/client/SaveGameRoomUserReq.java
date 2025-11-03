@@ -3,6 +3,7 @@ package click.mafia42.dto.client;
 import click.mafia42.entity.room.GameRoomUser;
 import click.mafia42.entity.room.GameUserStatus;
 import click.mafia42.job.JobType;
+import click.mafia42.job.server.SharedActiveType;
 import click.mafia42.job.server.SkillJob;
 import click.mafia42.job.server.citizen.special.Detective;
 
@@ -57,14 +58,27 @@ public record SaveGameRoomUserReq(
 
             boolean isCurrentUser = gameRoomUser.equals(currentUser);
             boolean detectiveTarget = currentUser.getJob() instanceof Detective detective &&
-                    detective.getTarget().equals(gameRoomUser);
+                    gameRoomUser.equals(detective.getTarget());
+            boolean isSameSharedActiveType = isSameSharedActiveType(currentUser, skillJob);
 
-            if (isCurrentUser || detectiveTarget) {
+            if (isCurrentUser || detectiveTarget || isSameSharedActiveType) {
                 return skillJob.getTarget().getUser().getId();
             }
         }
 
         return null;
+    }
+
+    private static boolean isSameSharedActiveType(GameRoomUser currentUser, SkillJob skillJob) {
+        if (skillJob.getSharedActiveType() == SharedActiveType.NONE) {
+            return false;
+        }
+
+        if (currentUser.getJob() instanceof SkillJob currentSkillJob) {
+            return skillJob.getSharedActiveType() == currentSkillJob.getSharedActiveType();
+        }
+
+        return false;
     }
 
     private static boolean isBlackmailed(GameRoomUser gameRoomUser, GameRoomUser currentUser) {

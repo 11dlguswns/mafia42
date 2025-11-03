@@ -3,13 +3,26 @@ package click.mafia42.job.server.citizen.special;
 import click.mafia42.entity.room.GameRoomUser;
 import click.mafia42.entity.room.GameStatus;
 import click.mafia42.entity.room.GameUserStatus;
+import click.mafia42.job.Job;
 import click.mafia42.job.JobType;
 import click.mafia42.job.SkillTriggerTime;
-import click.mafia42.job.server.*;
+import click.mafia42.job.server.MessageResult;
+import click.mafia42.job.server.SharedActiveType;
+import click.mafia42.job.server.SkillJob;
+import click.mafia42.job.server.SkillResult;
 
 public class Reporter extends SkillJob {
     public Reporter(GameRoomUser owner) {
         super(owner, SharedActiveType.NONE, false);
+    }
+
+    protected Reporter(Reporter reporter) {
+        super(reporter);
+    }
+
+    @Override
+    protected Job copyInternal() {
+        return new Reporter(this);
     }
 
     @Override
@@ -42,12 +55,12 @@ public class Reporter extends SkillJob {
     }
 
     @Override
-    protected boolean isSkillSetApproved(GameStatus gameStatus) {
+    public boolean isSkillSetApproved(GameStatus gameStatus) {
         return gameStatus == GameStatus.NIGHT;
     }
 
     @Override
-    protected boolean isValidTarget(GameUserStatus gameUserStatus) {
+    public boolean isValidTarget(GameUserStatus gameUserStatus) {
         return gameUserStatus == GameUserStatus.ALIVE;
     }
 }
