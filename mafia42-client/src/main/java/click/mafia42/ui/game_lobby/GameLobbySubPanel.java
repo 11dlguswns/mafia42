@@ -169,10 +169,12 @@ public class GameLobbySubPanel extends JPanel {
 
     private void kickOutGameRoomUser(ActionEvent e) {
         if (choiceUserId == null) {
-            JOptionPane.showMessageDialog(null, "유저를 선택해 주세요");
+            JOptionPane.showMessageDialog(null, "유저를 선택해 주세요.", "경고", JOptionPane.WARNING_MESSAGE);
+            return;
         }
         if (UserInfoProvider.id.equals(choiceUserId)) {
-            JOptionPane.showMessageDialog(null, "자기 자신을 강퇴할 수 없습니다.");
+            JOptionPane.showMessageDialog(null, "자기 자신을 강퇴할 수 없습니다.", "경고", JOptionPane.WARNING_MESSAGE);
+            return;
         }
 
         Payload payload = new Payload(

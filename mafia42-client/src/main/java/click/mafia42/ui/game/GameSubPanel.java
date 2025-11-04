@@ -154,17 +154,31 @@ public class GameSubPanel extends JPanel {
     }
 
     private void vote(ActionEvent e) {
+        if (choiceUserId == null) {
+            JOptionPane.showMessageDialog(null, "유저를 선택해 주세요.", "경고", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
         Payload payload = new Payload(
                 Commend.VOTE_USER,
                 new VoteUserReq(choiceUserId));
         Mafia42Client.sendRequest(channel, payload);
+
+        choiceUserId = null;
     }
 
     private void skill(ActionEvent e) {
+        if (choiceUserId == null) {
+            JOptionPane.showMessageDialog(null, "유저를 선택해 주세요.", "경고", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
         Payload payload = new Payload(
                 Commend.USE_JOB_SKILL,
                 new UseJobSkillReq(choiceUserId, choiceJobType));
         Mafia42Client.sendRequest(channel, payload);
+
+        choiceUserId = null;
     }
 
     private void exitGameRoom(ActionEvent e) {

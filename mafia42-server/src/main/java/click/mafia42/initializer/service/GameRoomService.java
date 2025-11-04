@@ -496,8 +496,8 @@ public class GameRoomService {
         saveGameRoomToGameRoomUsers(gameRoom);
 
         Payload payload = new Payload(
-                Commend.DISPLAY_NOTIFICATION,
-                new DisplayNotificationReq(winningTeam + " WIN")
+                Commend.CONSOLE_OUTPUT,
+                new ConsoleOutputReq(winningTeam + " WIN", ConsoleType.INFO)
         );
         sendCommendToGameRoomUsers(gameRoom, payload);
 

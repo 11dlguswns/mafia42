@@ -116,7 +116,7 @@ public class Mafia42Client {
 
             channel.writeAndFlush(payload);
 
-            future.get();
+            future.get(5, java.util.concurrent.TimeUnit.SECONDS);
         } catch (Exception e) {
             log.error("{}", payload, new GlobalException(GlobalExceptionCode.SYNC_PROCESS_EXCEPTION, e));
         }

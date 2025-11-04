@@ -47,6 +47,10 @@ public class TransactionManager {
                 throw new GlobalException(GlobalExceptionCode.TRANSACTION_FAIL, e);
             }
         } catch (Exception e) {
+            if (e instanceof GlobalException globalException) {
+                throw globalException;
+            }
+
             throw new GlobalException(GlobalExceptionCode.TRANSACTION_FAIL, e);
         } finally {
             connectionHolder.remove();

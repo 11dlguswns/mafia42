@@ -37,7 +37,6 @@ public enum Commend {
     SAVE_GAME_ROOM_LOBBY_SYSTEM_MESSAGE(false),
     SAVE_GAME_MESSAGE(false),
     SAVE_GAME_MESSAGES(false),
-    DISPLAY_NOTIFICATION(false),
     ;
     private final boolean isSyncReq;
 
