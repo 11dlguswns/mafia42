@@ -235,11 +235,14 @@ public class GameRoom {
     }
 
     private long getAgreeUserCount() {
+        long blackmailedVoteCount = blackmailedVoteCount();
         return players.stream()
                 .filter(GameRoomUser::isVoteAgree)
                 .mapToLong(gUser -> {
                     if (gUser.getJob() instanceof Politician && !gUser.isSeduced()) {
                         return 2L;
+                    } else if (gUser.getJob() instanceof Gangster) {
+                        return 1L + blackmailedVoteCount;
                     } else {
                         return 1L;
                     }
@@ -248,6 +251,7 @@ public class GameRoom {
     }
 
     private long getVoteAllowedPlayerCount() {
+        long blackmailedVoteCount = blackmailedVoteCount();
         return players.stream()
                 .filter(gameRoomUser -> {
                     boolean isAlive = gameRoomUser.getStatus() == GameUserStatus.ALIVE;
@@ -256,6 +260,8 @@ public class GameRoom {
                 }).mapToLong(gUser -> {
                     if (!gUser.isVoteAgree() && gUser.getJob() instanceof Politician && !gUser.isSeduced()) {
                         return 2L;
+                    } else if (!gUser.isVoteAgree() && gUser.getJob() instanceof Gangster) {
+                        return 1L + blackmailedVoteCount;
                     } else {
                         return 1L;
                     }
@@ -264,6 +270,8 @@ public class GameRoom {
     }
 
     public Optional<GameRoomUser> getMostVotedUser() {
+        long blackmailedVoteCount = blackmailedVoteCount();
+
         Map<GameRoomUser, Long> voteCountMap = players.stream()
                 .filter(gUser -> gUser.getVoteUser() != null)
                 .collect(Collectors.groupingBy(GameRoomUser::getVoteUser, Collectors.counting()));
@@ -271,6 +279,8 @@ public class GameRoom {
         voteCountMap.forEach((gUser, voteCount) -> {
             if (gUser.getJob() instanceof Politician && !gUser.isSeduced()) {
                 voteCountMap.put(gUser, voteCount + 1);
+            } else if (gUser.getJob() instanceof Gangster) {
+                voteCountMap.put(gUser, voteCount + blackmailedVoteCount);
             }
         });
 
@@ -288,6 +298,18 @@ public class GameRoom {
         }
 
         return Optional.of(topUsers.getFirst());
+    }
+
+    private long blackmailedVoteCount() {
+        return players.stream()
+                .filter(GameRoomUser::isBlackmailed)
+                .mapToLong(gUser -> {
+                    if (gUser.getJob() instanceof Politician && !gUser.isSeduced()) {
+                        return 2L;
+                    } else {
+                        return 1L;
+                    }
+                }).sum();
     }
 
     private Duration getGameTime() {
