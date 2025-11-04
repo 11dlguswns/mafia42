@@ -130,8 +130,13 @@ public class GameRoomService {
         GameRoom gameRoom = gameRoomManager.findGameRoomByGameRoomUser(user)
                 .orElseThrow(() -> new GlobalException(GlobalExceptionCode.NOT_JOIN_ROOM));
 
+        if (gameRoom.isStarted()) {
+            throw new GlobalException(GlobalExceptionCode.GAME_ALREADY_STARTED);
+        }
+
         GameRoomUser gameRoomUser = gameRoom.getPlayer(user.getId())
                 .orElseThrow(() -> new GlobalException(GlobalExceptionCode.NOT_JOIN_ROOM));
+
         exitGameRoom(gameRoomUser, gameRoom, ExitType.SELF);
 
         return new Payload(Commend.REMOVE_GAME_ROOM, new RemoveGameRoomReq());

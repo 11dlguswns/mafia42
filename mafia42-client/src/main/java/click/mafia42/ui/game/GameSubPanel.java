@@ -28,7 +28,7 @@ public class GameSubPanel extends JPanel {
     private final JPanel gameUserChoiceMiddlePanel = new JPanel(new GridLayout(1, 4));
     private final JPanel gameUserChoiceBottomPanel = new JPanel(new GridLayout(1, 4));
 
-    private final JPanel gameButtonPanel = new JPanel(new GridLayout(4, 1));
+    private final JPanel gameButtonPanel = new JPanel(new GridLayout(2, 1));
 
     private UUID choiceUserId;
     private JobType choiceJobType;
@@ -144,13 +144,8 @@ public class GameSubPanel extends JPanel {
         JButton skillButton = new JButton("능력");
         skillButton.addActionListener(this::skill);
 
-        JButton exitGameRoomButton = new JButton("나가기");
-        exitGameRoomButton.addActionListener(this::exitGameRoom);
-
         gameButtonPanel.add(voteButton);
         gameButtonPanel.add(skillButton);
-        gameButtonPanel.add(new JPanel());
-        gameButtonPanel.add(exitGameRoomButton);
     }
 
     private void vote(ActionEvent e) {
@@ -179,13 +174,6 @@ public class GameSubPanel extends JPanel {
         Mafia42Client.sendRequest(channel, payload);
 
         choiceUserId = null;
-    }
-
-    private void exitGameRoom(ActionEvent e) {
-        Payload payload = new Payload(
-                Commend.EXIT_GAME_ROOM,
-                new ExitGameRoomReq());
-        Mafia42Client.sendRequest(channel, payload);
     }
 
     public void showJudgmentVoteDialog() {

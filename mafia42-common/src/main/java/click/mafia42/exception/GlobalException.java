@@ -8,7 +8,7 @@ public class GlobalException extends RuntimeException {
     }
 
     public String getCodeAndMessage() {
-        return "[ " + code.name() + " ] : " + code.getMessage();
+        return this.getMessage();
     }
 
     public static String getCodeAndMessage(GlobalExceptionCode code) {

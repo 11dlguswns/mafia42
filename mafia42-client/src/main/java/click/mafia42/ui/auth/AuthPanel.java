@@ -3,6 +3,7 @@ package click.mafia42.ui.auth;
 import click.mafia42.Mafia42Client;
 import click.mafia42.dto.server.*;
 import click.mafia42.initializer.provider.DetailGameRoomProvider;
+import click.mafia42.initializer.provider.TokenProvider;
 import click.mafia42.payload.Commend;
 import click.mafia42.payload.Payload;
 import click.mafia42.ui.ClientPage;
@@ -83,13 +84,14 @@ public class AuthPanel extends JPanel {
         Payload payload = new Payload(
                 Commend.SIGN_IN,
                 new SignInReq(nickname, password));
-
         Mafia42Client.sendRequest(channel, payload);
 
-        setDefaultInfo();
+        if (TokenProvider.accessToken != null) {
+            setDefaultInfo();
 
-        nicknameField.setText("");
-        passwordField.setText("");
+            nicknameField.setText("");
+            passwordField.setText("");
+        }
     }
 
     private void signUp() {
@@ -106,8 +108,11 @@ public class AuthPanel extends JPanel {
                 new SignUpReq(nickname, password));
         Mafia42Client.sendRequest(channel, payload);
 
-        nicknameField.setText("");
-        passwordField.setText("");
+        if (TokenProvider.accessToken != null) {
+            nicknameField.setText("");
+            passwordField.setText("");
+        }
+
     }
 
     private void setDefaultInfo() {
