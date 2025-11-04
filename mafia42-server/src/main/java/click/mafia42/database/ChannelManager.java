@@ -1,6 +1,7 @@
 package click.mafia42.database;
 
 import click.mafia42.entity.room.GameRoom;
+import click.mafia42.entity.room.GameRoomUser;
 import click.mafia42.entity.user.User;
 import click.mafia42.payload.Payload;
 import io.netty.channel.Channel;
@@ -8,10 +9,7 @@ import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.util.concurrent.GlobalEventExecutor;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static click.mafia42.initializer.handler.AuthHandler.USER;
@@ -63,6 +61,12 @@ public class ChannelManager {
                     return user != null && gameRoom.containsPlayer(user);
                 })
                 .toList();
+    }
+
+    public Set<GameRoomUser> findInactiveUsers(GameRoom gameRoom) {
+        return gameRoom.getPlayers().stream()
+                .filter(gUser -> findChannelByUser(gUser.getUser()).isEmpty())
+                .collect(Collectors.toSet());
     }
 
     public void sendCommendToUsers(List<Channel> channels, Payload payload) {

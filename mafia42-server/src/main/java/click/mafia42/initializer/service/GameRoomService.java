@@ -502,6 +502,10 @@ public class GameRoomService {
         sendCommendToGameRoomUsers(gameRoom, payload);
 
         gameRoom.resetGame();
+
+        Set<GameRoomUser> inactiveUsers = channelManager.findInactiveUsers(gameRoom);
+        inactiveUsers.forEach(gameRoom::removePlayer);
+
         saveGameRoomToGameRoomUsers(gameRoom);
 
         return new Payload(Commend.NOTHING, null);
