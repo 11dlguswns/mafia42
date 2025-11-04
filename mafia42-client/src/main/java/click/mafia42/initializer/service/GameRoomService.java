@@ -34,6 +34,7 @@ public class GameRoomService {
         } else {
             clientUI.setCardLayout(ClientPage.GAME_ROOM_LOBBY);
 
+            clientUI.getGamePanel().clearChatArea();
             clientUI.getGameLobbySubPanel().updateGameLobbyUserChoicePanel();
             if (DetailGameRoomProvider.isCurrentUserManager()) {
                 clientUI.getGameLobbySubPanel().setGameRoomRoleCardLayout(GameRoomRole.MANAGER);

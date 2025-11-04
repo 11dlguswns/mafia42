@@ -1,7 +1,10 @@
 package click.mafia42.ui.game;
 
 import click.mafia42.Mafia42Client;
-import click.mafia42.dto.server.*;
+import click.mafia42.dto.server.DecreaseGameTimeReq;
+import click.mafia42.dto.server.IncreaseGameTimeReq;
+import click.mafia42.dto.server.SendMessageToGameReq;
+import click.mafia42.dto.server.UpdateGameStatusReq;
 import click.mafia42.initializer.provider.DetailGameRoomProvider;
 import click.mafia42.payload.Commend;
 import click.mafia42.payload.Payload;
@@ -128,5 +131,9 @@ public class GamePanel extends JPanel {
         } catch (BadLocationException e) {
             e.printStackTrace();
         }
+    }
+
+    public void clearChatArea() {
+        chatArea.setText("");
     }
 }
