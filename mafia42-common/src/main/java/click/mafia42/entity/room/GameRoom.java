@@ -5,11 +5,9 @@ import click.mafia42.entity.user.User;
 import click.mafia42.exception.GlobalException;
 import click.mafia42.exception.GlobalExceptionCode;
 import click.mafia42.job.JobType;
+import click.mafia42.job.Team;
 import click.mafia42.job.server.*;
-import click.mafia42.job.server.citizen.special.Lover;
-import click.mafia42.job.server.citizen.special.Martyr;
-import click.mafia42.job.server.citizen.special.Politician;
-import click.mafia42.job.server.citizen.special.Soldier;
+import click.mafia42.job.server.citizen.special.*;
 import click.mafia42.util.TimeUtil;
 import org.mindrot.jbcrypt.BCrypt;
 
@@ -516,5 +514,41 @@ public class GameRoom {
         } finally {
             lock.unlock();
         }
+    }
+
+    public Optional<Team> getWinningTeam() {
+        if (getAliveUserCountByTeam(Team.MAFIA) >= (getAliveUserCountByTeam(Team.CITIZEN)) + getAliveUserCountByTeam(Team.CULT)) {
+            return Optional.of(Team.MAFIA);
+        }
+
+        if (getAliveUserCountByTeam(Team.MAFIA) <= 0) {
+            return Optional.of(Team.CITIZEN);
+        }
+
+        return Optional.empty();
+    }
+
+    public void resetGame() {
+        isStarted = false;
+        status = null;
+        endTimeSecond = 0;
+        gameMessages.clear();
+        day = 0;
+
+        players.forEach(GameRoomUser::resetUser);
+    }
+
+    private long getAliveUserCountByTeam(Team team) {
+        return players.stream()
+                .filter(gUser -> gUser.getTeam() == team && gUser.getStatus() == GameUserStatus.ALIVE)
+                .mapToLong(gUser -> {
+                    if (gUser.getJob() instanceof Politician && !gUser.isSeduced()) {
+                        return 2L;
+                    } else if (gUser.getJob() instanceof Gangster) {
+                        return 3L;
+                    } else {
+                        return 1L;
+                    }
+                }).sum();
     }
 }

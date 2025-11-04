@@ -19,7 +19,7 @@ public class GameRoomUser implements Comparable<GameRoomUser> {
     private Job job;
     private Team team;
     private GameUserStatus status = GameUserStatus.ALIVE;
-    private final Set<UUID> visibleToUserIds;
+    private Set<UUID> visibleToUserIds;
     private boolean isProselytized = false;
     private boolean isContacted = false;
     private GameRoomUser voteUser;
@@ -28,7 +28,23 @@ public class GameRoomUser implements Comparable<GameRoomUser> {
     private boolean isSeduced = false;
     private boolean isAscended = false;
     private boolean timeControlUsed = false;
-    private GameRoom gameRoom;
+    private final GameRoom gameRoom;
+
+    public void resetUser() {
+        job = null;
+        team = null;
+        status = GameUserStatus.ALIVE;
+        visibleToUserIds = new HashSet<>(Set.of(user.getId()));;
+        isProselytized = false;
+        isContacted = false;
+        voteUser = null;
+        voteAgree = null;
+        isBlackmailed = false;
+        isSeduced = false;
+        isAscended = false;
+        timeControlUsed = false;
+
+    }
 
     public GameRoomUser(GameRoom gameRoom, User user) {
         this.number = gameRoom.getUserNumber();

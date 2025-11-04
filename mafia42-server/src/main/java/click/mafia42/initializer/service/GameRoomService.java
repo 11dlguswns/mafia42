@@ -11,6 +11,7 @@ import click.mafia42.exception.GlobalExceptionCode;
 import click.mafia42.job.Job;
 import click.mafia42.job.JobType;
 import click.mafia42.job.SkillTriggerTime;
+import click.mafia42.job.Team;
 import click.mafia42.job.server.SharedActiveType;
 import click.mafia42.job.server.SkillJob;
 import click.mafia42.job.server.SkillResult;
@@ -406,6 +407,10 @@ public class GameRoomService {
                 .orElseThrow(() -> new GlobalException(GlobalExceptionCode.NOT_JOIN_ROOM));
 
         return gameRoom.doWithLock(() -> {
+            if (!gameRoom.isStarted()) {
+                return new Payload(Commend.NOTHING, null);
+            }
+
             GameStatus updateBeforeStatus = gameRoom.getStatus();
             if (!gameRoom.updateStatus()) {
                 return new Payload(Commend.SAVE_GAME_ROOM, SaveDetailGameRoomReq.from(gameRoom, gameRoomUser));
@@ -477,9 +482,29 @@ public class GameRoomService {
                 }
             }
 
+            Optional<Team> winningTeam = gameRoom.getWinningTeam();
+            if (winningTeam.isPresent()) {
+                return endGame(winningTeam.get(), gameRoom);
+            }
+
             gameRoom.updateEndTime();
             return new Payload(Commend.SAVE_GAME_ROOM, SaveDetailGameRoomReq.from(gameRoom, gameRoomUser));
         });
+    }
+
+    private Payload endGame(Team winningTeam, GameRoom gameRoom) {
+        saveGameRoomToGameRoomUsers(gameRoom);
+
+        Payload payload = new Payload(
+                Commend.DISPLAY_NOTIFICATION,
+                new DisplayNotificationReq(winningTeam + " WIN")
+        );
+        sendCommendToGameRoomUsers(gameRoom, payload);
+
+        gameRoom.resetGame();
+        saveGameRoomToGameRoomUsers(gameRoom);
+
+        return new Payload(Commend.NOTHING, null);
     }
 
     private void useSkillBySkillTriggerTime(GameRoom gameRoom, SkillTriggerTime skillTriggerTime) {
