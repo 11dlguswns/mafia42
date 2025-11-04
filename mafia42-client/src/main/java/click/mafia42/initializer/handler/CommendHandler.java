@@ -4,10 +4,11 @@ import click.mafia42.dto.client.*;
 import click.mafia42.exception.GlobalException;
 import click.mafia42.exception.GlobalExceptionCode;
 import click.mafia42.initializer.service.GameRoomService;
+import click.mafia42.initializer.service.OutputService;
 import click.mafia42.initializer.service.TokenService;
 import click.mafia42.initializer.service.UserService;
+import click.mafia42.payload.Commend;
 import click.mafia42.payload.Payload;
-import click.mafia42.initializer.service.OutputService;
 import click.mafia42.util.ValidationUtil;
 import io.netty.channel.ChannelHandler.Sharable;
 import io.netty.channel.ChannelHandlerContext;
@@ -32,8 +33,14 @@ public class CommendHandler extends SimpleChannelInboundHandler<Payload> {
     public void setPayloadFuture(UUID payloadId, CompletableFuture<Payload> future) {
         this.payloadFutures.put(payloadId, future);
     }
+
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Payload payload) throws Exception {
+        if (payload.getCommend() == Commend.CONSOLE_OUTPUT) {
+            payloadFutures.values().forEach(completableFuture -> completableFuture.complete(payload));
+            payloadFutures.clear();
+        }
+
         switch (payload.getCommend()) {
             case NOTHING -> {
                 // do nothing
@@ -41,21 +48,21 @@ public class CommendHandler extends SimpleChannelInboundHandler<Payload> {
             case CONSOLE_OUTPUT ->
                     outputService.output(ValidationUtil.validationAndGet(payload.getBody(), ConsoleOutputReq.class));
             case SAVE_TOKEN ->
-                tokenService.saveToken(ValidationUtil.validationAndGet(payload.getBody(), SaveTokenReq.class));
+                    tokenService.saveToken(ValidationUtil.validationAndGet(payload.getBody(), SaveTokenReq.class));
             case SAVE_GAME_ROOM ->
-                gameRoomService.saveGameRoom(ValidationUtil.validationAndGet(payload.getBody(), SaveDetailGameRoomReq.class));
+                    gameRoomService.saveGameRoom(ValidationUtil.validationAndGet(payload.getBody(), SaveDetailGameRoomReq.class));
             case SAVE_GAME_ROOM_LIST ->
                     gameRoomService.saveGameRoomList(ValidationUtil.validationAndGet(payload.getBody(), SaveGameRoomListReq.class));
             case SAVE_USER_INFO_MYSELF ->
-                userService.saveUserInfoMyself(ValidationUtil.validationAndGet(payload.getBody(), SaveUserInfoMyselfReq.class));
+                    userService.saveUserInfoMyself(ValidationUtil.validationAndGet(payload.getBody(), SaveUserInfoMyselfReq.class));
             case REMOVE_GAME_ROOM ->
-                gameRoomService.removeGameRoom(ValidationUtil.validationAndGet(payload.getBody(), RemoveGameRoomReq.class), ctx);
+                    gameRoomService.removeGameRoom(ValidationUtil.validationAndGet(payload.getBody(), RemoveGameRoomReq.class), ctx);
             case SAVE_GAME_ROOM_LOBBY_MESSAGE ->
-                gameRoomService.saveGameRoomLobbyMessage(ValidationUtil.validationAndGet(payload.getBody(), SaveGameRoomLobbyMessageReq.class));
+                    gameRoomService.saveGameRoomLobbyMessage(ValidationUtil.validationAndGet(payload.getBody(), SaveGameRoomLobbyMessageReq.class));
             case SAVE_GAME_ROOM_LOBBY_SYSTEM_MESSAGE ->
-                gameRoomService.saveGameRoomLobbySystemMessage(ValidationUtil.validationAndGet(payload.getBody(), SaveGameRoomLobbySystemMessageReq.class));
+                    gameRoomService.saveGameRoomLobbySystemMessage(ValidationUtil.validationAndGet(payload.getBody(), SaveGameRoomLobbySystemMessageReq.class));
             case SAVE_GAME_MESSAGE ->
-                gameRoomService.saveGameMessage(ValidationUtil.validationAndGet(payload.getBody(), SaveGameMessageReq.class));
+                    gameRoomService.saveGameMessage(ValidationUtil.validationAndGet(payload.getBody(), SaveGameMessageReq.class));
             case SAVE_GAME_MESSAGES ->
                     gameRoomService.saveGameMessages(ValidationUtil.validationAndGet(payload.getBody(), SaveGameMessagesReq.class));
             default -> throw new GlobalException(GlobalExceptionCode.UNSUPPORTED_COMMAND);
