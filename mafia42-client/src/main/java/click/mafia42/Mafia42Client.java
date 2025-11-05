@@ -63,7 +63,7 @@ public class Mafia42Client {
     private static void setGroupToBootstrap(Bootstrap bootstrap) {
         bootstrap.group(eventLoopGroup)
                 .channel(NioSocketChannel.class)
-                .remoteAddress("localhost", 8080)
+                .remoteAddress("lostark.click", 8080)
                 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 1000)
                 .option(ChannelOption.SO_LINGER, 0)
                 .option(ChannelOption.SO_KEEPALIVE, true)
