@@ -32,9 +32,15 @@ public class LoggingHandler extends ChannelInboundHandlerAdapter {
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         Channel channel = ctx.channel();
         User user = ctx.channel().attr(AuthHandler.USER).get();
+        String nickname = "Anonymous";
+
+        if (user != null) {
+            nickname = user.getNickname();
+        }
+
         log.info("{}포트에서 {}님이 접속을 종료했습니다 [현재 접속자 수 : {}]",
                 channel.remoteAddress(),
-                user.getNickname(),
+                nickname,
                 channelManager.getChannelsCount());
         ctx.fireChannelInactive();
     }
